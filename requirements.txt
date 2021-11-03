@@ -1,0 +1,2 @@
+marshy==1.4.2
+validators==0.18.2
