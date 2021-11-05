@@ -109,6 +109,52 @@ the document). Schemas produced by schemey can be deserialized,
 but the intended workflow is to start with a Python dataclass
 and then convert to a json schema rather than the other way around.
 
+Self referencing data structures are supported out of the box. For
+example...
+```
+@dataclass
+class Node:
+    id: str
+    children: Optional[List[f'{__name__}.Node']] = None
+```
+...will result in the following schema:
+```
+{
+  "$defs": {
+    "Node": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "children": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Node"
+              }
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/$defs/Node"
+    }
+  ]
+}
+```
+
 ## Adding constraints
 
 ### Specifying a schema for a field
@@ -144,10 +190,124 @@ The following schemas are defined out of the box (Feel free to add your own!):
 * [StringSchema](schemey/string_schema.py): For string validation. (Including regex, format and length constraints)
 * [WithDefsSchema](schemey/with_defs_schema.py): For schemas which include indirectly referenced objects
 
-### Specifying a Schema for a Class
+## Architectural Concepts.
+
+* A [Schema](schemey/schema_abc.py) is used to validate instances of a type
+* A [Factory](schemey/factory/schema_factory_abc.py) is used to create schemas for a given type
+* A [Context](schemey/schema_context.py) coordinates the operations between schemas and factories (Using
+  the default context leads to a shorter syntax, but less flexibilty)
+
+## Specifying a Schema for a Class
+
+Below we outline the process of completely customizing schema generation and marshalling.
+The simplest way to specify a schema for a class is to define the __schema_factory__ class
+property. For example, imagine a situation where a 2D point is defined in javascript
+as an array of 2 numbers, [x, y].
+
+You write a dataclass to describe this in python, with a custom marshaller (As per the marshy
+documentation), but the marshalled schema no longer matches the marshalled dataclass.
+You will need to define a custom schema and marshaller for the class to:
+
+```
+from dataclasses import dataclass
+from typing import Dict, List, Iterator, Optional
+import json
+from marshy.marshaller.marshaller_abc import MarshallerABC
+from marshy import load, dump
+from schemey.schema_abc import SchemaABC
+from schemey.schema_error import SchemaError
+from schemey.object_schema import ObjectSchema
+from schemey.property_schema import PropertySchema
+from schemey.array_schema import ArraySchema
+from schemey.number_schema import NumberSchema
+from schemey.schema_context import schema_for_type
 
 
+@dataclass
+class Point:
+    x: float
+    y: float
+
+    @classmethod
+    def __marshaller_factory__(cls, marshaller_context):
+        """ Custom marshaller """
+        return PointMarshaller()
+
+    @classmethod
+    def __schema_factory__(cls, schema_context, defs):
+        return PointSchema()
+
+
+class PointMarshaller(MarshallerABC):
+    def __init__(self):
+        super().__init__(Point)
+
+    def load(self, item):
+        return Point(item[0], item[1])
+
+    def dump(self, item):
+        return [item.x, item.y]
+
+    @classmethod
+    def __marshaller_factory__(cls, marshaller_context):
+        """ Custom marshaller """
+        return PointMarshaller()
+
+
+INTERNAL_SCHEMA = ObjectSchema(property_schemas=(
+    PropertySchema('x', NumberSchema(), required=True),
+    PropertySchema('y', NumberSchema(), required=True)
+))
+
+EXTERNAL_SCHEMA = ArraySchema(NumberSchema(), 2, 2)
+
+
+@dataclass
+class PointSchema(SchemaABC[Point]):
+
+    def get_schema_errors(self,
+                          item: Point,
+                          defs: Optional[Dict[str, SchemaABC]],
+                          current_path: Optional[List[str]] = None,
+                          ) -> Iterator[SchemaError]:
+        yield from INTERNAL_SCHEMA.get_schema_errors(item, defs, current_path)
+
+    @classmethod
+    def __marshaller_factory__(cls, marshaller_context):
+        """ Custom marshaller """
+        return PointSchemaMarshaller()
+
+
+class PointSchemaMarshaller(MarshallerABC):
+    def __init__(self):
+        super().__init__(PointSchema)
+
+    def load(self, item):
+        return load(ArraySchema, item)
+
+    def dump(self, item):
+        return dump(EXTERNAL_SCHEMA)
+        
+schema = schema_for_type(Point)
+schema.validate(Point(1.2, 3.4))
+dumped = dump(schema)
+json_str = json.dumps(dumped)
+```
 
 ### Specify a Schema for a Class by factory
 
-Datetimes to numbers example
+Instead of overriding the __schema_factory__ / __marshaller_factory__
+methods, it is possible to register a factory for your schema with
+your schema context.
+
+
+## Building The Project
+
+You need an account on pypi before this will work:
+
+```
+pip install setuptools wheel
+python setup.py sdist bdist_wheel
+pip install twine
+python -m twine upload dist/*
+```

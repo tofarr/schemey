@@ -39,7 +39,7 @@ class SchemaABC(ABC, Generic[T]):
             raise error
 
     # noinspection PyUnusedLocal
-    @staticmethod
+    @classmethod
     def __marshaller_factory__(cls, marshaller_context: MarshallerContext):
         """
         Get the marshaller for schemas. Custom marshallers can override this
