@@ -1,9 +1,9 @@
 from marshy.marshaller.marshaller_abc import MarshallerABC
 from marshy.types import ExternalItemType
 
-from persisty.schema.schema_abc import SchemaABC
-from persisty.schema.object_schema import ObjectSchema
-from persisty.schema.property_schema import PropertySchema
+from schema.schema_abc import SchemaABC
+from schema.object_schema import ObjectSchema
+from schema.property_schema import PropertySchema
 
 
 class ObjectSchemaMarshaller(MarshallerABC[ObjectSchema]):

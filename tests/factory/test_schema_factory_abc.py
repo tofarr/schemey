@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from typing import Type, Optional
 from unittest import TestCase
 
-from persisty.schema.factory.schema_factory_abc import SchemaFactoryABC
-from persisty.schema.schema_abc import SchemaABC, T
-from persisty.schema.schema_context import SchemaContext
+from schema.factory.schema_factory_abc import SchemaFactoryABC
+from schema.schema_abc import SchemaABC, T
+from schema.schema_context import SchemaContext
 
 
 @dataclass

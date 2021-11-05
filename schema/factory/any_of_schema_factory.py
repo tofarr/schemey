@@ -17,5 +17,7 @@ class AnyOfSchemaFactory(SchemaFactoryABC):
         origin = typing_inspect.get_origin(type_)
         if origin == Union:
             args = typing_inspect.get_args(type_)
+            if len(args) == 2 and args[1] is (None).__class__:
+                args = (args[1], args[0])  # None checks are faster so make sure they are first
             schemas = tuple(context.get_schema(a, defs) for a in args)
             return AnyOfSchema[T](schemas)

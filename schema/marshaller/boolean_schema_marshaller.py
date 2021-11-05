@@ -1,7 +1,7 @@
 from marshy.marshaller.marshaller_abc import MarshallerABC
 from marshy.types import ExternalItemType
 
-from persisty.schema.boolean_schema import BooleanSchema
+from schema.boolean_schema import BooleanSchema
 
 
 class BooleanSchemaMarshaller(MarshallerABC[BooleanSchema]):

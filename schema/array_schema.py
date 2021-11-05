@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator
+from typing import Optional, List, Iterator, Type, Dict
 
-from persisty.schema.schema_abc import SchemaABC, T
-from persisty.schema.schema_error import SchemaError
+from schema.schema_abc import SchemaABC, T
+from schema.schema_context import SchemaContext
+from schema.schema_error import SchemaError
 
 
 @dataclass(frozen=True)
@@ -12,7 +13,11 @@ class ArraySchema(SchemaABC[T]):
     max_items: Optional[int] = None
     uniqueness: bool = False
 
-    def get_schema_errors(self, item: T, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
+    def get_schema_errors(self,
+                          item: T,
+                          defs: Optional[Dict[str, SchemaABC]],
+                          current_path: Optional[List[str]] = None,
+                          ) -> Iterator[SchemaError]:
         if current_path is None:
             current_path = []
         if not isinstance(item, list):
@@ -21,7 +26,7 @@ class ArraySchema(SchemaABC[T]):
         if self.item_schema is not None:
             for index, i in enumerate(item):
                 current_path.append(str(index))
-                yield from self.item_schema.get_schema_errors(i, current_path)
+                yield from self.item_schema.get_schema_errors(i, defs, current_path)
                 current_path.pop()
         if self.min_items is not None and len(item) < self.min_items:
             yield SchemaError(current_path, 'min_items', item)

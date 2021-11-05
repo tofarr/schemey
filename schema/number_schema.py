@@ -1,8 +1,8 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator, Union, Type, TypeVar
+from typing import Optional, List, Iterator, Union, Type, TypeVar, Dict
 
-from persisty.schema.schema_abc import SchemaABC
-from persisty.schema.schema_error import SchemaError
+from schema.schema_abc import SchemaABC
+from schema.schema_error import SchemaError
 
 T = TypeVar('T', bound=Union[int, float])
 
@@ -15,7 +15,11 @@ class NumberSchema(SchemaABC[T]):
     maximum: Optional[T] = None
     exclusive_maximum: bool = True
 
-    def get_schema_errors(self, item: T, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
+    def get_schema_errors(self,
+                          item: T,
+                          defs: Optional[Dict[str, SchemaABC]],
+                          current_path: Optional[List[str]] = None,
+                          ) -> Iterator[SchemaError]:
         if not isinstance(item, self.item_type):
             if not isinstance(item, int):
                 yield SchemaError(current_path, 'type', item)

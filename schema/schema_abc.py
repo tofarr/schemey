@@ -1,13 +1,13 @@
 from abc import abstractmethod, ABC
-from typing import Iterator, Optional, List, Generic, TypeVar
+from typing import Iterator, Optional, List, Generic, TypeVar, Type, Dict
 
 from marshy.marshaller.deferred_marshaller import DeferredMarshaller
 from marshy.marshaller_context import MarshallerContext
-from marshy.types import ExternalType
 
-from persisty.schema.schema_error import SchemaError
+from schema.schema_error import SchemaError
 
 T = TypeVar('T')
+_SchemaABC = f'{__name__}.SchemaABC'
 
 
 class SchemaABC(ABC, Generic[T]):
@@ -20,7 +20,8 @@ class SchemaABC(ABC, Generic[T]):
     @abstractmethod
     def get_schema_errors(self,
                           item: T,
-                          current_path: Optional[List[str]] = None
+                          defs: Optional[Dict[str, _SchemaABC]],
+                          current_path: Optional[List[str]] = None,
                           ) -> Iterator[SchemaError]:
         """ Get the validation errors for the item given. """
 
@@ -29,13 +30,13 @@ class SchemaABC(ABC, Generic[T]):
         """
         Get the marshaller for schemas. Custom marshallers can override this
         """
-        from persisty.schema.marshaller.array_schema_marshaller import ArraySchemaMarshaller
-        from persisty.schema.marshaller.boolean_schema_marshaller import BooleanSchemaMarshaller
-        from persisty.schema.marshaller.number_schema_marshaller import NumberSchemaMarshaller
-        from persisty.schema.marshaller.string_schema_marshaller import StringSchemaMarshaller
-        from persisty.schema.marshaller.object_schema_marshaller import ObjectSchemaMarshaller
-        from persisty.schema.marshaller.null_schema_marshaller import NullSchemaMarshaller
-        from persisty.schema.marshaller.schema_marshaller import SchemaMarshaller
+        from schema.marshaller.array_schema_marshaller import ArraySchemaMarshaller
+        from schema.marshaller.boolean_schema_marshaller import BooleanSchemaMarshaller
+        from schema.marshaller.number_schema_marshaller import NumberSchemaMarshaller
+        from schema.marshaller.string_schema_marshaller import StringSchemaMarshaller
+        from schema.marshaller.object_schema_marshaller import ObjectSchemaMarshaller
+        from schema.marshaller.null_schema_marshaller import NullSchemaMarshaller
+        from schema.marshaller.schema_marshaller import SchemaMarshaller
         deferred = DeferredMarshaller(SchemaABC, marshaller_context)
         marshallers_by_name = {
             'array': ArraySchemaMarshaller(deferred),

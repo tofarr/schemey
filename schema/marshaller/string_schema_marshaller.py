@@ -1,8 +1,8 @@
 from marshy import ExternalType
 from marshy.marshaller.marshaller_abc import MarshallerABC
 
-from persisty.schema.marshaller.util import filter_none
-from persisty.schema.string_schema import StringSchema
+from schema.marshaller.util import filter_none
+from schema.string_schema import StringSchema
 
 
 class StringSchemaMarshaller(MarshallerABC[StringSchema]):

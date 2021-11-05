@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from marshy.marshaller.marshaller_abc import MarshallerABC
 from marshy.types import ExternalItemType
 
-from persisty.schema.array_schema import ArraySchema
-from persisty.schema.marshaller.util import filter_none
-from persisty.schema.schema_abc import SchemaABC
+from schema.array_schema import ArraySchema
+from schema.marshaller.util import filter_none
+from schema.schema_abc import SchemaABC
 
 
 @dataclass(frozen=True)

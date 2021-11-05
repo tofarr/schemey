@@ -2,9 +2,9 @@ from unittest import TestCase
 
 from marshy.default_context import new_default_context
 
-from persisty.schema.null_schema import NullSchema
-from persisty.schema.schema_abc import SchemaABC
-from persisty.schema.schema_error import SchemaError
+from schema.null_schema import NullSchema
+from schema.schema_abc import SchemaABC
+from schema.schema_error import SchemaError
 
 
 class TestObjectSchema(TestCase):
@@ -12,8 +12,8 @@ class TestObjectSchema(TestCase):
     def test_null_schema(self):
         schema = NullSchema()
         # noinspection PyTypeChecker
-        assert list(schema.get_schema_errors('True', ['foo','bar'])) == [SchemaError('foo/bar', 'type', 'True')]
-        assert list(schema.get_schema_errors(None)) == []
+        assert list(schema.get_schema_errors('True', {}, ['foo','bar'])) == [SchemaError('foo/bar', 'type', 'True')]
+        assert list(schema.get_schema_errors(None, {})) == []
 
     def test_marshalling(self):
         context = new_default_context()

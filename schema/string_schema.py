@@ -1,13 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime, time
 import re
-from typing import Optional, List, Iterator
+from typing import Optional, List, Iterator, Dict
 import validators
-from marshy import ExternalType
 
-from persisty.schema.schema_abc import SchemaABC
-from persisty.schema.string_format import StringFormat
-from persisty.schema.schema_error import SchemaError
+from schema.schema_abc import SchemaABC
+from schema.string_format import StringFormat
+from schema.schema_error import SchemaError
 
 
 @dataclass(frozen=True)
@@ -21,7 +20,11 @@ class StringSchema(SchemaABC[str]):
     def __post_init__(self):
         object.__setattr__(self, '_compiled_pattern', None if self.pattern is None else re.compile(self.pattern))
 
-    def get_schema_errors(self, item: str, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
+    def get_schema_errors(self,
+                          item: str,
+                          defs: Optional[Dict[str, SchemaABC]],
+                          current_path: Optional[List[str]] = None,
+                          ) -> Iterator[SchemaError]:
         if not isinstance(item, str):
             yield SchemaError(current_path, 'type', item)
             return

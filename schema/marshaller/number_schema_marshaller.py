@@ -2,8 +2,8 @@ from marshy import ExternalType
 from marshy.marshaller.marshaller_abc import MarshallerABC
 from marshy.types import ExternalItemType
 
-from persisty.schema.marshaller.util import filter_none
-from persisty.schema.number_schema import NumberSchema
+from schema.marshaller.util import filter_none
+from schema.number_schema import NumberSchema
 
 
 class NumberSchemaMarshaller(MarshallerABC[NumberSchema]):

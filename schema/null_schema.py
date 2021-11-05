@@ -1,9 +1,7 @@
-from typing import Optional, List, Iterator
+from typing import Optional, List, Iterator, Dict
 
-from marshy import ExternalType
-
-from persisty.schema.schema_abc import SchemaABC
-from persisty.schema.schema_error import SchemaError
+from schema.schema_abc import SchemaABC
+from schema.schema_error import SchemaError
 
 
 class NullSchema(SchemaABC):
@@ -14,7 +12,11 @@ class NullSchema(SchemaABC):
             cls._instance = super(NullSchema, cls).__new__(cls, *args, **kwargs)
         return cls._instance
 
-    def get_schema_errors(self, item: ExternalType, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
+    def get_schema_errors(self,
+                          item,
+                          defs: Optional[Dict[str, SchemaABC]],
+                          current_path: Optional[List[str]] = None,
+                          ) -> Iterator[SchemaError]:
         if item is not None:
             yield SchemaError(current_path or [], 'type', item)
 

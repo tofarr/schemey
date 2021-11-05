@@ -1,18 +1,20 @@
 from datetime import datetime
 from typing import Optional, Dict, Type
 
-from persisty.schema.boolean_schema import BooleanSchema
+from schema.boolean_schema import BooleanSchema
+from schema.factory.enum_schema_factory import EnumSchemaFactory
 
-from persisty.schema.factory.schema_factory_abc import SchemaFactoryABC
-from persisty.schema.schema_abc import SchemaABC
-from persisty.schema.schema_context import SchemaContext
-from persisty.schema.string_schema import StringSchema
-from persisty.schema.string_format import StringFormat
-from persisty.schema.number_schema import NumberSchema
-from persisty.schema.factory.optional_schema_factory import OptionalSchemaFactory
-from persisty.schema.factory.array_schema_factory import ArraySchemaFactory
-from persisty.schema.factory.factory_schema_factory import FactorySchemaFactory
-from persisty.schema.factory.dataclass_schema_factory import DataclassSchemaFactory
+from schema.factory.schema_factory_abc import SchemaFactoryABC
+from schema.null_schema import NullSchema
+from schema.schema_abc import SchemaABC
+from schema.schema_context import SchemaContext
+from schema.string_schema import StringSchema
+from schema.string_format import StringFormat
+from schema.number_schema import NumberSchema
+from schema.factory.any_of_schema_factory import AnyOfSchemaFactory
+from schema.factory.array_schema_factory import ArraySchemaFactory
+from schema.factory.factory_schema_factory import FactorySchemaFactory
+from schema.factory.dataclass_schema_factory import DataclassSchemaFactory
 
 
 class DefaultSchemaContext(SchemaContext):
@@ -26,8 +28,10 @@ class DefaultSchemaContext(SchemaContext):
         self.register_schema(float, NumberSchema[float](float))
         self.register_schema(int, NumberSchema[int](int))
         self.register_schema(str, StringSchema())
+        self.register_schema((None).__class__, NullSchema())
 
-        self.register_factory(OptionalSchemaFactory())
+        self.register_factory(AnyOfSchemaFactory())
         self.register_factory(ArraySchemaFactory())
         self.register_factory(FactorySchemaFactory())
         self.register_factory(DataclassSchemaFactory())
+        self.register_factory(EnumSchemaFactory())

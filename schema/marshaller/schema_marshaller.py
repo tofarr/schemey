@@ -3,12 +3,17 @@ from typing import Dict, Iterable, Optional, Type
 from marshy.marshaller.marshaller_abc import MarshallerABC
 from marshy.types import ExternalItemType
 
-from persisty.schema.any_of_schema import AnyOfSchema
-from persisty.schema.enum_schema import EnumSchema
-from persisty.schema.schema_abc import SchemaABC
+from schema.any_of_schema import AnyOfSchema
+from schema.enum_schema import EnumSchema
+from schema.marshaller.enum_schema_marshaller import EnumSchemaMarshaller
+from schema.ref_schema import RefSchema
+from schema.schema_abc import SchemaABC
 
 TYPE = 'type'
 ENUM = 'enum'
+DEFS = '$defs'
+REF = '$ref'
+ANY_OF = 'anyOf'
 
 
 class SchemaMarshaller(MarshallerABC[SchemaABC]):
@@ -25,44 +30,39 @@ class SchemaMarshaller(MarshallerABC[SchemaABC]):
         object.__setattr__(self, '_marshallers_by_type', {m.marshalled_type: m for m in marshallers_by_name.values()})
 
     def load(self, item: ExternalItemType) -> SchemaABC:
-        enum = item.get(ENUM)
-        if enum:
-            return EnumSchema(tuple(enum))
+        if DEFS in item:
+            from schema.marshaller.with_defs_schema_marshaller import WithDefsSchemaMarshaller
+            return WithDefsSchemaMarshaller(self).load(item)
+        if ANY_OF in item:
+            from schema.marshaller.any_of_schema_marshaller import AnyOfSchemaMarshaller
+            return AnyOfSchemaMarshaller(self).load(item)
+        if REF in item:
+            from schema.marshaller.ref_schema_marshaller import RefSchemaMarshaller
+            return RefSchemaMarshaller().load(item)
+        if ENUM in item:
+            return EnumSchemaMarshaller().load(item)
         type_ = item[TYPE]
-        if type_ is None or isinstance(type_, str):
-            return self._load_by_type(type_, item)
-        return self._load_any_of(type_, item)
+        return self._load_by_type(type_, item)
 
     def _load_by_type(self, type_: str, item: ExternalItemType) -> SchemaABC:
         marshaller = self._marshallers_by_name[type_]
         loaded = marshaller.load(item)
         return loaded
 
-    def _load_any_of(self, types: Iterable[str], item: ExternalItemType):
-        item = {**item}
-        schemas = []
-        for type_ in types:
-            item[TYPE] = type_
-            schemas.append(self._load_by_type(type_, item))
-        return AnyOfSchema(tuple(schemas))
-
     def dump(self, schema: SchemaABC) -> ExternalItemType:
-        if isinstance(schema, EnumSchema):
-            return dict(enum=list(schema.permitted_values))
+        from schema.with_defs_schema import WithDefsSchema
+        if isinstance(schema, WithDefsSchema):
+            from schema.marshaller.with_defs_schema_marshaller import WithDefsSchemaMarshaller
+            return WithDefsSchemaMarshaller(self).dump(schema)
         if isinstance(schema, AnyOfSchema):
-            types = []
-            item = {}
-            for s in schema.schemas:
-                dumped = self.dump(s)
-                item.update(dumped)
-                sub_type = dumped[TYPE]
-                if sub_type is None or isinstance(sub_type, str):
-                    types.append(sub_type)
-                else:
-                    types.extend(sub_type)
-            item[TYPE] = types
-            return item
-        else:
-            marshaller = self._marshallers_by_type[schema.__class__]
-            dumped = marshaller.dump(schema)
-            return dumped
+            from schema.marshaller.any_of_schema_marshaller import AnyOfSchemaMarshaller
+            return AnyOfSchemaMarshaller(self).dump(schema)
+        if isinstance(schema, RefSchema):
+            from schema.marshaller.ref_schema_marshaller import RefSchemaMarshaller
+            return RefSchemaMarshaller().dump(schema)
+        if isinstance(schema, EnumSchema):
+            from schema.marshaller.enum_schema_marshaller import EnumSchemaMarshaller
+            return EnumSchemaMarshaller().dump(schema)
+        marshaller = self._marshallers_by_type[schema.__class__]
+        dumped = marshaller.dump(schema)
+        return dumped

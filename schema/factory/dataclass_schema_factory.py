@@ -1,26 +1,37 @@
 import dataclasses
-from typing import Type, Optional
+from typing import Type, Optional, Dict
 
-from persisty.schema.factory.schema_factory_abc import SchemaFactoryABC
-from persisty.schema.object_schema import ObjectSchema
-from persisty.schema.property_schema import PropertySchema
-from persisty.schema.schema_abc import SchemaABC
-from persisty.schema.schema_context import SchemaContext
+from schema.factory.schema_factory_abc import SchemaFactoryABC
+from schema.object_schema import ObjectSchema
+from schema.property_schema import PropertySchema
+from schema.ref_schema import RefSchema
+from schema.schema_abc import SchemaABC
+from schema.schema_context import SchemaContext
 
 SCHEMA = 'schema'
 
 
 class DataclassSchemaFactory(SchemaFactoryABC):
 
-    def create(self, type_: Type, context: SchemaContext) -> Optional[SchemaABC]:
+    def create(self, type_: Type, context: SchemaContext, defs: Dict[str, SchemaABC]) -> Optional[SchemaABC]:
         if not dataclasses.is_dataclass(type_):
             return
-        property_schemas = tuple(self._schema_for_field(f, context) for f in dataclasses.fields(type_))
-        return ObjectSchema(property_schemas)
+        name = type_.__name__
+        if name in defs:
+            return defs[name]
+        # noinspection PyTypeChecker
+        schema = RefSchema(name)
+        defs[name] = schema  # prevent inifinite loops
+        property_schemas = tuple(self._schema_for_field(f, context, defs) for f in dataclasses.fields(type_))
+        defs[name] = ObjectSchema(property_schemas)
+        return schema
 
     @staticmethod
-    def _schema_for_field(field: dataclasses.Field, context: SchemaContext) -> PropertySchema:
+    def _schema_for_field(field: dataclasses.Field,
+                          context: SchemaContext,
+                          defs: Dict[str, SchemaABC]
+                          ) -> PropertySchema:
         schema = field.metadata.get(SCHEMA)
         if not schema:
-            schema = context.get_schema(field.type)
+            schema = context.get_schema(field.type, defs)
         return PropertySchema(field.name, schema)
