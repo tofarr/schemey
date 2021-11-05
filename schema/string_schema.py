@@ -3,6 +3,7 @@ from datetime import datetime, time
 import re
 from typing import Optional, List, Iterator
 import validators
+from marshy import ExternalType
 
 from persisty.schema.schema_abc import SchemaABC
 from persisty.schema.string_format import StringFormat

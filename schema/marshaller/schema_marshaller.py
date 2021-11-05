@@ -4,9 +4,11 @@ from marshy.marshaller.marshaller_abc import MarshallerABC
 from marshy.types import ExternalItemType
 
 from persisty.schema.any_of_schema import AnyOfSchema
+from persisty.schema.enum_schema import EnumSchema
 from persisty.schema.schema_abc import SchemaABC
 
 TYPE = 'type'
+ENUM = 'enum'
 
 
 class SchemaMarshaller(MarshallerABC[SchemaABC]):
@@ -23,8 +25,11 @@ class SchemaMarshaller(MarshallerABC[SchemaABC]):
         object.__setattr__(self, '_marshallers_by_type', {m.marshalled_type: m for m in marshallers_by_name.values()})
 
     def load(self, item: ExternalItemType) -> SchemaABC:
+        enum = item.get(ENUM)
+        if enum:
+            return EnumSchema(tuple(enum))
         type_ = item[TYPE]
-        if isinstance(type_, str):
+        if type_ is None or isinstance(type_, str):
             return self._load_by_type(type_, item)
         return self._load_any_of(type_, item)
 
@@ -42,6 +47,8 @@ class SchemaMarshaller(MarshallerABC[SchemaABC]):
         return AnyOfSchema(tuple(schemas))
 
     def dump(self, schema: SchemaABC) -> ExternalItemType:
+        if isinstance(schema, EnumSchema):
+            return dict(enum=list(schema.permitted_values))
         if isinstance(schema, AnyOfSchema):
             types = []
             item = {}

@@ -1,8 +1,9 @@
 from abc import abstractmethod, ABC
-from typing import TypeVar, Generic, Iterator, Optional, List
+from typing import Iterator, Optional, List, Generic, TypeVar
 
 from marshy.marshaller.deferred_marshaller import DeferredMarshaller
 from marshy.marshaller_context import MarshallerContext
+from marshy.types import ExternalType
 
 from persisty.schema.schema_error import SchemaError
 
@@ -17,7 +18,10 @@ class SchemaABC(ABC, Generic[T]):
     """
 
     @abstractmethod
-    def get_schema_errors(self, item: T, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
+    def get_schema_errors(self,
+                          item: T,
+                          current_path: Optional[List[str]] = None
+                          ) -> Iterator[SchemaError]:
         """ Get the validation errors for the item given. """
 
     @staticmethod
@@ -43,5 +47,3 @@ class SchemaABC(ABC, Generic[T]):
             None: NullSchemaMarshaller(),
         }
         return SchemaMarshaller(marshallers_by_name)
-
-

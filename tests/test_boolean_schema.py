@@ -20,3 +20,7 @@ class TestObjectSchema(TestCase):
         assert context.load(BooleanSchema, dict(type='boolean')) == BooleanSchema()
         assert context.load(SchemaABC, dict(type='boolean')) == BooleanSchema()
         assert context.dump(BooleanSchema()) == dict(type='boolean')
+
+    def test_class(self):
+        assert BooleanSchema() is BooleanSchema()  # Make sure it is a singleton
+        assert str(BooleanSchema()) == "BooleanSchema()"

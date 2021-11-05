@@ -4,11 +4,10 @@ from typing import Type, TypeVar, Optional, Dict
 
 from marshy.utils import resolve_forward_refs
 
-from persisty.errors import PersistyError
 from persisty.schema.schema_abc import SchemaABC
 
 T = TypeVar('T')
-_SchemaFactoryABC = 'persisty.schema.factory.schema_factory_abc.SchemaFactoryABC'
+_SchemaFactoryABC = 'schema.factory.schema_factory_abc.SchemaFactoryABC'
 
 
 class SchemaContext:
@@ -19,7 +18,7 @@ class SchemaContext:
         self._factories = sorted(factories or [], reverse=True)
         self._by_type = dict(by_type or {})
 
-    def get_schema(self, type_: Type[T]) -> SchemaABC[T]:
+    def get_schema(self, type_: Type[T]) -> SchemaABC:
         schema = self._by_type.get(type_)
         if not schema:
             resolved_type = resolve_forward_refs(type_)
@@ -28,7 +27,7 @@ class SchemaContext:
                 if schema:
                     break
             if not schema:
-                raise PersistyError(f'no_schema_for_type:{type_}')
+                raise ValueError(f'no_schema_for_type:{type_}')
             self._by_type[type_] = schema
         return schema
 
@@ -57,7 +56,7 @@ def get_default_schema_context() -> SchemaContext:
     return _default_context
 
 
-def schema_for_type(type_: Type[T], schema_context: Optional[SchemaContext] = None) -> SchemaABC[T]:
+def schema_for_type(type_: Type[T], schema_context: Optional[SchemaContext] = None) -> SchemaABC:
     if schema_context is None:
         schema_context = get_default_schema_context()
     schema = schema_context.get_schema(type_)

@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from marshy.marshaller.marshaller_abc import MarshallerABC
 from marshy.types import ExternalItemType
 
-from persisty.util import filter_none
 from persisty.schema.array_schema import ArraySchema
+from persisty.schema.marshaller.util import filter_none
 from persisty.schema.schema_abc import SchemaABC
 
 

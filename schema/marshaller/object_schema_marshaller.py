@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from marshy.marshaller.marshaller_abc import MarshallerABC
 from marshy.types import ExternalItemType
 
