@@ -2,14 +2,14 @@ from unittest import TestCase
 
 from marshy.default_context import new_default_context
 
-from schema.any_of_schema import optional_schema
-from schema.boolean_schema import BooleanSchema
-from schema.schema_abc import SchemaABC
-from schema.number_schema import NumberSchema
-from schema.object_schema import ObjectSchema
-from schema.property_schema import PropertySchema
-from schema.schema_error import SchemaError
-from schema.string_schema import StringSchema
+from schemey.any_of_schema import optional_schema
+from schemey.boolean_schema import BooleanSchema
+from schemey.schema_abc import SchemaABC
+from schemey.number_schema import NumberSchema
+from schemey.object_schema import ObjectSchema
+from schemey.property_schema import PropertySchema
+from schemey.schema_error import SchemaError
+from schemey.string_schema import StringSchema
 from tests.fixtures import Band
 
 

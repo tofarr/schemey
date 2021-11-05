@@ -2,11 +2,11 @@ from unittest import TestCase
 
 from marshy.default_context import new_default_context
 
-from schema.array_schema import ArraySchema
-from schema.schema_abc import SchemaABC
-from schema.number_schema import NumberSchema
-from schema.schema_error import SchemaError
-from schema.string_schema import StringSchema
+from schemey.array_schema import ArraySchema
+from schemey.schema_abc import SchemaABC
+from schemey.number_schema import NumberSchema
+from schemey.schema_error import SchemaError
+from schemey.string_schema import StringSchema
 
 
 class TestArraySchema(TestCase):
@@ -33,7 +33,8 @@ class TestArraySchema(TestCase):
         schema = ArraySchema[int](item_schema=NumberSchema(item_type=int), max_items=2)
         assert list(schema.get_schema_errors([1], {})) == []
         assert list(schema.get_schema_errors([1, 2], {})) == [SchemaError('', 'max_items', [1, 2])]
-        assert list(schema.get_schema_errors([1, 2, 3], {}, ['foobar'])) == [SchemaError('foobar', 'max_items', [1, 2, 3])]
+        errors = list(schema.get_schema_errors([1, 2, 3], {}, ['foobar']))
+        assert errors == [SchemaError('foobar', 'max_items', [1, 2, 3])]
 
     def test_marshalling(self):
         context = new_default_context()

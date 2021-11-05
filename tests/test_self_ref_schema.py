@@ -1,13 +1,13 @@
 from unittest import TestCase
 
-from schema.any_of_schema import optional_schema
-from schema.array_schema import ArraySchema
-from schema.object_schema import ObjectSchema
-from schema.property_schema import PropertySchema
-from schema.ref_schema import RefSchema
-from schema.schema_context import schema_for_type
-from schema.string_schema import StringSchema
-from schema.with_defs_schema import WithDefsSchema
+from schemey.any_of_schema import optional_schema
+from schemey.array_schema import ArraySchema
+from schemey.object_schema import ObjectSchema
+from schemey.property_schema import PropertySchema
+from schemey.ref_schema import RefSchema
+from schemey.schema_context import schema_for_type
+from schemey.string_schema import StringSchema
+from schemey.with_defs_schema import WithDefsSchema
 from tests.fixtures import Node
 
 

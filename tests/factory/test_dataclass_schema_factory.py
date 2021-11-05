@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from schema.factory.dataclass_schema_factory import DataclassSchemaFactory
-from schema.schema_context import get_default_schema_context
+from schemey.factory.dataclass_schema_factory import DataclassSchemaFactory
+from schemey.schema_context import get_default_schema_context
 
 
 class TestDataclassSchemaFactory(TestCase):

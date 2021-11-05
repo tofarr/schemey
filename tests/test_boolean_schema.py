@@ -2,9 +2,9 @@ from unittest import TestCase
 
 from marshy.default_context import new_default_context
 
-from schema.boolean_schema import BooleanSchema
-from schema.schema_abc import SchemaABC
-from schema.schema_error import SchemaError
+from schemey.boolean_schema import BooleanSchema
+from schemey.schema_abc import SchemaABC
+from schemey.schema_error import SchemaError
 
 
 class TestObjectSchema(TestCase):

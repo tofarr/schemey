@@ -5,21 +5,23 @@ from unittest import TestCase
 from marshy import ExternalType
 from marshy.default_context import new_default_context
 
-from schema.any_of_schema import optional_schema
-from schema.array_schema import ArraySchema
-from schema.boolean_schema import BooleanSchema
-from schema.ref_schema import RefSchema
-from schema.schema_abc import SchemaABC
-from schema.number_schema import NumberSchema
-from schema.object_schema import ObjectSchema
-from schema.property_schema import PropertySchema
-from schema.schema_context import schema_for_type, SchemaContext
-from schema.schema_error import SchemaError
-from schema.string_schema import StringSchema
-from schema.with_defs_schema import WithDefsSchema
+from schemey.__version__ import __version__
+from schemey.any_of_schema import optional_schema
+from schemey.array_schema import ArraySchema
+from schemey.boolean_schema import BooleanSchema
+from schemey.ref_schema import RefSchema
+from schemey.schema_abc import SchemaABC
+from schemey.number_schema import NumberSchema
+from schemey.object_schema import ObjectSchema
+from schemey.property_schema import PropertySchema
+from schemey.schema_context import schema_for_type, SchemaContext
+from schemey.schema_error import SchemaError
+from schemey.string_schema import StringSchema
+from schemey.with_defs_schema import WithDefsSchema
 from tests.fixtures import Band, Issue
 
 
+# noinspection PyUnusedLocal
 @dataclass
 class DefinesSchema:
     @classmethod
@@ -50,6 +52,10 @@ class TestSchema(TestCase):
         assert len(list(schema.get_schema_errors(Band(23), {}))) == 1
         # noinspection PyTypeChecker
         assert len(list(schema.get_schema_errors(Band(23, False), {}))) == 2
+        # noinspection PyTypeChecker
+        with self.assertRaises(SchemaError):
+            # noinspection PyTypeChecker
+            schema.validate(Band(23, False))
 
     def test_schema_for_type_node(self):
         schema = schema_for_type(Issue)
@@ -99,3 +105,6 @@ class TestSchema(TestCase):
             context.dump(WeirdSchema())
         with self.assertRaises(KeyError):
             context.dump(dict(type='weird'), SchemaABC)
+
+    def test_version(self):
+        assert __version__ is not None

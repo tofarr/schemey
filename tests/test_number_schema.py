@@ -2,9 +2,9 @@ from unittest import TestCase
 
 from marshy.default_context import new_default_context
 
-from schema.schema_abc import SchemaABC
-from schema.number_schema import NumberSchema
-from schema.schema_error import SchemaError
+from schemey.schema_abc import SchemaABC
+from schemey.number_schema import NumberSchema
+from schemey.schema_error import SchemaError
 
 
 class TestNumberSchema(TestCase):

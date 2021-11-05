@@ -1,9 +1,9 @@
 from unittest import TestCase
 from uuid import uuid4
 
-from schema.schema_error import SchemaError
-from schema.string_format import StringFormat
-from schema.string_schema import StringSchema
+from schemey.schema_error import SchemaError
+from schemey.string_format import StringFormat
+from schemey.string_schema import StringSchema
 
 
 class TestNumberSchema(TestCase):

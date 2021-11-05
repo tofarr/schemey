@@ -3,13 +3,13 @@ from unittest import TestCase
 from marshy import dump, load
 from marshy.default_context import new_default_context
 
-from schema.any_of_schema import AnyOfSchema, strip_optional
-from schema.boolean_schema import BooleanSchema
-from schema.null_schema import NullSchema
-from schema.number_schema import NumberSchema
-from schema.schema_abc import SchemaABC
-from schema.schema_error import SchemaError
-from schema.string_schema import StringSchema
+from schemey.any_of_schema import AnyOfSchema, strip_optional
+from schemey.boolean_schema import BooleanSchema
+from schemey.null_schema import NullSchema
+from schemey.number_schema import NumberSchema
+from schemey.schema_abc import SchemaABC
+from schemey.schema_error import SchemaError
+from schemey.string_schema import StringSchema
 
 
 class TestAnyOfSchema(TestCase):
@@ -24,7 +24,7 @@ class TestAnyOfSchema(TestCase):
     def test_marshalling(self):
         context = new_default_context()
         schema = AnyOfSchema((NumberSchema(item_type=int), NullSchema()))
-        json_schema = dict(anyOf=[dict(type='integer'), dict(type=None)])
+        json_schema = dict(anyOf=[dict(type='integer'), dict(type='null')])
         loaded = context.load(AnyOfSchema, json_schema)
         dumped = context.dump(schema)
         assert loaded == schema
