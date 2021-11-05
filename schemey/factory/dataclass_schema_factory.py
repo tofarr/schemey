@@ -8,7 +8,7 @@ from schemey.ref_schema import RefSchema
 from schemey.schema_abc import SchemaABC
 from schemey.schema_context import SchemaContext
 
-SCHEMA = 'schemey'
+SCHEMA = 'schema'
 
 
 class DataclassSchemaFactory(SchemaFactoryABC):
@@ -35,4 +35,5 @@ class DataclassSchemaFactory(SchemaFactoryABC):
         schema = field.metadata.get(SCHEMA)
         if not schema:
             schema = context.get_schema(field.type, defs)
-        return PropertySchema(field.name, schema)
+        required = field.default is dataclasses.MISSING and field.default_factory is dataclasses.MISSING
+        return PropertySchema(field.name, schema, required)

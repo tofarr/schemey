@@ -44,21 +44,33 @@ class SchemaABC(ABC, Generic[T]):
         """
         Get the marshaller for schemas. Custom marshallers can override this
         """
+        from schemey.marshaller.schema_marshaller_abc import SchemaMarshallerABC
+        from schemey.marshaller.schema_marshaller import SchemaMarshaller
+
+        from schemey.marshaller.any_of_schema_marshaller import AnyOfSchemaMarshaller
         from schemey.marshaller.array_schema_marshaller import ArraySchemaMarshaller
         from schemey.marshaller.boolean_schema_marshaller import BooleanSchemaMarshaller
-        from schemey.marshaller.number_schema_marshaller import NumberSchemaMarshaller
-        from schemey.marshaller.string_schema_marshaller import StringSchemaMarshaller
-        from schemey.marshaller.object_schema_marshaller import ObjectSchemaMarshaller
+        from schemey.marshaller.datetime_schema_marshaller import DatetimeSchemaMarshaller
+        from schemey.marshaller.enum_schema_marshaller import EnumSchemaMarshaller
         from schemey.marshaller.null_schema_marshaller import NullSchemaMarshaller
-        from schemey.marshaller.schema_marshaller import SchemaMarshaller
+        from schemey.marshaller.number_schema_marshaller import NumberSchemaMarshaller
+        from schemey.marshaller.object_schema_marshaller import ObjectSchemaMarshaller
+        from schemey.marshaller.ref_schema_marshaller import RefSchemaMarshaller
+        from schemey.marshaller.string_schema_marshaller import StringSchemaMarshaller
+        from schemey.marshaller.with_defs_schema_marshaller import WithDefsSchemaMarshaller
+
         deferred = DeferredMarshaller(SchemaABC, marshaller_context)
-        marshallers_by_name = {
-            'array': ArraySchemaMarshaller(deferred),
-            'boolean': BooleanSchemaMarshaller(),
-            'integer': NumberSchemaMarshaller(),
-            'number': NumberSchemaMarshaller(),
-            'string': StringSchemaMarshaller(),
-            'object': ObjectSchemaMarshaller(deferred),
-            'null': NullSchemaMarshaller(),
-        }
+        marshallers_by_name: List[SchemaMarshallerABC]  = [
+            AnyOfSchemaMarshaller(deferred),
+            ArraySchemaMarshaller(deferred),
+            BooleanSchemaMarshaller(),
+            DatetimeSchemaMarshaller(),
+            EnumSchemaMarshaller(),
+            NullSchemaMarshaller(),
+            NumberSchemaMarshaller(),
+            ObjectSchemaMarshaller(deferred),
+            RefSchemaMarshaller(),
+            StringSchemaMarshaller(),
+            WithDefsSchemaMarshaller(deferred)
+        ]
         return SchemaMarshaller(marshallers_by_name)

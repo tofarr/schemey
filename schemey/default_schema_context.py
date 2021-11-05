@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional, Dict, Type
 
 from schemey.boolean_schema import BooleanSchema
+from schemey.datetime_schema import DatetimeSchema
 from schemey.factory.enum_schema_factory import EnumSchemaFactory
 
 from schemey.factory.schema_factory_abc import SchemaFactoryABC
@@ -9,7 +10,6 @@ from schemey.null_schema import NullSchema
 from schemey.schema_abc import SchemaABC
 from schemey.schema_context import SchemaContext
 from schemey.string_schema import StringSchema
-from schemey.string_format import StringFormat
 from schemey.number_schema import NumberSchema
 from schemey.factory.any_of_schema_factory import AnyOfSchemaFactory
 from schemey.factory.array_schema_factory import ArraySchemaFactory
@@ -23,8 +23,9 @@ class DefaultSchemaContext(SchemaContext):
                  factories: Optional[SchemaFactoryABC] = None,
                  by_type: Optional[Dict[Type, SchemaABC]] = None):
         super().__init__(factories, by_type)
+
         self.register_schema(bool, BooleanSchema())
-        self.register_schema(datetime, StringSchema(format=StringFormat.DATE_TIME))
+        self.register_schema(datetime, DatetimeSchema())
         self.register_schema(float, NumberSchema[float](float))
         self.register_schema(int, NumberSchema[int](int))
         self.register_schema(str, StringSchema())

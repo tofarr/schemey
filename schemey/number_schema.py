@@ -1,10 +1,8 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator, Union, Type, TypeVar, Dict
+from typing import Optional, List, Iterator, Type, TypeVar, Dict
 
-from schemey.schema_abc import SchemaABC
+from schemey.schema_abc import SchemaABC, T
 from schemey.schema_error import SchemaError
-
-T = TypeVar('T', bound=Union[int, float])
 
 
 @dataclass(frozen=True)
@@ -21,7 +19,7 @@ class NumberSchema(SchemaABC[T]):
                           current_path: Optional[List[str]] = None,
                           ) -> Iterator[SchemaError]:
         if not isinstance(item, self.item_type):
-            if not isinstance(item, int):
+            if not (self.item_type is float and isinstance(item, int)):
                 yield SchemaError(current_path, 'type', item)
                 return
         if self.minimum is not None and item < self.minimum:

@@ -1,19 +1,26 @@
 from marshy import ExternalType
-from marshy.marshaller.marshaller_abc import MarshallerABC
 from marshy.types import ExternalItemType
 
+from schemey.marshaller.schema_marshaller import TYPE
+from schemey.marshaller.schema_marshaller_abc import SchemaMarshallerABC
 from schemey.marshaller.util import filter_none
 from schemey.number_schema import NumberSchema
 
+INTEGER = 'integer'
+NUMBER = 'number'
 
-class NumberSchemaMarshaller(MarshallerABC[NumberSchema]):
+
+class NumberSchemaMarshaller(SchemaMarshallerABC[NumberSchema]):
 
     def __init__(self):
         super().__init__(NumberSchema)
 
+    def can_load(self, item: ExternalItemType) -> bool:
+        return item.get(TYPE) in (INTEGER, NUMBER)
+
     def load(self, item: ExternalItemType) -> NumberSchema:
         item_type = item['type']
-        item_type = int if item_type == 'integer' else float
+        item_type = int if item_type == INTEGER else float
         return NumberSchema(
             item_type=item_type,
             minimum=item_type(item['minimum']) if item.get('minimum') is not None else None,
@@ -26,7 +33,7 @@ class NumberSchemaMarshaller(MarshallerABC[NumberSchema]):
         exclusive_minimum = item.exclusive_minimum
         exclusive_maximum = item.exclusive_maximum
         return filter_none(dict(
-            type='integer' if item.item_type is int else 'number',
+            type=INTEGER if item.item_type is int else NUMBER,
             minimum=item.minimum,
             exclusiveMinimum=exclusive_minimum if exclusive_minimum != NumberSchema.exclusive_minimum else None,
             maximum=item.maximum,

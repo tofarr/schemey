@@ -17,7 +17,7 @@ class TestSelfRefSchema(TestCase):
         schema = schema_for_type(Node)
         expected = WithDefsSchema(
             defs={'Node': ObjectSchema(property_schemas=(
-                PropertySchema(name='id', schema=StringSchema()),
+                PropertySchema(name='id', schema=StringSchema(), required=True),
                 PropertySchema(name='parent', schema=optional_schema(RefSchema(ref='Node'))),
                 PropertySchema(name='children', schema=ArraySchema(item_schema=RefSchema(ref='Node'))))
             )},

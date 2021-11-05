@@ -1,14 +1,23 @@
 from marshy import ExternalType
 from marshy.marshaller.marshaller_abc import MarshallerABC
+from marshy.types import ExternalItemType
 
+from schemey.marshaller.schema_marshaller import TYPE
+from schemey.marshaller.schema_marshaller_abc import SchemaMarshallerABC
 from schemey.marshaller.util import filter_none
 from schemey.string_schema import StringSchema
 
+STRING = 'string'
+FORMAT = 'format'
 
-class StringSchemaMarshaller(MarshallerABC[StringSchema]):
+
+class StringSchemaMarshaller(SchemaMarshallerABC[StringSchema]):
 
     def __init__(self):
         super().__init__(StringSchema)
+
+    def can_load(self, item: ExternalItemType) -> bool:
+        return item.get(TYPE) == STRING
 
     def load(self, item: ExternalType) -> StringSchema:
         return StringSchema(

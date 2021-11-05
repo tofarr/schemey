@@ -24,7 +24,7 @@ class TestObjectSchema(TestCase):
         expected = WithDefsSchema(
             defs={
                 'Transaction': ObjectSchema(property_schemas=(
-                    PropertySchema(name='id', schema=AnyOfSchema(schemas=(
+                    PropertySchema(name='id', required=True, schema=AnyOfSchema(schemas=(
                         StringSchema(),
                         NumberSchema(int),
                         NullSchema()))),

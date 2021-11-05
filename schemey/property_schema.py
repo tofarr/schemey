@@ -11,6 +11,7 @@ B = TypeVar('B')
 class PropertySchema(Generic[T, B], SchemaABC[T]):
     name: str
     schema: SchemaABC
+    required: bool = False
 
     def get_schema_errors(self,
                           item: T,

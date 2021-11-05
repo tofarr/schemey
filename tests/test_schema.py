@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List, Optional, Iterator, Dict
 from unittest import TestCase
 
-from marshy import ExternalType
+from marshy import ExternalType, get_default_context
 from marshy.default_context import new_default_context
 
 from schemey.__version__ import __version__
@@ -62,12 +62,12 @@ class TestSchema(TestCase):
         expected = WithDefsSchema(
             defs={
                 'Issue': ObjectSchema(property_schemas=(
-                    PropertySchema(name='id', schema=StringSchema()),
+                    PropertySchema(name='id', schema=StringSchema(), required=True),
                     PropertySchema(name='tags', schema=ArraySchema(item_schema=StringSchema())),
                     PropertySchema(name='status', schema=RefSchema(ref='Status'))
                 )),
                 'Status': ObjectSchema(property_schemas=(
-                    PropertySchema(name='title', schema=StringSchema()),
+                    PropertySchema(name='title', schema=StringSchema(), required=True),
                     PropertySchema(name='public', schema=BooleanSchema())))
             },
             schema=RefSchema(ref='Issue')
@@ -88,7 +88,7 @@ class TestSchema(TestCase):
 
     def test_load_invalid(self):
         context = new_default_context()
-        with self.assertRaises(KeyError):
+        with self.assertRaises(ValueError):
             context.load(SchemaABC, dict(type='unknown'))
 
     def test_store_invalid(self):
@@ -108,3 +108,7 @@ class TestSchema(TestCase):
 
     def test_version(self):
         assert __version__ is not None
+
+    def test_marshallers(self):
+        marshaller = get_default_context().get_marshaller(SchemaABC)
+        assert bool(marshaller.schema_marshallers)

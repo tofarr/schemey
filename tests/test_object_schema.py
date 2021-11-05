@@ -34,7 +34,8 @@ class TestObjectSchema(TestCase):
             "properties": {
                 "some_str": {"type": "string"},
                 "some_bool": {"type": "boolean"}
-            }
+            },
+            "additionalProperties": False
         }
         schema = ObjectSchema(tuple((
             PropertySchema('some_str', StringSchema()),
