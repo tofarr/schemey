@@ -33,7 +33,7 @@ class HelloWorld:
 
 
 # A schema may be generated...
-from schemey.schema_context import schema_for_type
+from schemey.json_output_context import schema_for_type
 schema = schema_for_type(HelloWorld)
 
 # A full listing of errors for an item can be retrieved:
@@ -103,11 +103,11 @@ The contents of `json_str` (formatted) will be:
 }
 ```
 
-Deserializing json schemas is currently only partially supported.
+Deserializing json schemas is currently not supported.
 (Due to the complexity of extracting references from anywhere in
-the document). Schemas produced by schemey can be deserialized, 
-but the intended workflow is to start with a Python dataclass
-and then convert to a json schema rather than the other way around.
+the document and the evolving nature of the spec). The intended 
+workflow is to start with a Python dataclass and then convert to
+a json schema rather than the other way around.
 
 Self referencing data structures are supported out of the box. For
 example...
@@ -163,7 +163,7 @@ class Node:
 from dataclasses import dataclass, field
 from typing import Optional
 from schemey.number_schema import NumberSchema
-from schemey.schema_context import schema_for_type
+from schemey.json_output_context import schema_for_type
 
 @dataclass
 class Person:
@@ -186,7 +186,7 @@ The following schemas are defined out of the box (Feel free to add your own!):
 * [NullSchema](schemey/null_schema.py): For None / null values
 * [ObjectSchema](schemey/object_schema.py): For objects
 * [PropertySchema](schemey/property_schema.py): For properties of objects
-* [RefSchema](schemey/ref_schema.py): For indirectly referenced objects  
+* [RefSchema](schemey/deferred_schema.py): For indirectly referenced objects  
 * [StringSchema](schemey/string_schema.py): For string validation. (Including regex, format and length constraints)
 * [WithDefsSchema](schemey/with_defs_schema.py): For schemas which include indirectly referenced objects
 
@@ -194,8 +194,8 @@ The following schemas are defined out of the box (Feel free to add your own!):
 
 * A [Schema](schemey/schema_abc.py) is used to validate instances of a type
 * A [Factory](schemey/factory/schema_factory_abc.py) is used to create schemas for a given type
-* A [Context](schemey/schema_context.py) coordinates the operations between schemas and factories (Using
-  the default context leads to a shorter syntax, but less flexibilty)
+* A [Context](schemey/json_output_context.py) coordinates the operations between schemas and factories (Using
+  the default context leads to a shorter syntax, but less flexibility)
 
 ## Specifying a Schema for a Class
 
@@ -220,7 +220,7 @@ from schemey.object_schema import ObjectSchema
 from schemey.property_schema import PropertySchema
 from schemey.array_schema import ArraySchema
 from schemey.number_schema import NumberSchema
-from schemey.schema_context import schema_for_type
+from schemey.json_output_context import schema_for_type
 
 
 @dataclass
@@ -234,7 +234,7 @@ class Point:
         return PointMarshaller()
 
     @classmethod
-    def __schema_factory__(cls, schema_context, defs):
+    def __schema_factory__(cls, json_output_context, defs):
         return PointSchema()
 
 

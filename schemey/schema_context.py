@@ -4,8 +4,6 @@ from typing import Type, TypeVar, Optional, Dict
 
 from marshy.utils import resolve_forward_refs
 
-from schemey.with_defs_schema import WithDefsSchema
-
 T = TypeVar('T')
 _SchemaFactoryABC = 'schemey.factory.schema_factory_abc.SchemaFactoryABC'
 _SchemaABC = 'schemey.schema_abc.SchemaABC'
@@ -19,19 +17,16 @@ class SchemaContext:
         self._factories = sorted(factories or [], reverse=True)
         self._by_type = dict(by_type or {})
 
-    def get_schema(self, type_: Type[T], defs: Dict[str, _SchemaABC] = None) -> _SchemaABC:
+    def get_schema(self, type_: Type[T]) -> _SchemaABC:
         schema = self._by_type.get(type_)
         if not schema:
-            local_defs = {} if defs is None else defs
             resolved_type = resolve_forward_refs(type_)
             for factory in self._factories:
-                schema = factory.create(resolved_type, self, local_defs)
+                schema = factory.create(resolved_type, self)
                 if schema:
                     break
             if not schema:
                 raise ValueError(f'no_schema_for_type:{type_}')
-            if local_defs is not defs and local_defs:
-                schema = WithDefsSchema(local_defs, schema)
             self._by_type[type_] = schema
         return schema
 

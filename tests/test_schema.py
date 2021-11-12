@@ -9,15 +9,13 @@ from schemey.__version__ import __version__
 from schemey.any_of_schema import optional_schema
 from schemey.array_schema import ArraySchema
 from schemey.boolean_schema import BooleanSchema
-from schemey.ref_schema import RefSchema
 from schemey.schema_abc import SchemaABC
 from schemey.number_schema import NumberSchema
 from schemey.object_schema import ObjectSchema
 from schemey.property_schema import PropertySchema
-from schemey.schema_context import schema_for_type, SchemaContext
+from schemey.schema_context import SchemaContext, schema_for_type
 from schemey.schema_error import SchemaError
 from schemey.string_schema import StringSchema
-from schemey.with_defs_schema import WithDefsSchema
 from tests.fixtures import Band, Issue
 
 
@@ -25,8 +23,8 @@ from tests.fixtures import Band, Issue
 @dataclass
 class DefinesSchema:
     @classmethod
-    def __schema_factory__(cls, schema_context: SchemaContext, refs: Dict[str, SchemaABC]):
-        return ObjectSchema((
+    def __schema_factory__(cls, schema_context: SchemaContext):
+        return ObjectSchema(DefinesSchema, (
             PropertySchema('some_bool', BooleanSchema()),
         ))
 
@@ -35,23 +33,18 @@ class TestSchema(TestCase):
 
     def test_schema_for_type_band(self):
         schema = schema_for_type(Band)
-        expected = WithDefsSchema(
-            defs={
-                'Band': ObjectSchema(property_schemas=(
-                    PropertySchema(name='id', schema=optional_schema(StringSchema())),
-                    PropertySchema(name='band_name', schema=optional_schema(StringSchema())),
-                    PropertySchema(name='year_formed', schema=optional_schema(NumberSchema(int)))
-                ))
-            },
-            schema=RefSchema(ref='Band')
-        )
+        expected = ObjectSchema(Band, property_schemas=(
+            PropertySchema(name='id', schema=optional_schema(StringSchema())),
+            PropertySchema(name='band_name', schema=optional_schema(StringSchema())),
+            PropertySchema(name='year_formed', schema=optional_schema(NumberSchema(int)))
+        ))
 
         assert expected == schema
-        assert not list(schema.get_schema_errors(Band(), {}))
+        assert not list(schema.get_schema_errors(Band()))
         # noinspection PyTypeChecker
-        assert len(list(schema.get_schema_errors(Band(23), {}))) == 1
+        assert len(list(schema.get_schema_errors(Band(23)))) == 1
         # noinspection PyTypeChecker
-        assert len(list(schema.get_schema_errors(Band(23, False), {}))) == 2
+        assert len(list(schema.get_schema_errors(Band(23, False)))) == 2
         # noinspection PyTypeChecker
         with self.assertRaises(SchemaError):
             # noinspection PyTypeChecker
@@ -59,24 +52,34 @@ class TestSchema(TestCase):
 
     def test_schema_for_type_node(self):
         schema = schema_for_type(Issue)
-        expected = WithDefsSchema(
-            defs={
-                'Issue': ObjectSchema(property_schemas=(
-                    PropertySchema(name='id', schema=StringSchema(), required=True),
-                    PropertySchema(name='tags', schema=ArraySchema(item_schema=StringSchema())),
-                    PropertySchema(name='status', schema=RefSchema(ref='Status'))
-                )),
-                'Status': ObjectSchema(property_schemas=(
-                    PropertySchema(name='title', schema=StringSchema(), required=True),
-                    PropertySchema(name='public', schema=BooleanSchema())))
+        json_schema = schema.to_json_schema()
+        expected = {
+            '$defs': {
+                'Status': {
+                    'type': 'object',
+                    'properties': {
+                        'title': {'type': 'string'},
+                        'public': {'type': 'boolean'}
+                    },
+                    'additionalProperties': False
+                },
+                'Issue': {
+                    'type': 'object',
+                    'properties': {
+                        'id': {'type': 'string'},
+                        'tags': {'type': 'array', 'items': {'type': 'string'}},
+                        'status': {'$ref': '#$defs/Status'}
+                    },
+                    'additionalProperties': False
+                }
             },
-            schema=RefSchema(ref='Issue')
-        )
-        assert expected == schema
+            'allOf': [{'$ref': '#$defs/Issue'}]
+        }
+        assert expected == json_schema
 
     def test_schema(self):
         schema = schema_for_type(DefinesSchema)
-        assert schema == DefinesSchema.__schema_factory__(SchemaContext(), {})
+        assert schema == DefinesSchema.__schema_factory__(SchemaContext())
 
     def test_schema_invalid(self):
 
@@ -86,29 +89,5 @@ class TestSchema(TestCase):
         with self.assertRaises(ValueError):
             schema_for_type(CantExtractSchema)
 
-    def test_load_invalid(self):
-        context = new_default_context()
-        with self.assertRaises(ValueError):
-            context.load(SchemaABC, dict(type='unknown'))
-
-    def test_store_invalid(self):
-        class WeirdSchema(SchemaABC):
-
-            def get_schema_errors(self,
-                                  item: ExternalType, refs: Dict[str, SchemaABC],
-                                  current_path: Optional[List[str]] = None
-                                  ) -> Iterator[SchemaError]:
-                """ Never actually called"""
-
-        context = new_default_context()
-        with self.assertRaises(KeyError):
-            context.dump(WeirdSchema())
-        with self.assertRaises(KeyError):
-            context.dump(dict(type='weird'), SchemaABC)
-
     def test_version(self):
         assert __version__ is not None
-
-    def test_marshallers(self):
-        marshaller = get_default_context().get_marshaller(SchemaABC)
-        assert bool(marshaller.schema_marshallers)

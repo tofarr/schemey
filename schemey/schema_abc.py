@@ -1,9 +1,9 @@
 from abc import abstractmethod, ABC
-from typing import Iterator, Optional, List, Generic, TypeVar, Dict
+from typing import Iterator, Optional, List, Generic, TypeVar, Type
 
-from marshy.marshaller.deferred_marshaller import DeferredMarshaller
-from marshy.marshaller_context import MarshallerContext
+from marshy.types import ExternalItemType
 
+from schemey.json_output_context import JsonOutputContext
 from schemey.schema_error import SchemaError
 
 T = TypeVar('T')
@@ -18,59 +18,26 @@ class SchemaABC(ABC, Generic[T]):
     """
 
     @abstractmethod
-    def get_schema_errors(self,
-                          item: T,
-                          defs: Optional[Dict[str, _SchemaABC]],
-                          current_path: Optional[List[str]] = None,
-                          ) -> Iterator[SchemaError]:
+    def get_schema_errors(self, item: T, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         """ Get the validation errors for the item given. """
 
-    def validate(self,
-                 item: T,
-                 defs: Optional[Dict[str, _SchemaABC]] = None,
-                 current_path: Optional[List[str]] = None,
-                 ):
+    def validate(self, item: T, current_path: Optional[List[str]] = None):
         """ Validate the item given """
-        if defs is None:
-            defs = {}
-        errors = self.get_schema_errors(item, defs, current_path)
+        errors = self.get_schema_errors(item, current_path)
         error = next(errors, None)
         if error:
             raise error
 
-    # noinspection PyUnusedLocal
-    @classmethod
-    def __marshaller_factory__(cls, marshaller_context: MarshallerContext):
-        """
-        Get the marshaller for schemas. Custom marshallers can override this
-        """
-        from schemey.marshaller.schema_marshaller_abc import SchemaMarshallerABC
-        from schemey.marshaller.schema_marshaller import SchemaMarshaller
+    @property
+    @abstractmethod
+    def item_type(self) -> Type[T]:
+        """ Get the type of item processed by this schema """
 
-        from schemey.marshaller.any_of_schema_marshaller import AnyOfSchemaMarshaller
-        from schemey.marshaller.array_schema_marshaller import ArraySchemaMarshaller
-        from schemey.marshaller.boolean_schema_marshaller import BooleanSchemaMarshaller
-        from schemey.marshaller.datetime_schema_marshaller import DatetimeSchemaMarshaller
-        from schemey.marshaller.enum_schema_marshaller import EnumSchemaMarshaller
-        from schemey.marshaller.null_schema_marshaller import NullSchemaMarshaller
-        from schemey.marshaller.number_schema_marshaller import NumberSchemaMarshaller
-        from schemey.marshaller.object_schema_marshaller import ObjectSchemaMarshaller
-        from schemey.marshaller.ref_schema_marshaller import RefSchemaMarshaller
-        from schemey.marshaller.string_schema_marshaller import StringSchemaMarshaller
-        from schemey.marshaller.with_defs_schema_marshaller import WithDefsSchemaMarshaller
+    @property
+    @abstractmethod
+    def default_value(self) -> Optional[T]:
+        """ The default value for this schema """
 
-        deferred = DeferredMarshaller(SchemaABC, marshaller_context)
-        marshallers_by_name: List[SchemaMarshallerABC]  = [
-            AnyOfSchemaMarshaller(deferred),
-            ArraySchemaMarshaller(deferred),
-            BooleanSchemaMarshaller(),
-            DatetimeSchemaMarshaller(),
-            EnumSchemaMarshaller(),
-            NullSchemaMarshaller(),
-            NumberSchemaMarshaller(),
-            ObjectSchemaMarshaller(deferred),
-            RefSchemaMarshaller(),
-            StringSchemaMarshaller(),
-            WithDefsSchemaMarshaller(deferred)
-        ]
-        return SchemaMarshaller(marshallers_by_name)
+    @abstractmethod
+    def to_json_schema(self, json_output_context: Optional[JsonOutputContext] = None) -> Optional[ExternalItemType]:
+        """ Convert this schema to a json schema """

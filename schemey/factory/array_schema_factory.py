@@ -1,4 +1,4 @@
-from typing import Type, Optional, Dict
+from typing import Type, Optional
 
 import typing_inspect
 
@@ -10,9 +10,9 @@ from schemey.schema_context import SchemaContext
 
 class ArraySchemaFactory(SchemaFactoryABC):
 
-    def create(self, type_: Type, context: SchemaContext, defs: Dict[str, SchemaABC]) -> Optional[SchemaABC]:
+    def create(self, type_: Type, context: SchemaContext) -> Optional[SchemaABC]:
         origin = typing_inspect.get_origin(type_)
         if origin is list:
             args = typing_inspect.get_args(type_)
-            schema = context.get_schema(args[0], defs)
+            schema = context.get_schema(args[0])
             return ArraySchema[T](schema)

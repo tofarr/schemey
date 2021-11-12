@@ -1,9 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime, time
 import re
-from typing import Optional, List, Iterator, Dict
+from typing import Optional, List, Iterator, Type
 import validators
+from marshy.types import ExternalItemType
 
+from schemey._util import filter_none
+from schemey.json_output_context import JsonOutputContext
 from schemey.schema_abc import SchemaABC
 from schemey.string_format import StringFormat
 from schemey.schema_error import SchemaError
@@ -16,15 +19,26 @@ class StringSchema(SchemaABC[str]):
     pattern: Optional[str] = None
     format: Optional[StringFormat] = None
     _compiled_pattern = None
+    default_value: Optional[str] = None
 
     def __post_init__(self):
         object.__setattr__(self, '_compiled_pattern', None if self.pattern is None else re.compile(self.pattern))
 
-    def get_schema_errors(self,
-                          item: str,
-                          defs: Optional[Dict[str, SchemaABC]],
-                          current_path: Optional[List[str]] = None,
-                          ) -> Iterator[SchemaError]:
+    @property
+    def item_type(self) -> Type[str]:
+        return str
+
+    def to_json_schema(self, json_output_context: Optional[JsonOutputContext] = None) -> Optional[ExternalItemType]:
+        return filter_none(dict(
+            type='string',
+            minLength=self.min_length,
+            maxLength=self.max_length,
+            pattern=self.pattern,
+            format=self.format.value if self.format else None,
+            default=self.default_value
+        ))
+
+    def get_schema_errors(self, item: str, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         if not isinstance(item, str):
             yield SchemaError(current_path, 'type', item)
             return

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Type, Optional, Dict
+from typing import Type, Optional
 from unittest import TestCase
 
 from schemey.factory.schema_factory_abc import SchemaFactoryABC
@@ -11,7 +11,7 @@ from schemey.schema_context import SchemaContext
 class MySchemaFactory(SchemaFactoryABC):
     priority: int = 100
 
-    def create(self, type_: Type[T], context: SchemaContext, defs: Dict[str, SchemaABC]) -> Optional[SchemaABC[T]]:
+    def create(self, type_: Type[T], context: SchemaContext) -> Optional[SchemaABC[T]]:
         """ Not Used """
 
 
