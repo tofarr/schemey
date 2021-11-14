@@ -1,5 +1,5 @@
 import importlib
-import os
+import pkgutil
 from typing import Type, TypeVar, Optional, Dict
 
 from marshy.utils import resolve_forward_refs
@@ -46,20 +46,25 @@ class SchemaContext:
 
 
 _default_context = None
-SCHEMA_CONTEXT = 'SCHEMA_CONTEXT'
+CONFIG_MODULE_PREFIX = 'schemey_config_'
 
 
 def get_default_schema_context() -> SchemaContext:
     global _default_context
     if not _default_context:
-        # Set up the default_context based on an environment variable
-        import_name = os.environ.get(SCHEMA_CONTEXT, 'schemey.default_schema_context.DefaultSchemaContext')
-        import_path = import_name.split('.')
-        import_module = '.'.join(import_path[:-1])
-        imported_module = importlib.import_module(import_module)
-        context_fn = getattr(imported_module, import_path[-1])
-        _default_context = context_fn()
+        _default_context = new_default_schema_context()
     return _default_context
+
+
+def new_default_schema_context() -> SchemaContext:
+    context = SchemaContext()
+    # Set up context based on naming convention
+    module_info = (m for m in pkgutil.iter_modules() if m.name.startswith(CONFIG_MODULE_PREFIX))
+    modules = [importlib.import_module(m.name) for m in module_info]
+    modules.sort(key=lambda m: m.priority, reverse=True)
+    for m in modules:
+        getattr(m, 'configure')(context)
+    return context
 
 
 def schema_for_type(type_: Type[T],
