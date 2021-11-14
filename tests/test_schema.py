@@ -1,15 +1,9 @@
 from dataclasses import dataclass
-from typing import List, Optional, Iterator, Dict
 from unittest import TestCase
-
-from marshy import ExternalType, get_default_context
-from marshy.default_context import new_default_context
 
 from schemey.__version__ import __version__
 from schemey.any_of_schema import optional_schema
-from schemey.array_schema import ArraySchema
 from schemey.boolean_schema import BooleanSchema
-from schemey.schema_abc import SchemaABC
 from schemey.number_schema import NumberSchema
 from schemey.object_schema import ObjectSchema
 from schemey.property_schema import PropertySchema

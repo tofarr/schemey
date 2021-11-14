@@ -1,7 +1,6 @@
 from unittest import TestCase
 from uuid import uuid4
 
-from schemey.json_output_context import JsonOutputContext
 from schemey.schema_error import SchemaError
 from schemey.string_format import StringFormat
 from schemey.string_schema import StringSchema
