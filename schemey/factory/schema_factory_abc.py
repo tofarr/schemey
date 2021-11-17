@@ -14,7 +14,7 @@ class SchemaFactoryABC(ABC):
     priority: int = 100
 
     @abstractmethod
-    def create(self, type_: Type[T], context: SchemaContext) -> Optional[SchemaABC[T]]:
+    def create(self, type_: Type[T], default_value: Optional[T], context: SchemaContext) -> Optional[SchemaABC[T]]:
         """
         Create a schemey for the type given, or return None if that was not possible
         """

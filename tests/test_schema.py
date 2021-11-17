@@ -17,10 +17,10 @@ from tests.fixtures import Band, Issue
 @dataclass
 class DefinesSchema:
     @classmethod
-    def __schema_factory__(cls, schema_context: SchemaContext):
+    def __schema_factory__(cls, default_value, schema_context: SchemaContext):
         return ObjectSchema(DefinesSchema, (
             PropertySchema('some_bool', BooleanSchema()),
-        ))
+        ), default_value=default_value)
 
 
 class TestSchema(TestCase):
@@ -73,7 +73,7 @@ class TestSchema(TestCase):
 
     def test_schema(self):
         schema = schema_for_type(DefinesSchema)
-        assert schema == DefinesSchema.__schema_factory__(SchemaContext())
+        assert schema == DefinesSchema.__schema_factory__(None, SchemaContext())
 
     def test_schema_invalid(self):
 

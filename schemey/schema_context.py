@@ -27,7 +27,7 @@ class SchemaContext:
             resolved_type = resolve_forward_refs(type_)
             self._schema_cache[cache_key] = DeferredSchema(self, type_, default_value)
             for factory in self._factories:
-                schema = factory.create(resolved_type, self)
+                schema = factory.create(resolved_type, default_value, self)
                 if schema:
                     break
             if not schema:

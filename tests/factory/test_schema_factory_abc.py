@@ -11,7 +11,7 @@ from schemey.schema_context import SchemaContext
 class MySchemaFactory(SchemaFactoryABC):
     priority: int = 100
 
-    def create(self, type_: Type[T], context: SchemaContext) -> Optional[SchemaABC[T]]:
+    def create(self, type_: Type[T], default_value, context: SchemaContext) -> Optional[SchemaABC[T]]:
         """ Not Used """
 
 

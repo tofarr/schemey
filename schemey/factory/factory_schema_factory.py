@@ -10,7 +10,7 @@ SCHEMA_FACTORY = '__schema_factory__'
 class FactorySchemaFactory(SchemaFactoryABC):
     priority: int = 110
 
-    def create(self, type_, context: SchemaContext) -> Optional[SchemaABC]:
+    def create(self, type_, default_value, context: SchemaContext) -> Optional[SchemaABC]:
         factory = getattr(type_, SCHEMA_FACTORY, None)
         if factory is not None:
-            return factory(context)
+            return factory(default_value, context)

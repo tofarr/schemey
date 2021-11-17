@@ -12,6 +12,6 @@ PERMITTED_TYPES = [str, bool, int, float, NONE_TYPE]
 
 class EnumSchemaFactory(SchemaFactoryABC):
 
-    def create(self, type_: Type[T], context: SchemaContext) -> Optional[SchemaABC[T]]:
+    def create(self, type_: Type[T], default_value: T, context: SchemaContext) -> Optional[SchemaABC[T]]:
         if issubclass(type_, Enum):
-            return EnumSchema(type_)
+            return EnumSchema(type_, default_value=default_value)
