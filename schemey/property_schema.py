@@ -20,7 +20,10 @@ class PropertySchema(Generic[T, B], SchemaABC[T]):
     def get_schema_errors(self, item: T, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         if current_path is None:
             current_path = []
-        attr = getattr(item, self.name, None)
+        if hasattr(item, 'get'):
+            attr = item.get(self.name)
+        else:
+            attr = getattr(item, self.name, None)
         current_path.append(self.name)
         yield from self.schema.get_schema_errors(attr, current_path)
         current_path.pop()

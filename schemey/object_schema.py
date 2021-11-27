@@ -28,8 +28,20 @@ class ObjectSchema(SchemaABC[T]):
             object.__setattr__(self, 'name', self.item_type.__name__)
 
     def get_schema_errors(self, item: T, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
+        if hasattr(item, 'keys'):
+            keys = item.keys()
+        elif hasattr(item, '__dict__'):
+            keys = (k for k in item.__dict__ if not k.startswith('_'))
+        else:
+            yield SchemaError(current_path, 'type', item)
+            return
+        keys = set(keys)
         for property_schema in (self.property_schemas or []):
+            if property_schema.name in keys:
+                keys.remove(property_schema.name)
             yield from property_schema.get_schema_errors(item, current_path)
+        if keys:
+            yield SchemaError(current_path, 'additional_attributes', ', '.join(keys))
 
     def to_json_schema(self, json_output_context: Optional[JsonOutputContext] = None) -> Optional[ExternalItemType]:
         local_json_output_context = json_output_context or JsonOutputContext()

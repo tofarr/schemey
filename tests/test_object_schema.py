@@ -18,6 +18,7 @@ class TestObjectSchema(TestCase):
     def test_object_schema(self):
         schema = ObjectSchema(Band, [
             PropertySchema('id', StringSchema(min_length=1)),
+            PropertySchema('band_name', optional_schema(StringSchema())),
             PropertySchema('year_formed', optional_schema(NumberSchema(int, minimum=1900))),
         ])
         assert list(schema.get_schema_errors(Band())) == [SchemaError('id', 'type')]
@@ -66,3 +67,15 @@ class TestObjectSchema(TestCase):
             }
          }
         assert expected == json_schema
+
+    def test_dict(self):
+        schema = ObjectSchema(dict, [
+            PropertySchema('foo', NumberSchema(int)),
+            PropertySchema('bar', optional_schema(StringSchema()))
+        ])
+        schema.validate(dict(foo=1, bar='b'))
+        schema.validate(dict(foo=1))
+        with self.assertRaises(SchemaError):
+            schema.validate(dict(foo=1, bar=2))
+        with self.assertRaises(SchemaError):
+            schema.validate(dict(foo=1, bar='b', zap='c'))
