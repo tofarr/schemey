@@ -1,8 +1,10 @@
+import inspect
 from dataclasses import dataclass, field
-from typing import Iterable, Union, Sized, Optional, List, Iterator, Type
+from typing import Iterable, Union, Sized, Optional, List, Iterator, Type, TextIO
 
 from marshy.types import ExternalItemType
 
+from schemey.graphql_context import GraphqlContext, GraphqlObjectType
 from schemey.json_output_context import JsonOutputContext, REF
 from schemey.property_schema import PropertySchema
 from schemey.schema_abc import SchemaABC, T
@@ -56,3 +58,25 @@ class ObjectSchema(SchemaABC[T]):
         if json_output_context is None:
             json_schema = local_json_output_context.to_json_schema(json_schema)
         return json_schema
+
+    def to_graphql_schema(self, target: GraphqlContext):
+        target.objects[self.item_type.__name__] = self
+
+    def to_graphql(self, writer: TextIO, graphql_object_type: GraphqlObjectType):
+        if self._has_real_doc_string():
+            writer.write(f'"""\n{self.item_type.__doc__.strip()}\n"""\n')
+        writer.write('%s %s {\n' % (graphql_object_type.value, self.name))
+        for property_schema in self.property_schemas:
+            property_schema.to_graphql(writer)
+        writer.write('}\n\n')
+
+    def _has_real_doc_string(self):
+        """
+        The auto generated docstrings are useless in the context of graphql, so we include the docstring only
+        if it has been customized
+        """
+        doc = self.item_type.__doc__
+        if doc is None or self.item_type is dict:
+            return False
+        default_doc = self.item_type.__name__ + str(inspect.signature(self.item_type)).replace(' -> None', '')
+        return default_doc != doc

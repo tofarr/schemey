@@ -1,8 +1,10 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator, Iterable, Union
+from typing import Optional, List, Iterator, Iterable, Union, TextIO, Type
 
 from marshy.types import ExternalItemType
 
+from schemey.graphql import PRIMITIVE_TYPES
+from schemey.graphql_context import GraphqlContext
 from schemey.json_output_context import JsonOutputContext
 from schemey.null_schema import NullSchema
 from schemey.schema_abc import SchemaABC, T
@@ -13,6 +15,7 @@ from schemey.schema_error import SchemaError
 class AnyOfSchema(SchemaABC[T]):
     schemas: Iterable[SchemaABC]
     default_value: Optional[T] = None
+    name: str = None
 
     def __post_init__(self):
         schemas = []
@@ -22,6 +25,9 @@ class AnyOfSchema(SchemaABC[T]):
             else:
                 schemas.append(s)
         object.__setattr__(self, 'schemas', tuple(schemas))
+        if self.name is None:
+            names = (_graphql_type_name(s.item_type) for s in self.schemas)
+            object.__setattr__(self, 'name', f"AnyOf{''.join(name for name in names)}")
 
     @property
     def item_type(self):
@@ -41,6 +47,17 @@ class AnyOfSchema(SchemaABC[T]):
         dumped = dict(anyOf=[s.to_json_schema(json_output_context) for s in self.schemas])
         return dumped
 
+    def to_graphql_schema(self, target: GraphqlContext):
+        schema = strip_optional(self)
+        if schema is not self:
+            return schema.to_graphql_schema(target)
+        target.unions[self.name] = self
+        for schema in self.schemas:
+            schema.to_graphql_schema(target)
+
+    def to_graphql(self, writer: TextIO):
+        writer.write(f"union {self.name} = {' | '.join(_graphql_type_name(s.item_type) for s in self.schemas)}\n")
+
 
 def optional_schema(schema: SchemaABC) -> SchemaABC:
     return AnyOfSchema((NullSchema(), schema))
@@ -57,3 +74,10 @@ def strip_optional(schema: SchemaABC) -> SchemaABC:
     if isinstance(schemas[1], NullSchema):
         return schemas[0]
     return schema
+
+
+def _graphql_type_name(type_: Type):
+    type_name = PRIMITIVE_TYPES.get(type_)
+    if type_name:
+        return type_name
+    return type_.__name__

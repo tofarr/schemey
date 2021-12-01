@@ -1,8 +1,10 @@
 from typing import Union
 from unittest import TestCase
 
-from schemey.any_of_schema import AnyOfSchema, strip_optional
+from schemey.any_of_schema import AnyOfSchema, strip_optional, optional_schema
 from schemey.boolean_schema import BooleanSchema
+from schemey.graphql.graphql_object_type import GraphqlObjectType
+from schemey.graphql_context import GraphqlContext
 from schemey.null_schema import NullSchema
 from schemey.number_schema import NumberSchema
 from schemey.schema_context import schema_for_type
@@ -50,4 +52,20 @@ class TestAnyOfSchema(TestCase):
         item_type = Union[str, int, type(None)]
         schema = schema_for_type(item_type)
         assert schema.item_type == item_type
+
+    def test_to_graphql_union(self):
+        schema = AnyOfSchema((NumberSchema(int), StringSchema()))
+        graphql_context = GraphqlContext(GraphqlObjectType.INPUT)
+        schema.to_graphql_schema(graphql_context)
+        graphql = graphql_context.to_graphql()
+        expected = 'union AnyOfIntString = Int | String\n'  # I dunno if graphql impls will even let you do this...
+        assert graphql == expected
+
+    def test_to_graphql_optional(self):
+        schema = optional_schema(StringSchema())
+        graphql_context = GraphqlContext(GraphqlObjectType.INPUT)
+        schema.to_graphql_schema(graphql_context)
+        graphql = graphql_context.to_graphql()
+        expected = ''
+        assert graphql == expected
 

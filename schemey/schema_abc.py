@@ -3,6 +3,7 @@ from typing import Iterator, Optional, List, Generic, TypeVar, Type
 
 from marshy.types import ExternalItemType
 
+from schemey.graphql_context import GraphqlContext
 from schemey.json_output_context import JsonOutputContext
 from schemey.schema_error import SchemaError
 
@@ -41,3 +42,6 @@ class SchemaABC(ABC, Generic[T]):
     @abstractmethod
     def to_json_schema(self, json_output_context: Optional[JsonOutputContext] = None) -> Optional[ExternalItemType]:
         """ Convert this schema to a json schema """
+
+    def to_graphql_schema(self, target: GraphqlContext):
+        """ Add entries to the graphql context given - not abstract since most schema types do not do anything here. """

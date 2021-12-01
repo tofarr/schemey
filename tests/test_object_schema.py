@@ -1,9 +1,12 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import List
 from unittest import TestCase
 
 from schemey.any_of_schema import optional_schema
 from schemey.array_schema import ArraySchema
 from schemey.deferred_schema import DeferredSchema
+from schemey.graphql.graphql_object_type import GraphqlObjectType
+from schemey.graphql_context import GraphqlContext
 from schemey.number_schema import NumberSchema
 from schemey.object_schema import ObjectSchema
 from schemey.property_schema import PropertySchema
@@ -79,3 +82,35 @@ class TestObjectSchema(TestCase):
             schema.validate(dict(foo=1, bar=2))
         with self.assertRaises(SchemaError):
             schema.validate(dict(foo=1, bar='b', zap='c'))
+
+    def test_to_graphql(self):
+        schema = schema_for_type(Band)
+        graphql_context = GraphqlContext(GraphqlObjectType.INPUT)
+        schema.to_graphql_schema(graphql_context)
+        graphql = graphql_context.to_graphql()
+        expected = 'input Band {\n\tid: String\n\tband_name: String\n\tyear_formed: Int\n}\n\n'
+        assert graphql == expected
+
+    def test_to_graphql_dict(self):
+        schema = ObjectSchema(dict, [
+            PropertySchema('foo', NumberSchema(int)),
+            PropertySchema('bar', optional_schema(StringSchema()))
+        ], name='FooBar')
+        graphql_context = GraphqlContext(GraphqlObjectType.INPUT)
+        schema.to_graphql_schema(graphql_context)
+        graphql = graphql_context.to_graphql()
+        expected = 'input FooBar {\n\tfoo: Int!\n\tbar: String\n}\n\n'
+        assert graphql == expected
+
+    def test_to_graphql_custom_doc_string(self):
+        @dataclass
+        class FooBar:
+            """ A Bar of the Foo variety! """
+            foo: int
+            bar: List[str] = field(default_factory=list)
+        schema = schema_for_type(FooBar)
+        graphql_context = GraphqlContext(GraphqlObjectType.INPUT)
+        schema.to_graphql_schema(graphql_context)
+        graphql = graphql_context.to_graphql()
+        expected = '"""\nA Bar of the Foo variety!\n"""\ninput FooBar {\n\tfoo: Int!\n\tbar: [String!]!\n}\n\n'
+        assert graphql == expected

@@ -2,6 +2,8 @@ from unittest import TestCase
 
 from schemey.any_of_schema import AnyOfSchema
 from schemey.enum_schema import EnumSchema
+from schemey.graphql.graphql_object_type import GraphqlObjectType
+from schemey.graphql_context import GraphqlContext
 from schemey.null_schema import NullSchema
 from schemey.number_schema import NumberSchema
 from schemey.object_schema import ObjectSchema
@@ -60,3 +62,11 @@ class TestObjectSchema(TestCase):
         json_schema = schema.to_json_schema()
         expected = dict(enum=[s.value for s in TransactionStatus], default='pending')
         assert expected == json_schema
+
+    def test_to_graphql(self):
+        schema = EnumSchema(TransactionStatus, TransactionStatus.PENDING)
+        graphql_context = GraphqlContext(GraphqlObjectType.INPUT)
+        schema.to_graphql_schema(graphql_context)
+        graphql = graphql_context.to_graphql()
+        expected = '"""\nAn enumeration.\n"""\nenum TransactionStatus {\n\tpending\n\trejected\n\tcompleted\n}\n\n'
+        assert graphql == expected

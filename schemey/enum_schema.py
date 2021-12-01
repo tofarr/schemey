@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator, Type
+from typing import Optional, List, Iterator, Type, TextIO
 
 from marshy.types import ExternalItemType
 
+from schemey.graphql_context import GraphqlContext
 from schemey.json_output_context import JsonOutputContext
 from schemey.schema_abc import SchemaABC, T
 from schemey.schema_error import SchemaError
@@ -26,3 +27,14 @@ class EnumSchema(SchemaABC[T]):
         if self.default_value:
             json_schema['default'] = self.default_value.value
         return json_schema
+
+    def to_graphql_schema(self, target: GraphqlContext):
+        target.enums[self.item_type.__name__] = self
+
+    def to_graphql(self, writer: TextIO):
+        if self.item_type.__doc__:
+            writer.write(f'"""\n{self.item_type.__doc__.strip()}\n"""\n')
+        writer.write('enum %s {\n' % self.item_type.__name__)
+        for e in self.item_type:
+            writer.write(f'\t{str(e.value)}\n')
+        writer.write('}\n\n')
