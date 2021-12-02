@@ -3,7 +3,7 @@ from typing import TypeVar, Generic, Iterator, Optional, List, TextIO
 
 from marshy.types import ExternalItemType
 
-from schemey.any_of_schema import strip_optional, AnyOfSchema
+from schemey.any_of_schema import AnyOfSchema
 from schemey.array_schema import ArraySchema
 from schemey.graphql import PRIMITIVE_TYPES
 from schemey.json_output_context import JsonOutputContext
@@ -50,12 +50,10 @@ class PropertySchema(Generic[T, B], SchemaABC[T]):
 def get_graphql_type_name(schema: SchemaABC):
     required = not isinstance(schema, AnyOfSchema) or \
                next((s for s in schema.schemas if isinstance(s, NullSchema)), None) is None
-    is_array = isinstance(schema, ArraySchema)
-    if is_array:
-        # noinspection PyUnresolvedReference zzzz zzzzz zzzs
-        type_name = f'[{get_graphql_type_name(s.item_schema)}]'
+    if isinstance(schema, ArraySchema):
+        type_name = f'[{get_graphql_type_name(schema.item_schema)}]'
     else:
-        type_name = PRIMITIVE_TYPES.get(schema.item_type) or getattr(schema, 'name', None) or s.item_type.__name__
+        type_name = PRIMITIVE_TYPES.get(schema.item_type) or getattr(schema, 'name', None) or schema.item_type.__name__
     if required:
         type_name += '!'
     return type_name
