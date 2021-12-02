@@ -13,7 +13,7 @@ from schemey.property_schema import PropertySchema
 from schemey.schema_context import schema_for_type, get_default_schema_context
 from schemey.schema_error import SchemaError
 from schemey.string_schema import StringSchema
-from tests.fixtures import Band, Node
+from tests.fixtures import Band, Node, Transaction, Issue
 
 
 class TestObjectSchema(TestCase):
@@ -113,4 +113,19 @@ class TestObjectSchema(TestCase):
         schema.to_graphql_schema(graphql_context)
         graphql = graphql_context.to_graphql()
         expected = '"""\nA Bar of the Foo variety!\n"""\ninput FooBar {\n\tfoo: Int!\n\tbar: [String!]!\n}\n\n'
+        assert graphql == expected
+
+    def test_nested(self):
+        graphql_context = GraphqlContext(GraphqlObjectType.INPUT)
+        schema_for_type(Node).to_graphql_schema(graphql_context)
+        graphql = graphql_context.to_graphql()
+        expected = 'input Node {\n\tid: String!\n\tparent: Node\n\tchildren: [Node!]!\n}\n\n'
+        assert graphql == expected
+
+    def test_multi(self):
+        graphql_context = GraphqlContext(GraphqlObjectType.INPUT)
+        schema_for_type(Transaction).to_graphql_schema(graphql_context)
+        schema_for_type(Issue).to_graphql_schema(graphql_context)
+        graphql = graphql_context.to_graphql()
+        expected = 'input Node {\n\tid: String!\n\tparent: Node\n\tchildren: [Node!]!\n}\n\n'
         assert graphql == expected

@@ -200,7 +200,7 @@ class Point:
         return PointMarshaller()
 
     @classmethod
-    def __schema_factory__(cls, schema_context):
+    def __schema_factory__(cls, default_value, schema_context):
         return PointSchema()
 
 
@@ -214,11 +214,6 @@ class PointMarshaller(MarshallerABC):
     def dump(self, item):
         return [item.x, item.y]
 
-    @classmethod
-    def __marshaller_factory__(cls, marshaller_context):
-        """ Custom marshaller """
-        return PointMarshaller()
-
 
 INTERNAL_SCHEMA = ObjectSchema(Point, (
     PropertySchema('x', NumberSchema(), required=True),
@@ -230,6 +225,7 @@ EXTERNAL_SCHEMA = ArraySchema(NumberSchema(), 2, 2)
 
 @dataclass
 class PointSchema(SchemaABC[Point]):
+    default_value: Optional[Point] = None
 
     def get_schema_errors(self,
                           item: Point,
@@ -240,10 +236,6 @@ class PointSchema(SchemaABC[Point]):
     @property
     def item_type(self) -> Type[Point]:
         return Point
-
-    @property
-    def default_value(self) -> Optional[Point]:
-        return None
 
     def to_json_schema(self, json_output_context: Optional[JsonOutputContext] = None) -> ExternalItemType:
         json_schema = EXTERNAL_SCHEMA.to_json_schema(json_output_context)

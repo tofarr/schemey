@@ -26,7 +26,7 @@ class AnyOfSchema(SchemaABC[T]):
                 schemas.append(s)
         object.__setattr__(self, 'schemas', tuple(schemas))
         if self.name is None:
-            names = (_graphql_type_name(s.item_type) for s in self.schemas)
+            names = (_graphql_type_name(s.item_type) for s in self.schemas if not isinstance(s, NullSchema))
             object.__setattr__(self, 'name', f"AnyOf{''.join(name for name in names)}")
 
     @property
@@ -48,9 +48,9 @@ class AnyOfSchema(SchemaABC[T]):
         return dumped
 
     def to_graphql_schema(self, target: GraphqlContext):
-        schema = strip_optional(self)
-        if schema is not self:
-            return schema.to_graphql_schema(target)
+        schemas = [s for s in self.schemas if s != NullSchema()]
+        if len(schemas) == 1:
+            return schemas[0].to_graphql_schema(target)
         target.unions[self.name] = self
         for schema in self.schemas:
             schema.to_graphql_schema(target)

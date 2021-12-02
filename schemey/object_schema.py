@@ -60,7 +60,11 @@ class ObjectSchema(SchemaABC[T]):
         return json_schema
 
     def to_graphql_schema(self, target: GraphqlContext):
+        if self.item_type.__name__ in target.objects:
+            return
         target.objects[self.item_type.__name__] = self
+        for property_schema in self.property_schemas:
+            property_schema.schema.to_graphql_schema(target)
 
     def to_graphql(self, writer: TextIO, graphql_object_type: GraphqlObjectType):
         if self._has_real_doc_string():
