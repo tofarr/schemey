@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import List
 from unittest import TestCase
 
@@ -10,6 +11,7 @@ from schemey.graphql_context import GraphqlContext
 from schemey.number_schema import NumberSchema
 from schemey.object_schema import ObjectSchema
 from schemey.property_schema import PropertySchema
+from schemey.schema_abc import SchemaABC
 from schemey.schema_context import schema_for_type, get_default_schema_context
 from schemey.schema_error import SchemaError
 from schemey.string_schema import StringSchema
@@ -127,5 +129,22 @@ class TestObjectSchema(TestCase):
         schema_for_type(Transaction).to_graphql_schema(graphql_context)
         schema_for_type(Issue).to_graphql_schema(graphql_context)
         graphql = graphql_context.to_graphql()
-        expected = 'input Node {\n\tid: String!\n\tparent: Node\n\tchildren: [Node!]!\n}\n\n'
+        with open((Path(__file__).parent / 'multi_graphql.schema'), 'r') as f:
+            expected = f.read()
         assert graphql == expected
+
+    def test_to_graphql_no_attrs(self):
+        @dataclass
+        class NoAttrs:
+            pass
+
+        @dataclass
+        class NoAttrsNested:
+            no_attrs: NoAttrs
+
+        schema: SchemaABC = schema_for_type(NoAttrsNested)
+        context = GraphqlContext(GraphqlObjectType.TYPE)
+        schema.to_graphql_schema(context)
+        graphql = context.to_graphql()
+        expected = ''
+        assert expected == graphql

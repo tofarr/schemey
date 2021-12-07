@@ -4,6 +4,7 @@ from typing import Optional
 from marshy.types import ExternalItemType
 
 from schemey._util import filter_none
+from schemey.graphql.graphql_attr import GraphqlAttr
 from schemey.json_output_context import JsonOutputContext
 from schemey.number_schema import NumberSchema
 from schemey.string_format import StringFormat
@@ -34,3 +35,6 @@ class DatetimeSchema(NumberSchema[datetime]):
             maximum=self.maximum.isoformat() if self.maximum is not None else None,
             exclusiveMaximum=exclusive_maximum if exclusive_maximum != DatetimeSchema.exclusive_maximum else None
         ))
+
+    def to_graphql_attr(self) -> GraphqlAttr:
+        return GraphqlAttr('String')

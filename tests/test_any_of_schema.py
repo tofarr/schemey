@@ -3,12 +3,14 @@ from unittest import TestCase
 
 from schemey.any_of_schema import AnyOfSchema, strip_optional, optional_schema
 from schemey.boolean_schema import BooleanSchema
+from schemey.graphql.graphql_attr import GraphqlAttr
 from schemey.graphql.graphql_object_type import GraphqlObjectType
 from schemey.graphql_context import GraphqlContext
 from schemey.null_schema import NullSchema
 from schemey.number_schema import NumberSchema
 from schemey.schema_context import schema_for_type
 from schemey.schema_error import SchemaError
+from schemey.string_format import StringFormat
 from schemey.string_schema import StringSchema
 
 
@@ -22,8 +24,8 @@ class TestAnyOfSchema(TestCase):
         assert list(schema.get_schema_errors(10, ['foo', 'bar'])) == [SchemaError('foo/bar', 'type', 10)]
 
     def test_to_json_schema(self):
-        schema = AnyOfSchema((NumberSchema(item_type=int), NullSchema()))
-        json_schema = dict(anyOf=[dict(type='integer'), dict(type='null')])
+        schema = AnyOfSchema((NumberSchema(item_type=int), NullSchema()), 10)
+        json_schema = dict(anyOf=[dict(type='integer'), dict(type='null')], default=10)
         dumped = schema.to_json_schema()
         assert dumped == json_schema
 
@@ -69,3 +71,17 @@ class TestAnyOfSchema(TestCase):
         expected = ''
         assert graphql == expected
 
+    def test_to_graphql(self):
+        schema = AnyOfSchema((NullSchema(), NullSchema()))
+        assert schema.to_graphql_attr() is None
+        # noinspection PyTypeChecker
+        assert schema.to_graphql_schema(None) is None
+
+    def test_to_graphql_attr_custom_name(self):
+        schema = AnyOfSchema((StringSchema(format=StringFormat.EMAIL),
+                              StringSchema(format=StringFormat.URI)),
+                             name='EmailOrUri')
+        assert schema.to_graphql_attr() == GraphqlAttr('EmailOrUri')
+        json_schema = schema.to_json_schema()
+        expected = {'anyOf': [{'type': 'string', 'format': 'email'}, {'type': 'string', 'format': 'uri'}]}
+        assert expected == json_schema

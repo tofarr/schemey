@@ -1,0 +1,26 @@
+"""
+An enumeration.
+"""
+enum TransactionStatus {
+	pending
+	rejected
+	completed
+}
+
+input Transaction {
+	id: AnyOfStringInt
+	transaction_status: TransactionStatus
+}
+
+input Issue {
+	id: String!
+	tags: [String!]!
+	status: Status!
+}
+
+input Status {
+	title: String!
+	public: Boolean!
+}
+
+union AnyOfStringInt = String | Int

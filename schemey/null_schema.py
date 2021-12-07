@@ -2,6 +2,7 @@ from typing import Optional, List, Iterator, Type
 
 from marshy.types import ExternalItemType
 
+from schemey.graphql.graphql_attr import GraphqlAttr
 from schemey.json_output_context import JsonOutputContext
 from schemey.schema_abc import SchemaABC
 from schemey.schema_error import SchemaError
@@ -23,6 +24,9 @@ class NullSchema(SchemaABC):
 
     def to_json_schema(self, json_output_context: Optional[JsonOutputContext] = None) -> Optional[ExternalItemType]:
         return dict(type=NULL)
+
+    def to_graphql_attr(self) -> Optional[GraphqlAttr]:
+        return None
 
     def __repr__(self):
         return 'NullSchema()'

@@ -16,7 +16,7 @@ class DataclassSchemaFactory(SchemaFactoryABC):
     def create(self, type_: Type, default_value, context: SchemaContext) -> Optional[SchemaABC]:
         if not dataclasses.is_dataclass(type_):
             return
-        context.register_schema(type_, DeferredSchema[type_](context, type_))
+        context.register_schema(DeferredSchema[type_](context, type_))
         # noinspection PyDataclass
         property_schemas = tuple(self._schema_for_field(f, context) for f in dataclasses.fields(type_))
         schema = ObjectSchema[type_](type_, property_schemas, default_value=default_value)

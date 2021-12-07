@@ -4,6 +4,7 @@ from typing import Iterable, Union, Sized, Optional, List, Iterator, Type, TextI
 
 from marshy.types import ExternalItemType
 
+from schemey.graphql.graphql_attr import GraphqlAttr
 from schemey.graphql_context import GraphqlContext, GraphqlObjectType
 from schemey.json_output_context import JsonOutputContext, REF
 from schemey.property_schema import PropertySchema
@@ -67,12 +68,26 @@ class ObjectSchema(SchemaABC[T]):
             property_schema.schema.to_graphql_schema(target)
 
     def to_graphql(self, writer: TextIO, graphql_object_type: GraphqlObjectType):
+        if not self._has_valid_attrs():
+            return
         if self._has_real_doc_string():
             writer.write(f'"""\n{self.item_type.__doc__.strip()}\n"""\n')
         writer.write('%s %s {\n' % (graphql_object_type.value, self.name))
         for property_schema in self.property_schemas:
-            property_schema.to_graphql(writer)
+            graphql_attr = property_schema.to_graphql_attr()
+            if graphql_attr:
+                writer.write(f'\t{property_schema.name}: {graphql_attr.to_graphql()}\n')
         writer.write('}\n\n')
+
+    def to_graphql_attr(self) -> Optional[GraphqlAttr]:
+        if not self._has_valid_attrs():
+            return
+        return GraphqlAttr(self.item_type.__name__)
+
+    def _has_valid_attrs(self):
+        schemas = (s for s in self.property_schemas if s.to_graphql_attr())
+        has_valid_attrs = next(schemas, None) is not None
+        return has_valid_attrs
 
     def _has_real_doc_string(self):
         """

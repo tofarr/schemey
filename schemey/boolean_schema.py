@@ -3,6 +3,7 @@ from typing import Optional, List, Iterator, Type
 from marshy.types import ExternalItemType
 
 from schemey._util import filter_none
+from schemey.graphql.graphql_attr import GraphqlAttr
 from schemey.json_output_context import JsonOutputContext
 from schemey.schema_abc import SchemaABC
 from schemey.schema_error import SchemaError
@@ -40,6 +41,9 @@ class BooleanSchema(SchemaABC[bool]):
 
     def to_json_schema(self, json_output_context: Optional[JsonOutputContext] = None) -> Optional[ExternalItemType]:
         return filter_none(dict(type=BOOLEAN, default=self.default_value or None))
+
+    def to_graphql_attr(self) -> GraphqlAttr:
+        return GraphqlAttr('Boolean')
 
     def __repr__(self):
         return 'BooleanSchema()'

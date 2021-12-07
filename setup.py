@@ -15,7 +15,7 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     url="https://github.com/tofarr/schemey",
     packages=setuptools.find_packages(exclude=('tests',)),
-    install_requires=['typing-inspect>=0.7.1', 'marshy>=1.4.2', 'validators>=0.18.2'],
+    install_requires=['typing-inspect>=0.7.1', 'marshy>=2.1.3', 'validators>=0.18.2'],
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',

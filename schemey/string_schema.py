@@ -6,6 +6,7 @@ import validators
 from marshy.types import ExternalItemType
 
 from schemey._util import filter_none
+from schemey.graphql.graphql_attr import GraphqlAttr
 from schemey.json_output_context import JsonOutputContext
 from schemey.schema_abc import SchemaABC
 from schemey.string_format import StringFormat
@@ -37,6 +38,9 @@ class StringSchema(SchemaABC[str]):
             format=self.format.value if self.format else None,
             default=self.default_value
         ))
+
+    def to_graphql_attr(self) -> GraphqlAttr:
+        return GraphqlAttr('String')
 
     def get_schema_errors(self, item: str, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         if not isinstance(item, str):

@@ -4,6 +4,8 @@ from typing import Optional, List, Iterator
 from marshy.types import ExternalItemType
 
 from schemey._util import filter_none
+from schemey.graphql.graphql_attr import GraphqlAttr
+from schemey.graphql_context import GraphqlContext
 from schemey.json_output_context import JsonOutputContext
 from schemey.schema_abc import SchemaABC, T
 from schemey.schema_error import SchemaError
@@ -55,3 +57,13 @@ class ArraySchema(SchemaABC[List[T]]):
                     current_path.pop()
                     return
                 existing.add(i)
+
+    def to_graphql_schema(self, target: GraphqlContext):
+        if self.item_schema is not None:
+            self.item_schema.to_graphql_schema(target)
+
+    def to_graphql_attr(self) -> Optional[GraphqlAttr]:
+        graphql_attr = self.item_schema.to_graphql_attr()
+        if graphql_attr:
+            graphql_attr = GraphqlAttr(graphql_attr.to_graphql(), array=True)
+        return graphql_attr

@@ -29,18 +29,38 @@ class TestObjectSchema(TestCase):
         ))
         assert expected == schema
         json_schema = {
-            'type': 'object',
-            'properties': {
+          '$defs': {
+            'AnyOfStringIntNull': {
+              'anyOf': [
+                {'type': 'string'},
+                {'type': 'integer'},
+                {'type': 'null'}
+              ]
+            },
+            'AnyOfNullTransactionStatus': {
+              'anyOf': [
+                {'type': 'null'},
+                {'enum': ['pending', 'rejected', 'completed']}
+              ]
+            },
+            'Transaction': {
+              'type': 'object',
+              'properties': {
                 'id': {
-                    'anyOf': [
-                        {'type': 'string'},
-                        {'type': 'integer'},
-                        {'type': 'null'}]},
+                  '$ref': '#$defs/AnyOfStringIntNull'
+                },
                 'transaction_status': {
-                    'anyOf': [
-                        {'type': 'null'},
-                        {'enum': ['pending', 'rejected', 'completed']}]}},
-            'additionalProperties': False
+                  '$ref': '#$defs/AnyOfNullTransactionStatus'
+                }
+              },
+              'additionalProperties': False
+            }
+          },
+          'allOf': [
+            {
+              '$ref': '#$defs/Transaction'
+            }
+          ]
         }
         dumped = schema.to_json_schema()
         assert dumped == json_schema

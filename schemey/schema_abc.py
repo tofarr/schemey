@@ -3,6 +3,7 @@ from typing import Iterator, Optional, List, Generic, TypeVar, Type
 
 from marshy.types import ExternalItemType
 
+from schemey.graphql.graphql_attr import GraphqlAttr
 from schemey.graphql_context import GraphqlContext
 from schemey.json_output_context import JsonOutputContext
 from schemey.schema_error import SchemaError
@@ -45,3 +46,7 @@ class SchemaABC(ABC, Generic[T]):
 
     def to_graphql_schema(self, target: GraphqlContext):
         """ Add entries to the graphql context given - not abstract since most schema types do not do anything here. """
+
+    @abstractmethod
+    def to_graphql_attr(self) -> Optional[GraphqlAttr]:
+        """ Get the type name for use in graphql. (None if the schema can't be converted to graphql) """

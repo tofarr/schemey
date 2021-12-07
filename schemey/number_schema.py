@@ -4,6 +4,7 @@ from typing import Optional, List, Iterator, Type
 from marshy.types import ExternalItemType
 
 from schemey._util import filter_none
+from schemey.graphql.graphql_attr import GraphqlAttr
 from schemey.json_output_context import JsonOutputContext
 from schemey.schema_abc import SchemaABC, T
 from schemey.schema_error import SchemaError
@@ -45,3 +46,7 @@ class NumberSchema(SchemaABC[T]):
             maximum=self.maximum,
             exclusiveMaximum=exclusive_maximum if exclusive_maximum != NumberSchema.exclusive_maximum else None
         ))
+
+    def to_graphql_attr(self) -> Optional[GraphqlAttr]:
+        graphql_attr = GraphqlAttr('Int' if self.item_type is int else 'Float')
+        return graphql_attr

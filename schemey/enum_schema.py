@@ -3,6 +3,7 @@ from typing import Optional, List, Iterator, Type, TextIO
 
 from marshy.types import ExternalItemType
 
+from schemey.graphql.graphql_attr import GraphqlAttr
 from schemey.graphql_context import GraphqlContext
 from schemey.json_output_context import JsonOutputContext
 from schemey.schema_abc import SchemaABC, T
@@ -38,3 +39,6 @@ class EnumSchema(SchemaABC[T]):
         for e in self.item_type:
             writer.write(f'\t{str(e.value)}\n')
         writer.write('}\n\n')
+
+    def to_graphql_attr(self) -> GraphqlAttr:
+        return GraphqlAttr(self.item_type.__name__)

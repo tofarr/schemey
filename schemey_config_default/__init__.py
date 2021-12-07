@@ -8,6 +8,7 @@ from schemey.factory.array_schema_factory import ArraySchemaFactory
 from schemey.factory.dataclass_schema_factory import DataclassSchemaFactory
 from schemey.factory.enum_schema_factory import EnumSchemaFactory
 from schemey.factory.factory_schema_factory import FactorySchemaFactory
+from schemey.factory.json_string_schema_factory import JsonStringSchemaFactory
 from schemey.factory.number_schema_factory import NumberSchemaFactory
 from schemey.factory.primitive_schema_factory import PrimitiveSchemaFactory
 from schemey.null_schema import NullSchema
@@ -34,3 +35,4 @@ def configure(context: SchemaContext):
         str: StringSchema,
         UUID: UuidSchema
     }))
+    context.register_factory(JsonStringSchemaFactory())

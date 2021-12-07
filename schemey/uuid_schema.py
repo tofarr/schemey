@@ -5,6 +5,7 @@ from uuid import UUID
 from marshy.types import ExternalItemType
 
 from schemey._util import filter_none
+from schemey.graphql.graphql_attr import GraphqlAttr
 from schemey.json_output_context import JsonOutputContext
 from schemey.schema_abc import SchemaABC
 from schemey.string_format import StringFormat
@@ -29,3 +30,6 @@ class UuidSchema(SchemaABC[UUID]):
     def get_schema_errors(self, item: UUID, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         if not isinstance(item, UUID):
             yield SchemaError(current_path, 'type', item)
+
+    def to_graphql_attr(self) -> GraphqlAttr:
+        return GraphqlAttr('ID')

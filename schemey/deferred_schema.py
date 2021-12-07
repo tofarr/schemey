@@ -3,6 +3,7 @@ from typing import Optional, Type, List, Iterator
 
 from marshy.types import ExternalItemType
 
+from schemey.graphql.graphql_attr import GraphqlAttr
 from schemey.graphql_context import GraphqlContext
 from schemey.json_output_context import JsonOutputContext
 from schemey.schema_abc import SchemaABC, T
@@ -36,3 +37,6 @@ class DeferredSchema(SchemaABC[T]):
 
     def to_graphql_schema(self, target: GraphqlContext):
         return self.schema.to_graphql_schema(target)
+
+    def to_graphql_attr(self) -> Optional[GraphqlAttr]:
+        return self.schema.to_graphql_attr()

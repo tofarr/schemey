@@ -2,8 +2,11 @@ import importlib
 import pkgutil
 from typing import Type, TypeVar, Optional, Dict
 
+from marshy import get_default_context
+from marshy.marshaller_context import MarshallerContext
 from marshy.utils import resolve_forward_refs
 
+from schemey._util import secure_hash
 from schemey.schema_key import SchemaKey
 
 T = TypeVar('T')
@@ -15,13 +18,15 @@ class SchemaContext:
 
     def __init__(self,
                  factories: Optional[_SchemaFactoryABC] = None,
-                 schema_cache: Optional[Dict[SchemaKey, _SchemaABC]] = None):
+                 schema_cache: Optional[Dict[SchemaKey, _SchemaABC]] = None,
+                 marshaller_context: Optional[MarshallerContext] = None):
         self._factories = sorted(factories or [], reverse=True)
         self._schema_cache = dict(schema_cache or {})
+        self._marshaller_context = marshaller_context or get_default_context()
 
     def get_schema(self, type_: Type[T], default_value: Optional[T] = None) -> _SchemaABC:
         from schemey.deferred_schema import DeferredSchema
-        cache_key = SchemaKey(type_, default_value)
+        cache_key = self.key_for_schema(type_, default_value)
         schema = self._schema_cache.get(cache_key)
         if not schema:
             resolved_type = resolve_forward_refs(type_)
@@ -39,10 +44,16 @@ class SchemaContext:
         self._factories.append(schema_factory)
         self._factories = sorted(self._factories or [], reverse=True)
 
-    def register_schema(self, schema: _SchemaABC, schema_key: Optional[SchemaKey] = None):
-        if schema_key is None:
-            schema_key = SchemaKey(schema.item_type, schema.default_value)
-        self._schema_cache[schema_key] = schema
+    def register_schema(self, schema: _SchemaABC):
+        key = self.key_for_schema(schema.item_type, schema.default_value)
+        self._schema_cache[key] = schema
+
+    def key_for_schema(self, item_type, default_value):
+        default_value_hash = None
+        if default_value is not None:
+            default_value_str = self._marshaller_context.dump(default_value, item_type)
+            default_value_hash = secure_hash(default_value_str)
+        return SchemaKey(item_type, default_value_hash)
 
 
 _default_context = None

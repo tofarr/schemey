@@ -2,6 +2,7 @@ from datetime import datetime
 from unittest import TestCase
 
 from schemey.datetime_schema import DatetimeSchema
+from schemey.graphql.graphql_attr import GraphqlAttr
 from schemey.schema_error import SchemaError
 
 N4 = datetime.fromisoformat('2021-11-04')
@@ -47,3 +48,6 @@ class TestNumberSchema(TestCase):
                            exclusiveMinimum=True, exclusiveMaximum=False)
         schema = DatetimeSchema(minimum=N4, maximum=N6, exclusive_minimum=True, exclusive_maximum=False)
         assert schema.to_json_schema() == json_schema
+
+    def test_to_graphql_attr(self):
+        assert DatetimeSchema().to_graphql_attr() == GraphqlAttr('String')
