@@ -21,6 +21,7 @@ class ObjectSchema(SchemaABC[T]):
     property_schemas: Union[Iterable[PropertySchema], Sized] = field(default_factory=tuple)
     default_value: Optional[T] = None
     name: str = None
+    additional_properties: bool = False
 
     @property
     def item_type(self):
@@ -43,15 +44,15 @@ class ObjectSchema(SchemaABC[T]):
             if property_schema.name in keys:
                 keys.remove(property_schema.name)
             yield from property_schema.get_schema_errors(item, current_path)
-        if keys:
-            yield SchemaError(current_path, 'additional_attributes', ', '.join(keys))
+        if keys and not self.additional_properties:
+            yield SchemaError(current_path, 'additional_properties', ', '.join(keys))
 
     def to_json_schema(self, json_output_context: Optional[JsonOutputContext] = None) -> Optional[ExternalItemType]:
         local_json_output_context = json_output_context or JsonOutputContext()
         if not local_json_output_context.is_item_type_handled(self.item_type):
             local_json_output_context.add_handled_item_type(self.item_type)
             properties = {p.name: p.to_json_schema(local_json_output_context) for p in self.property_schemas}
-            json_schema = dict(type=OBJECT, properties=properties, additionalProperties=False)
+            json_schema = dict(type=OBJECT, properties=properties, additionalProperties=self.additional_properties)
             if self.default_value is not None:
                 json_schema['default'] = local_json_output_context.marshaller_context.dump(self.default_value)
             local_json_output_context.add_def(self.name, json_schema)
