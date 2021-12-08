@@ -57,12 +57,12 @@ class AnyOfSchema(SchemaABC[T]):
     def to_json_schema(self, json_output_context: Optional[JsonOutputContext] = None) -> Optional[ExternalItemType]:
         name = self._get_json_name()
         local_json_output_context = json_output_context or JsonOutputContext()
-        if not local_json_output_context.is_item_type_handled(self.item_type):
-            local_json_output_context.add_handled_item_type(self.item_type)
+        if not local_json_output_context.is_item_name_handled(name):
+            local_json_output_context.set_def(name, {})
             json_schema = dict(anyOf=[s.to_json_schema(json_output_context) for s in self.schemas])
             if self.default_value is not None:
                 json_schema['default'] = local_json_output_context.marshaller_context.dump(self.default_value)
-            local_json_output_context.add_def(name, json_schema)
+            local_json_output_context.set_def(name, json_schema)
         json_schema = {REF: f'#$defs/{name}'}
         if json_output_context is None:
             json_schema = local_json_output_context.to_json_schema(json_schema)

@@ -13,19 +13,15 @@ DEFS = '$defs'
 class JsonOutputContext:
     marshaller_context: MarshallerContext = None
     defs: Dict[str, ExternalItemType] = field(default_factory=dict)
-    item_types: Set[Type] = field(default_factory=set)
 
     def __post_init__(self):
         if self.marshaller_context is None:
             self.marshaller_context = get_default_context()
 
-    def is_item_type_handled(self, item_type: Type) -> bool:
-        return item_type in self.item_types
+    def is_item_name_handled(self, item_name: str) -> bool:
+        return item_name in self.defs
 
-    def add_handled_item_type(self, item_type: Type):
-        self.item_types.add(item_type)
-
-    def add_def(self, name: str, json_schema: ExternalItemType):
+    def set_def(self, name: str, json_schema: ExternalItemType):
         self.defs[name] = json_schema
 
     def to_json_schema(self, json_schema: ExternalItemType):

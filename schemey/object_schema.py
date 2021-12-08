@@ -49,22 +49,22 @@ class ObjectSchema(SchemaABC[T]):
 
     def to_json_schema(self, json_output_context: Optional[JsonOutputContext] = None) -> Optional[ExternalItemType]:
         local_json_output_context = json_output_context or JsonOutputContext()
-        if not local_json_output_context.is_item_type_handled(self.item_type):
-            local_json_output_context.add_handled_item_type(self.item_type)
+        if not local_json_output_context.is_item_name_handled(self.name):
+            local_json_output_context.set_def(self.name, {})
             properties = {p.name: p.to_json_schema(local_json_output_context) for p in self.property_schemas}
             json_schema = dict(type=OBJECT, properties=properties, additionalProperties=self.additional_properties)
             if self.default_value is not None:
                 json_schema['default'] = local_json_output_context.marshaller_context.dump(self.default_value)
-            local_json_output_context.add_def(self.name, json_schema)
+            local_json_output_context.set_def(self.name, json_schema)
         json_schema = {REF: f'#$defs/{self.name}'}
         if json_output_context is None:
             json_schema = local_json_output_context.to_json_schema(json_schema)
         return json_schema
 
     def to_graphql_schema(self, target: GraphqlContext):
-        if self.item_type.__name__ in target.objects:
+        if self.name in target.objects:
             return
-        target.objects[self.item_type.__name__] = self
+        target.objects[self.name] = self
         for property_schema in self.property_schemas:
             property_schema.schema.to_graphql_schema(target)
 
@@ -83,7 +83,7 @@ class ObjectSchema(SchemaABC[T]):
     def to_graphql_attr(self) -> Optional[GraphqlAttr]:
         if not self._has_valid_attrs():
             return
-        return GraphqlAttr(self.item_type.__name__)
+        return GraphqlAttr(self.name)
 
     def _has_valid_attrs(self):
         schemas = (s for s in self.property_schemas if s.to_graphql_attr())
