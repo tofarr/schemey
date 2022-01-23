@@ -252,7 +252,10 @@ json_str = json.dumps(json_schema)
 
 Instead of overriding the __schema_factory__ / __marshaller_factory__
 methods, it is possible to register a factory for your schema with
-your schema context using the `register_schema` method
+your schema context using the `register_schema` method.
+
+It is also possible to register implementations for abstract classes / duck typing via the 
+[register_impl method](tests/factory/test_impl_schema_factory.py)
 
 
 ## Building The Project

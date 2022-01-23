@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Type, Dict, Set
+from typing import Dict
 
 from marshy import get_default_context
 from marshy.marshaller_context import MarshallerContext

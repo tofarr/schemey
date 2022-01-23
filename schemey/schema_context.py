@@ -1,6 +1,6 @@
 import importlib
 import pkgutil
-from typing import Type, TypeVar, Optional, Dict
+from typing import Type, TypeVar, Optional, Dict, Iterator
 
 from marshy import get_default_context
 from marshy.marshaller_context import MarshallerContext
@@ -54,6 +54,9 @@ class SchemaContext:
             default_value_str = self._marshaller_context.dump(default_value, item_type)
             default_value_hash = secure_hash(default_value_str)
         return SchemaKey(item_type, default_value_hash)
+
+    def get_factories(self) -> Iterator[_SchemaFactoryABC]:
+        return iter(self._factories)
 
 
 _default_context = None

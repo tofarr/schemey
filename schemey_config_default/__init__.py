@@ -25,9 +25,9 @@ def configure(context: SchemaContext):
 
     context.register_factory(AnyOfSchemaFactory())
     context.register_factory(ArraySchemaFactory())
-    context.register_factory(FactorySchemaFactory())
     context.register_factory(DataclassSchemaFactory())
     context.register_factory(EnumSchemaFactory())
+    context.register_factory(FactorySchemaFactory())
     context.register_factory(NumberSchemaFactory())
     context.register_factory(PrimitiveSchemaFactory({
         bool: BooleanSchema,

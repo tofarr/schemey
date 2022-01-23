@@ -11,7 +11,10 @@ NONE_TYPE = type(None)
 
 @total_ordering
 class SchemaFactoryABC(ABC):
-    priority: int = 100
+
+    @property
+    def priority(self):
+        return 100
 
     @abstractmethod
     def create(self, type_: Type[T], default_value: Optional[T], context: SchemaContext) -> Optional[SchemaABC[T]]:
