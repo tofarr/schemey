@@ -4,8 +4,9 @@ This project allows for generation of json schema objects based on python
 dataclasses, along with customization of said schemas. Schemas may then
 be used to validate object graphs.
 
-The framework is designed to be extensible, and out of the box support
-is provided for dataclasses, enums, timestamps and primitives.
+The general idea is that the framework should not insist on any particular
+data structure or paradigm - it is designed to be extensible, and out of the box support
+is provided for iterable types, dataclasses, enums, timestamps and primitives.
 
 Serialization is provided using marshy.
 

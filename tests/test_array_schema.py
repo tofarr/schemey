@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple, Set
 from unittest import TestCase
 
 from schemey.array_schema import ArraySchema
@@ -47,4 +47,29 @@ class TestArraySchema(TestCase):
         item_type = List[str]
         schema = schema_for_type(item_type)
         assert schema.item_type == item_type
+        assert list(schema.get_schema_errors(('foo', 'bar')))
+        assert list(schema.get_schema_errors(['foo', 1]))
+        assert not list(schema.get_schema_errors(['foo', 'bar']))
+        assert list(schema.get_schema_errors({'foo', 'bar'}))
 
+    def test_tuple(self):
+        item_type = Tuple[str, ...]
+        schema = schema_for_type(item_type)
+        assert schema.item_type == item_type
+        assert not list(schema.get_schema_errors(('foo', 'bar')))
+        assert list(schema.get_schema_errors(('foo', 1)))
+        assert list(schema.get_schema_errors(['foo', 'bar']))
+        assert list(schema.get_schema_errors({'foo', 'bar'}))
+
+    def test_set(self):
+        item_type = Set[str]
+        schema = schema_for_type(item_type)
+        assert schema.item_type == item_type
+        assert list(schema.get_schema_errors(('foo', 'bar')))
+        assert list(schema.get_schema_errors({'foo', 1}))
+        assert list(schema.get_schema_errors(['foo', 'bar']))
+        assert not list(schema.get_schema_errors({'foo', 'bar'}))
+
+    def test_no_item_type(self):
+        schema = ArraySchema(item_schema=StringSchema())
+        assert schema.item_type == List[str]

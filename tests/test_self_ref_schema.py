@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from unittest import TestCase
 
 from schemey.any_of_schema import optional_schema
@@ -20,7 +20,8 @@ class TestSelfRefSchema(TestCase):
         expected = ObjectSchema(Node, (
             PropertySchema(name='id', schema=StringSchema(), required=True),
             PropertySchema(name='parent', schema=optional_schema(DeferredSchema(schema_context, Node))),
-            PropertySchema(name='children', schema=ArraySchema(item_schema=DeferredSchema(schema_context, Node)))
+            PropertySchema(name='children', schema=ArraySchema(item_schema=DeferredSchema(schema_context, Node),
+                                                               item_type_=List[Node]))
         ))
         assert expected == schema
 

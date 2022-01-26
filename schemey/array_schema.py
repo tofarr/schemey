@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator
+from typing import Optional, List, Iterator, Iterable, Union, Sized, Type
 
+import typing_inspect
 from marshy.types import ExternalItemType
 
 from schemey._util import filter_none
@@ -11,18 +12,22 @@ from schemey.schema_abc import SchemaABC, T
 from schemey.schema_error import SchemaError
 
 ARRAY = 'array'
+A = Union[Iterable[T], Sized]
 
 
 @dataclass(frozen=True)
-class ArraySchema(SchemaABC[List[T]]):
+class ArraySchema(SchemaABC[A]):
     item_schema: Optional[SchemaABC[T]] = None
     min_items: int = 0
     max_items: Optional[int] = None
     uniqueness: bool = False
-    default_value: Optional[List[T]] = None
+    default_value: Optional[A] = None
+    item_type_: Optional[Type] = None
 
     @property
     def item_type(self):
+        if self.item_type_:
+            return self.item_type_
         return List[self.item_schema.item_type]
 
     def to_json_schema(self, json_output_context: Optional[JsonOutputContext] = None) -> Optional[ExternalItemType]:
@@ -36,7 +41,7 @@ class ArraySchema(SchemaABC[List[T]]):
     def get_schema_errors(self, item: T, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         if current_path is None:
             current_path = []
-        if not isinstance(item, list):
+        if not isinstance(item, typing_inspect.get_origin(self.item_type)):
             yield SchemaError(current_path, 'type', item)
             return
         if self.item_schema is not None:
