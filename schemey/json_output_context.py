@@ -13,6 +13,7 @@ DEFS = '$defs'
 class JsonOutputContext:
     marshaller_context: MarshallerContext = None
     defs: Dict[str, ExternalItemType] = field(default_factory=dict)
+    defs_path: str = DEFS
 
     def __post_init__(self):
         if self.marshaller_context is None:

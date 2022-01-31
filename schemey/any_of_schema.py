@@ -5,7 +5,7 @@ from marshy.types import ExternalItemType
 
 from schemey.graphql.graphql_attr import GraphqlAttr
 from schemey.graphql_context import GraphqlContext
-from schemey.json_output_context import JsonOutputContext, REF
+from schemey.json_output_context import JsonOutputContext, REF, DEFS
 from schemey.null_schema import NullSchema
 from schemey.schema_abc import SchemaABC, T
 from schemey.schema_error import SchemaError
@@ -63,7 +63,8 @@ class AnyOfSchema(SchemaABC[T]):
             if self.default_value is not None:
                 json_schema['default'] = local_json_output_context.marshaller_context.dump(self.default_value)
             local_json_output_context.set_def(name, json_schema)
-        json_schema = {REF: f'#$defs/{name}'}
+        defs_path = json_output_context.defs_path if json_output_context else DEFS
+        json_schema = {REF: f'#{defs_path}/{name}'}
         if json_output_context is None:
             json_schema = local_json_output_context.to_json_schema(json_schema)
         return json_schema
