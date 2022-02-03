@@ -142,24 +142,24 @@ errors = list(schema.get_schema_errors(Person('You', -1)))  # [SchemaError(path=
 
 The following schemas are defined out of the box (Feel free to add your own!):
 
-* [AnyOfSchema](schemey/any_of_schema.py): For polymorphic constraints
+* [AnyOfSchema](old/any_of_schema.py): For polymorphic constraints
 * [ArraySchema](schemey/array_schema.py): For arrays
 * [BooleanSchema](schemey/boolean_schema.py): For boolean values
-* [DatetimeSchema](schemey/datetime_schema.py): For datetime values as iso strings
-* [DeferredSchema](schemey/deferred_schema.py): Deferred schema - (used for self referential schemas)
-* [EnumSchema](schemey/enum_schema.py): For enums
-* [NumberSchema](schemey/number_schema.py): For integer / float validation
+* [DatetimeSchema](old/datetime_schema.py): For datetime values as iso strings
+* [DeferredSchema](old/deferred_schema.py): Deferred schema - (used for self referential schemas)
+* [EnumSchema](old/enum_schema.py): For enums
+* [NumberSchema](old/number_schema.py): For integer / float validation
 * [NullSchema](schemey/null_schema.py): For None / null values
 * [ObjectSchema](schemey/object_schema.py): For objects
-* [PropertySchema](schemey/property_schema.py): For properties of objects
-* [RefSchema](schemey/deferred_schema.py): For indirectly referenced objects  
-* [StringSchema](schemey/string_schema.py): For string validation. (Including regex, format and length constraints)
+* [PropertySchema](old/property_schema.py): For properties of objects
+* [RefSchema](old/deferred_schema.py): For indirectly referenced objects  
+* [StringSchema](old/string_schema.py): For string validation. (Including regex, format and length constraints)
 
 ## Architectural Concepts.
 
-* A [Schema](schemey/schema_abc.py) is used to validate instances of a type
-* A [Factory](schemey/factory/schema_factory_abc.py) is used to create schemas for a given type
-* A [Context](schemey/schema_context.py) coordinates the operations between schemas and factories (Using
+* A [Schema](old/schema_abc.py) is used to validate instances of a type
+* A [Factory](old/factory/schema_factory_abc.py) is used to create schemas for a given type
+* A [Context](old/schema_context.py) coordinates the operations between schemas and factories (Using
   the default context leads to a shorter syntax, but less flexibility)
 
 ## Specifying a Schema for a Class
@@ -256,7 +256,7 @@ methods, it is possible to register a factory for your schema with
 your schema context using the `register_schema` method.
 
 It is also possible to register implementations for abstract classes / duck typing via the 
-[register_impl method](tests/factory/test_impl_schema_factory.py)
+[register_impl method](old/tests/factory/test_impl_schema_factory.py)
 
 
 ## Building The Project

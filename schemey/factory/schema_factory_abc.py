@@ -1,12 +1,14 @@
 from abc import abstractmethod, ABC
 from functools import total_ordering
-from typing import TypeVar, Type, Optional
+from typing import TypeVar, Type, Optional, Union
 
-from schemey.schema_abc import SchemaABC
-from schemey.schema_context import SchemaContext
+from marshy import ExternalType
+
+from schemey.json_schema_abc import JsonSchemaABC, NoDefault
 
 T = TypeVar('T')
 NONE_TYPE = type(None)
+_SchemeyContext = 'schemey.schemey_context.SchemeyContext'
 
 
 @total_ordering
@@ -17,9 +19,13 @@ class SchemaFactoryABC(ABC):
         return 100
 
     @abstractmethod
-    def create(self, type_: Type[T], default_value: Optional[T], context: SchemaContext) -> Optional[SchemaABC[T]]:
+    def create(self,
+               type_: Type,
+               context: _SchemeyContext,
+               default_value: Union[ExternalType, Type[NoDefault]] = NoDefault
+               ) -> Optional[JsonSchemaABC]:
         """
-        Create a schemey for the type given, or return None if that was not possible
+        Create a schema for the type given, or return None if that was not possible
         """
 
     def __ne__(self, other):

@@ -1,25 +1,60 @@
 from unittest import TestCase
 
+from schemey.boolean_schema import BooleanSchema
+from schemey.json_schema_abc import NoDefault
 from schemey.null_schema import NullSchema
+from schemey.schema import Schema
 from schemey.schema_error import SchemaError
+from schemey.schemey_context import get_default_schemey_context
 
 
-class TestObjectSchema(TestCase):
+class TestBooleanSchema(TestCase):
+
+    def test_factory_no_default(self):
+        context = get_default_schemey_context()
+        schema = context.get_schema(type(None))
+        expected = Schema(
+            NullSchema(default_value=NoDefault),
+            context.marshaller_context.get_marshaller(type(None))
+        )
+        self.assertEqual(expected, schema)
+
+    def test_factory_with_default(self):
+        context = get_default_schemey_context()
+        schema = context.get_schema(type(None), None)
+        expected = NullSchema(default_value=None)
+        self.assertEqual(expected, schema.json_schema)
 
     def test_null_schema(self):
         schema = NullSchema()
+        errors = list(schema.get_schema_errors('True', ['foo', 'bar']))
         # noinspection PyTypeChecker
-        assert list(schema.get_schema_errors('True', ['foo', 'bar'])) == [SchemaError('foo/bar', 'type', 'True')]
-        assert list(schema.get_schema_errors(None)) == []
+        self.assertEqual(errors, [SchemaError('foo/bar', 'type', 'True')])
+        self.assertEqual(list(schema.get_schema_errors(None)), [])
 
-    def test_to_json_schema(self):
-        assert NullSchema().to_json_schema() == dict(type='null')
+    def test_validate(self):
+        context = get_default_schemey_context()
+        schema = context.get_schema(type(None))
+        schema.validate(None)
 
-    def test_class(self):
-        assert NullSchema() is NullSchema()  # Make sure it is a singleton
-        assert str(NullSchema()) == "NullSchema()"
-        assert NullSchema().default_value is None
+    def test_validate_fail(self):
+        context = get_default_schemey_context()
+        schema = context.get_schema(type(None))
+        with self.assertRaises(SchemaError):
+            schema.validate('Not None!')
 
-    def test_item_type(self):
-        none_type = type(None)
-        assert NullSchema().item_type == none_type
+    def test_load(self):
+        context = get_default_schemey_context()
+        self.assertEqual(context.load_json_schema(dict(type='null')), NullSchema())
+        to_load = dict(type='null', default=None)
+        loaded = context.load_json_schema(to_load)
+        expected = NullSchema(default_value=None)
+        self.assertEqual(loaded, expected)
+
+    def test_dump(self):
+        context = get_default_schemey_context()
+        self.assertEqual(context.dump_json_schema(NullSchema()), dict(type='null'))
+        to_dump = NullSchema(default_value=None)
+        dumped = context.dump_json_schema(to_dump)
+        expected = dict(type='null', default=None)
+        self.assertEqual(dumped, expected)

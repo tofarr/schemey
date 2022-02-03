@@ -1,23 +1,17 @@
-from abc import abstractmethod, ABC
-from typing import Iterator, Optional, List, Generic, TypeVar, Type
+from abc import ABC, abstractmethod
+from typing import Generic, TypeVar, Optional, List, Iterator, Type
 
-from marshy.types import ExternalItemType
-
-from schemey.graphql.graphql_attr import GraphqlAttr
-from schemey.graphql_context import GraphqlContext
-from schemey.json_output_context import JsonOutputContext
 from schemey.schema_error import SchemaError
 
 T = TypeVar('T')
-_SchemaABC = f'{__name__}.SchemaABC'
 
 
 class SchemaABC(ABC, Generic[T]):
     """
-    A Schema for a particular type of object, which may be marshalled into a JsonSchema. Json Schemas are fundamentally
-    extensible and tolerant of additional unknown attributes. We use this to pass additional data to clients and store
-    things that may not be part of the general spec.
-    """
+     A Schema for a particular type of object, which may be marshalled into a JsonSchema. Json Schemas are fundamentally
+     extensible and tolerant of additional unknown attributes. We use this to pass additional data to clients and store
+     things that may not be part of the general spec.
+     """
 
     @abstractmethod
     def get_schema_errors(self, item: T, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
@@ -33,20 +27,9 @@ class SchemaABC(ABC, Generic[T]):
     @property
     @abstractmethod
     def item_type(self) -> Type[T]:
-        """ Get the type of item processed by this schema """
+        """ Get the type of item processed by this schemey """
 
     @property
     @abstractmethod
     def default_value(self) -> Optional[T]:
-        """ The default value for this schema """
-
-    @abstractmethod
-    def to_json_schema(self, json_output_context: Optional[JsonOutputContext] = None) -> Optional[ExternalItemType]:
-        """ Convert this schema to a json schema """
-
-    def to_graphql_schema(self, target: GraphqlContext):
-        """ Add entries to the graphql context given - not abstract since most schema types do not do anything here. """
-
-    @abstractmethod
-    def to_graphql_attr(self) -> Optional[GraphqlAttr]:
-        """ Get the type name for use in graphql. (None if the schema can't be converted to graphql) """
+        """ The default value for this schemey """

@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Any, Union, List
 
+from marshy import ExternalType
+
 
 @dataclass(frozen=True)
 class SchemaError(Exception):
@@ -8,7 +10,7 @@ class SchemaError(Exception):
     code: str
     value: Any
 
-    def __init__(self, path: Union[str, List[str]], code: str, value: Any = None):
+    def __init__(self, path: Union[str, List[str]], code: str, value: ExternalType = None):
         if not isinstance(path, str):
             path = "/".join(path or [])
         super().__init__(f':{code}:{path}:{value}')

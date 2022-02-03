@@ -1,23 +1,27 @@
 from typing import Type, Optional, Set, List, Tuple, Union
 
 import typing_inspect
+from marshy import ExternalType
 
 from schemey.array_schema import ArraySchema
-from schemey.factory.schema_factory_abc import SchemaFactoryABC, T
-from schemey.schema_abc import SchemaABC
-from schemey.schema_context import SchemaContext
+from schemey.factory.schema_factory_abc import SchemaFactoryABC
+from schemey.json_schema_abc import NoDefault, JsonSchemaABC
+from schemey.schemey_context import SchemeyContext
 
 
 class ArraySchemaFactory(SchemaFactoryABC):
 
-    def create(self, type_: Type, default_value, context: SchemaContext) -> Optional[SchemaABC]:
+    def create(self,
+               type_: Type,
+               context: SchemeyContext,
+               default_value: Union[ExternalType, Type[NoDefault]] = NoDefault
+               ) -> Optional[JsonSchemaABC]:
         array_type = self.get_array_type(type_)
         if array_type:
             args = typing_inspect.get_args(type_)
-            schema = context.get_schema(args[0])
+            schema = context.get_schema(args[0]).json_schema
             uniqueness = array_type is Set
-            return ArraySchema[T](item_schema=schema, default_value=default_value, item_type_=type_,
-                                  uniqueness=uniqueness)
+            return ArraySchema(item_schema=schema, default_value=default_value, uniqueness=uniqueness)
 
     @staticmethod
     def get_array_type(type_: Type) -> Union[Type[List], Type[Set], Type[Tuple], None]:

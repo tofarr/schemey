@@ -1,46 +1,26 @@
 from dataclasses import dataclass
 from datetime import datetime, time
 import re
-from typing import Optional, List, Iterator, Type
-import validators
-from marshy.types import ExternalItemType
+from typing import Optional, List, Iterator, Union, Type
 
-from schemey._util import filter_none
-from schemey.graphql.graphql_attr import GraphqlAttr
-from schemey.json_output_context import JsonOutputContext
-from schemey.schema_abc import SchemaABC
-from schemey.string_format import StringFormat
+import validators
+
+from schemey.json_schema_abc import JsonSchemaABC, NoDefault
 from schemey.schema_error import SchemaError
+from schemey.string_format import StringFormat
 
 
 @dataclass(frozen=True)
-class StringSchema(SchemaABC[str]):
+class StringSchema(JsonSchemaABC):
     min_length: Optional[int] = None
     max_length: Optional[int] = None
     pattern: Optional[str] = None
     format: Optional[StringFormat] = None
     _compiled_pattern = None
-    default_value: Optional[str] = None
+    default_value: Union[str, Type[NoDefault]] = NoDefault
 
     def __post_init__(self):
         object.__setattr__(self, '_compiled_pattern', None if self.pattern is None else re.compile(self.pattern))
-
-    @property
-    def item_type(self) -> Type[str]:
-        return str
-
-    def to_json_schema(self, json_output_context: Optional[JsonOutputContext] = None) -> Optional[ExternalItemType]:
-        return filter_none(dict(
-            type='string',
-            minLength=self.min_length,
-            maxLength=self.max_length,
-            pattern=self.pattern,
-            format=self.format.value if self.format else None,
-            default=self.default_value
-        ))
-
-    def to_graphql_attr(self) -> GraphqlAttr:
-        return GraphqlAttr('String')
 
     def get_schema_errors(self, item: str, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         if not isinstance(item, str):
@@ -86,3 +66,11 @@ class StringSchema(SchemaABC[str]):
         elif self.format == StringFormat.UUID:
             if validators.uuid(item) is not True:
                 yield SchemaError(current_path, 'format:uuid', item)
+
+
+def date_string_schema(default_value: Union[str, Type[NoDefault]] = NoDefault):
+    return StringSchema(default_value=default_value, format=StringFormat.DATE_TIME)
+
+
+def uuid_string_schema(default_value: Union[str, Type[NoDefault]] = NoDefault):
+    return StringSchema(default_value=default_value, format=StringFormat.UUID)
