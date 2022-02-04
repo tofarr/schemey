@@ -1,7 +1,11 @@
 from dataclasses import dataclass
 from typing import Optional, List, Iterator, Union
 
+from marshy.types import ExternalItemType
+
+from schemey.integer_schema import check, dump_json_schema, simplify_kwargs
 from schemey.json_schema_abc import JsonSchemaABC, NoDefault
+from schemey.json_schema_context import JsonSchemaContext
 from schemey.schema_error import SchemaError
 
 
@@ -11,7 +15,7 @@ class NumberSchema(JsonSchemaABC):
     exclusive_minimum: Optional[float] = None
     maximum: Optional[float] = None
     exclusive_maximum: Optional[float] = None
-    default_value: Union[float, NoDefault] = NoDefault
+    default: Union[float, NoDefault] = NoDefault
 
     def get_schema_errors(self, item: float, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         if not isinstance(item, float) and item.__class__ is not int:
@@ -19,13 +23,9 @@ class NumberSchema(JsonSchemaABC):
             return
         yield from check(item, current_path, self.minimum, self.maximum, self.exclusive_minimum, self.exclusive_maximum)
 
+    def dump_json_schema(self, json_context: JsonSchemaContext) -> ExternalItemType:
+        return dump_json_schema(self, 'number')
 
-def check(item: Union[float, int], current_path, minimum, maximum, exclusive_minimum, exclusive_maximum):
-    if minimum is not None and item < minimum:
-        yield SchemaError(current_path, 'minimum', item)
-    if exclusive_minimum is not None and item <= exclusive_minimum:
-        yield SchemaError(current_path, 'exclusive_minimum', item)
-    if maximum is not None and item > maximum:
-        yield SchemaError(current_path, 'maximum', item)
-    if exclusive_maximum is not None and item >= exclusive_maximum:
-        yield SchemaError(current_path, 'exclusive_maximum', item)
+    def simplify(self) -> JsonSchemaABC:
+        kwargs = simplify_kwargs(self)
+        return NumberSchema(**kwargs)

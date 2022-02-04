@@ -2,9 +2,10 @@ from datetime import datetime
 from unittest import TestCase
 from uuid import uuid4, UUID
 
+from marshy import dump, load
 from marshy.types import ExternalItemType
 
-from schemey.json_schema_abc import NoDefault
+from schemey.json_schema_abc import NoDefault, JsonSchemaABC
 from schemey.schema import Schema
 from schemey.schema_error import SchemaError
 from schemey.schemey_context import get_default_schemey_context
@@ -18,7 +19,7 @@ class TestIntegerSchema(TestCase):
         context = get_default_schemey_context()
         schema = context.get_schema(str)
         expected = Schema(
-            StringSchema(default_value=NoDefault),
+            StringSchema(default=NoDefault),
             context.marshaller_context.get_marshaller(str)
         )
         self.assertEqual(expected, schema)
@@ -26,7 +27,7 @@ class TestIntegerSchema(TestCase):
     def test_factory_with_default(self):
         context = get_default_schemey_context()
         schema = context.get_schema(str, 'foobar')
-        expected = StringSchema(default_value='foobar')
+        expected = StringSchema(default='foobar')
         self.assertEqual(expected, schema.json_schema)
 
     def test_schema_max_length(self):
@@ -133,13 +134,12 @@ class TestIntegerSchema(TestCase):
         assert list(schema.get_schema_errors("foobar")) == [SchemaError('', 'format:uri', 'foobar')]
         self._check_dump_and_load(schema, dict(type='string', format='uri'))
 
-    def test_default_value(self):
-        schema = StringSchema(default_value='foobar')
+    def test_default(self):
+        schema = StringSchema(default='foobar')
         self._check_dump_and_load(schema, dict(type='string', default='foobar'))
 
     def _check_dump_and_load(self, schema: StringSchema, expected: ExternalItemType):
-        context = get_default_schemey_context()
-        dumped = context.dump_json_schema(schema)
+        dumped = dump(schema)
         self.assertEqual(expected, dumped)
-        loaded = context.load_json_schema(dumped)
+        loaded = load(JsonSchemaABC, dumped)
         self.assertEqual(loaded, schema)

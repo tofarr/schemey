@@ -27,7 +27,7 @@ class DeferredSchema(SchemaABC[T]):
 
     @property
     def schema(self) -> SchemaABC[T]:
-        return self.schema_context.get_schema(self.item_type, self.default_value)
+        return self.schema_context.create_schema(self.item_type, self.default_value)
 
     def get_schema_errors(self, item: T, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         yield from self.schema.get_schema_errors(item, current_path)

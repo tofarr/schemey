@@ -11,7 +11,7 @@ from schemey.schema_error import SchemaError
 @dataclass
 class Schema(SchemaABC[T]):
     """ Implementation of SchemaABC using Json """
-    json_schema: Optional[JsonSchemaABC]
+    json_schema: JsonSchemaABC
     marshaller: MarshallerABC[T]
 
     def get_schema_errors(self, item: T, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:

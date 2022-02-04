@@ -8,11 +8,11 @@ from schemey.json_schema_abc import JsonSchemaABC, NoDefault
 
 T = TypeVar('T')
 NONE_TYPE = type(None)
-_SchemeyContext = 'schemey.schemey_context.SchemeyContext'
+_JsonSchemaContext = 'schemey.json_schema_context.JsonSchemaContext'
 
 
 @total_ordering
-class SchemaFactoryABC(ABC):
+class JsonSchemaFactoryABC(ABC):
 
     @property
     def priority(self):
@@ -21,8 +21,8 @@ class SchemaFactoryABC(ABC):
     @abstractmethod
     def create(self,
                type_: Type,
-               context: _SchemeyContext,
-               default_value: Union[ExternalType, Type[NoDefault]] = NoDefault
+               json_context: _JsonSchemaContext,
+               default: Union[ExternalType, Type[NoDefault]] = NoDefault
                ) -> Optional[JsonSchemaABC]:
         """
         Create a schema for the type given, or return None if that was not possible

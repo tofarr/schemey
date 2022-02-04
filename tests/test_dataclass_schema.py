@@ -1,26 +1,24 @@
 from dataclasses import field, dataclass
-from datetime import datetime
-from random import randint
 from typing import Optional, List, Set
 from unittest import TestCase
 from uuid import uuid4, UUID
 
-from marshy.types import ExternalItemType
+from marshy import dump, load
 
 from schemey.any_of_schema import optional_schema
 from schemey.array_schema import ArraySchema
 from schemey.boolean_schema import BooleanSchema
+from schemey.deferred_schema import DeferredSchema
 from schemey.integer_schema import IntegerSchema
-from schemey.json_schema_abc import NoDefault
+from schemey.json_schema_abc import JsonSchemaABC
 from schemey.object_schema import ObjectSchema
-from schemey.ref_schema import RefSchema
 from schemey.schema import Schema
-from schemey.schema_error import SchemaError
 from schemey.schemey_context import get_default_schemey_context
 from schemey.string_format import StringFormat
 from schemey.string_schema import StringSchema
 
 _Node = f"{__name__}.Node"
+
 
 @dataclass
 class Tag:
@@ -52,11 +50,24 @@ class TestDataclassSchema(TestCase):
             ObjectSchema(name='Tag', required=['id', 'title'], properties=dict(
                 id=IntegerSchema(),
                 title=StringSchema(max_length=255),
-                active=BooleanSchema(default_value=False)
+                active=BooleanSchema(default=False)
             )),
             context.marshaller_context.get_marshaller(Tag)
         )
         self.assertEqual(expected, schema)
+
+    def test_load_and_dump_tag(self):
+        self._check_load_and_dump(Tag, dict(
+            name='Tag',
+            type='object',
+            additionalProperties=False,
+            required=['id', 'title'],
+            properties=dict(
+                id=dict(type='integer'),
+                title=dict(type='string', maxLength=255),
+                active=dict(type='boolean', default=False),
+            )
+        ))
 
     def test_generate_schema_for_content(self):
         context = get_default_schemey_context()
@@ -72,16 +83,67 @@ class TestDataclassSchema(TestCase):
         )
         self.assertEqual(expected, schema)
 
+    def test_load_and_dump_content(self):
+        self._check_load_and_dump(Content, dict(
+            name='Content',
+            type='object',
+            additionalProperties=False,
+            required=['text'],
+            properties=dict(
+                text=dict(type='string'),
+                id=dict(type='string', format='uuid'),
+                title=dict(anyOf=[dict(type='null'), dict(type='string')], default=None),
+                tags=dict(type='array', uniqueness=True, items=dict(
+                    name='Tag',
+                    type='object',
+                    additionalProperties=False,
+                    required=['id', 'title'],
+                    properties=dict(
+                        id=dict(type='integer'),
+                        title=dict(type='string', maxLength=255),
+                        active=dict(type='boolean', default=False),
+                    )
+                )),
+            )
+        ))
+
     def test_generate_schema_for_node(self):
         context = get_default_schemey_context()
         schema = context.get_schema(Node)
-        ref_schema = RefSchema()
-        expected = Schema(
-            ObjectSchema(name='Node', required=['title'], properties=dict(
-                title=StringSchema(),
-                children=ArraySchema(item_schema=ref_schema),
-            )),
-            context.marshaller_context.get_marshaller(Node)
-        )
-        ref_schema.schema = expected.json_schema
+        expected = DeferredSchema(ref='Node', num_usages=2)
+        expected.schema = ObjectSchema(name='Node', required=['title'], properties=dict(
+            title=StringSchema(),
+            children=ArraySchema(item_schema=expected),
+        ))
+        expected = Schema(expected, context.marshaller_context.get_marshaller(Node))
         self.assertEqual(expected, schema)
+
+    def test_load_and_dump_node(self):
+        self._check_load_and_dump(Node, {
+            '$ref': '#$defs/Node',
+            '$defs': {
+                'Node': {
+                    'name': 'Node',
+                    'type': 'object',
+                    'additionalProperties': False,
+                    'required': ['title'],
+                    'properties': {
+                        'title': {'type': 'string'},
+                        'children': {
+                            'type': 'array',
+                            'items': {
+                                '$ref': '#$defs/Node'
+                            }
+                        }
+                    }
+                }
+            }
+        })
+
+    def _check_load_and_dump(self, type_, expected_dump):
+        context = get_default_schemey_context()
+        schema = context.get_json_schema(type_)
+        dumped = dump(schema)
+        self.assertEqual(expected_dump, dumped)
+        loaded = load(JsonSchemaABC, dumped)
+        self.assertEqual(schema, loaded)

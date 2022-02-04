@@ -2,31 +2,39 @@ from dataclasses import dataclass, field
 from typing import Type
 
 from marshy import ExternalType
-from marshy.marshaller.marshaller_abc import MarshallerABC, T
+from marshy.marshaller.marshaller_abc import MarshallerABC
+from marshy.types import ExternalItemType
 
+from schemey.deferred_schema import DeferredSchema
 from schemey.json_schema_abc import JsonSchemaABC
-from schemey.jsonifier.json_dump import JsonDump
-from schemey.jsonifier.json_load import JsonLoad
+from schemey.json_schema_context import JsonSchemaContext
 from schemey.schemey_context import SchemeyContext, get_default_schemey_context
 
 
-@dataclass
+@dataclass(frozen=True)
 class JsonSchemaMarshaller(MarshallerABC[JsonSchemaABC]):
     marshalled_type: Type[JsonSchemaABC] = JsonSchemaABC
     schemey_context: SchemeyContext = field(default_factory=get_default_schemey_context)
+    defs_key: str = '$defs'
 
-    def load(self, item: ExternalType) -> JsonSchemaABC:
-        json_load = JsonLoad(self.schemey_context)
-        for schema_jsonifier in self.schemey_context.schema_jsonifiers:
-            schema = schema_jsonifier.load_schema(item, json_load)
-            if schema:
-                return schema
-        raise ValueError(f'load_faild:{item}')
+    def load(self, item: ExternalItemType) -> JsonSchemaABC:
+        raw_defs = item.get(self.defs_key) or {}
+        defs = {k: DeferredSchema(k) for k in raw_defs}
+        json_schema_context = JsonSchemaContext(defs=defs, loaders=self.schemey_context.schema_loaders,
+                                                defs_path=f"#{self.defs_key}/")
+        for k, raw_def in raw_defs.items():
+            deferred = defs[k]
+            deferred.schema = json_schema_context.load(raw_def)
+        schema = json_schema_context.load(item)
+        schema = schema.simplify()
+        return schema
 
-    def dump(self, item: T) -> ExternalType:
-        json_dump = JsonDump(self.schemey_context)
-        for schema_jsonifier in self.schemey_context.schema_jsonifiers:
-            schema = schema_jsonifier.dump_schema(item, json_dump)
-            if schema:
-                return schema
-        raise ValueError(f'dump_failed:{item}')
+    def dump(self, item: JsonSchemaABC) -> ExternalType:
+        json_context = JsonSchemaContext()
+        dumped = item.dump_json_schema(json_context)
+        if json_context.defs:
+            dumped[self.defs_key] = {
+                k: s.schema.dump_json_schema(json_context)
+                for k, s in json_context.defs.items() if s.num_usages > 1
+            }
+        return dumped

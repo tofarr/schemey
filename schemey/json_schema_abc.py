@@ -1,12 +1,13 @@
 from abc import abstractmethod, ABC
-from dataclasses import MISSING
-from typing import Iterator, Optional, List, TypeVar, Union
+from typing import Iterator, Optional, List, TypeVar
 
 from marshy.types import ExternalItemType
 
 from schemey.schema_error import SchemaError
 
 T = TypeVar('T')
+_JsonSchemaABC = f"{__name__}JsonSchemaABC"
+_JsonSchemaContext = 'schemey.json_schema_context.JsonSchemaContext'
 
 
 class NoDefault:
@@ -35,7 +36,9 @@ class JsonSchemaABC(ABC):
         if error:
             raise error
 
-    @property
     @abstractmethod
-    def default_value(self) -> Union[NoDefault, ExternalItemType]:
-        """ Get a default value for this schema """
+    def dump_json_schema(self, json_context: _JsonSchemaContext) -> ExternalItemType:
+        """ Convert this to a json schema """
+
+    def simplify(self) -> _JsonSchemaABC:
+        return self

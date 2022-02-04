@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from typing import Optional, List, Iterator, Iterable, Union, Sized, Type
 
-from marshy.types import ExternalType
+from marshy.types import ExternalType, ExternalItemType
 
 from schemey.json_schema_abc import JsonSchemaABC, NoDefault
+from schemey.json_schema_context import JsonSchemaContext
 from schemey.null_schema import NullSchema
 from schemey.schema_error import SchemaError
 
@@ -11,7 +12,7 @@ from schemey.schema_error import SchemaError
 @dataclass(frozen=True)
 class AnyOfSchema(JsonSchemaABC):
     schemas: Union[Iterable[JsonSchemaABC], Sized]
-    default_value: Union[ExternalType, Type[NoDefault]] = NoDefault
+    default: Union[ExternalType, Type[NoDefault]] = NoDefault
     name: str = None
 
     def __post_init__(self):
@@ -23,11 +24,6 @@ class AnyOfSchema(JsonSchemaABC):
                 schemas.append(s)
         object.__setattr__(self, 'schemas', tuple(schemas))
 
-    @property
-    def item_type(self):
-        types = tuple(s.item_type for s in self.schemas)
-        return Union[types]
-
     def get_schema_errors(self, item: ExternalType, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         errors = [SchemaError(current_path or [], 'type', item)]
         for schema in self.schemas:
@@ -36,6 +32,20 @@ class AnyOfSchema(JsonSchemaABC):
                 return
         if item is not None:
             yield from errors
+
+    def dump_json_schema(self, json_context: JsonSchemaContext) -> ExternalItemType:
+        any_of = [s.dump_json_schema(json_context) for s in self.schemas]
+        dumped = dict(anyOf=any_of)
+        if self.name:
+            dumped['name'] = self.name
+        if self.default is not NoDefault:
+            dumped['default'] = self.default
+        return dumped
+
+    def simplify(self) -> JsonSchemaABC:
+        any_of = [s.simplify() for s in self.schemas]
+        schema = AnyOfSchema(**{**self.__dict__, 'schemas': any_of})
+        return schema
 
 
 def optional_schema(schema: JsonSchemaABC,

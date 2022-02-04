@@ -4,8 +4,11 @@ import re
 from typing import Optional, List, Iterator, Union, Type
 
 import validators
+from marshy.types import ExternalItemType
 
+from schemey._util import filter_none
 from schemey.json_schema_abc import JsonSchemaABC, NoDefault
+from schemey.json_schema_context import JsonSchemaContext
 from schemey.schema_error import SchemaError
 from schemey.string_format import StringFormat
 
@@ -17,7 +20,7 @@ class StringSchema(JsonSchemaABC):
     pattern: Optional[str] = None
     format: Optional[StringFormat] = None
     _compiled_pattern = None
-    default_value: Union[str, Type[NoDefault]] = NoDefault
+    default: Union[str, Type[NoDefault]] = NoDefault
 
     def __post_init__(self):
         object.__setattr__(self, '_compiled_pattern', None if self.pattern is None else re.compile(self.pattern))
@@ -67,10 +70,22 @@ class StringSchema(JsonSchemaABC):
             if validators.uuid(item) is not True:
                 yield SchemaError(current_path, 'format:uuid', item)
 
+    def dump_json_schema(self, json_context: JsonSchemaContext) -> ExternalItemType:
+        dumped = filter_none(dict(
+            type='string',
+            minLength=self.min_length,
+            maxLength=self.max_length,
+            pattern=self.pattern,
+            format=self.format.value if self.format else None,
+        ))
+        if self.default is not NoDefault:
+            dumped['default'] = self.default
+        return dumped
 
-def date_string_schema(default_value: Union[str, Type[NoDefault]] = NoDefault):
-    return StringSchema(default_value=default_value, format=StringFormat.DATE_TIME)
+
+def date_string_schema(default: Union[str, Type[NoDefault]] = NoDefault):
+    return StringSchema(default=default, format=StringFormat.DATE_TIME)
 
 
-def uuid_string_schema(default_value: Union[str, Type[NoDefault]] = NoDefault):
-    return StringSchema(default_value=default_value, format=StringFormat.UUID)
+def uuid_string_schema(default: Union[str, Type[NoDefault]] = NoDefault):
+    return StringSchema(default=default, format=StringFormat.UUID)

@@ -1,6 +1,8 @@
 from unittest import TestCase
 
-from schemey.json_schema_abc import NoDefault
+from marshy import dump, load
+
+from schemey.json_schema_abc import NoDefault, JsonSchemaABC
 from schemey.number_schema import NumberSchema
 from schemey.schema import Schema
 from schemey.schema_error import SchemaError
@@ -13,7 +15,7 @@ class TestNumberSchema(TestCase):
         context = get_default_schemey_context()
         schema = context.get_schema(float)
         expected = Schema(
-            NumberSchema(default_value=NoDefault),
+            NumberSchema(default=NoDefault),
             context.marshaller_context.get_marshaller(float)
         )
         self.assertEqual(expected, schema)
@@ -21,7 +23,7 @@ class TestNumberSchema(TestCase):
     def test_factory_with_default(self):
         context = get_default_schemey_context()
         schema = context.get_schema(float, 10.5)
-        expected = NumberSchema(default_value=10.5)
+        expected = NumberSchema(default=10.5)
         self.assertEqual(expected, schema.json_schema)
 
     def test_get_schema_errors(self):
@@ -67,23 +69,42 @@ class TestNumberSchema(TestCase):
         self.assertEqual(list(schema.get_schema_errors(10)), [SchemaError('', 'exclusive_maximum', 10)])
         self.assertEqual(list(schema.get_schema_errors(11, ['foo'])), [SchemaError('foo', 'exclusive_maximum', 11)])
 
-    def test_load(self):
-        context = get_default_schemey_context()
-        self.assertEqual(context.load_json_schema(dict(type='number')), NumberSchema())
-        to_load = dict(type='number', default=7, minimum=5, exclusiveMinimum=4, maximum=9, exclusiveMaximum=10)
-        loaded = context.load_json_schema(to_load)
-        expected = NumberSchema(default_value=7, minimum=5, exclusive_minimum=4, maximum=9, exclusive_maximum=10)
-        self.assertEqual(loaded, expected)
+    def test_dump_and_load(self):
+        schema = NumberSchema()
+        dumped = dump(schema)
+        loaded = load(JsonSchemaABC, dumped)
+        self.assertEqual(schema, loaded)
+
+    def test_dump_and_load_with_range(self):
+        schema = NumberSchema(default=7, minimum=5, maximum=9)
+        dumped = dump(schema)
+        expected_dump = dict(type='number', default=7, minimum=5, maximum=9)
+        self.assertEqual(expected_dump, dumped)
+        loaded = load(JsonSchemaABC, dumped)
+        self.assertEqual(schema, loaded)
+
+    def test_dump_and_load_with_exclusive_range(self):
+        schema = NumberSchema(default=7, exclusive_minimum=4,exclusive_maximum=10)
+        dumped = dump(schema)
+        expected_dump = dict(type='number', default=7, exclusiveMinimum=4, exclusiveMaximum=10)
+        self.assertEqual(expected_dump, dumped)
+        loaded = load(JsonSchemaABC, dumped)
+        self.assertEqual(schema, loaded)
 
     def test_load_fail(self):
-        context = get_default_schemey_context()
-        with self.assertRaises(StopIteration):
-            context.load_json_schema({})
+        with self.assertRaises(ValueError):
+            load(JsonSchemaABC, {})
 
-    def test_dump(self):
-        context = get_default_schemey_context()
-        self.assertEqual(context.dump_json_schema(NumberSchema()), dict(type='number'))
-        to_dump = NumberSchema(default_value=7, minimum=5, exclusive_minimum=4, maximum=9, exclusive_maximum=10)
-        dumped = context.dump_json_schema(to_dump)
-        expected = dict(type='number', default=7, minimum=5, exclusiveMinimum=4, maximum=9, exclusiveMaximum=10)
-        self.assertEqual(dumped, expected)
+    def test_simplify(self):
+        self.assertEqual(dict(type='number', exclusiveMinimum=5),
+                          dump(NumberSchema(minimum=5, exclusive_minimum=5).simplify()))
+        self.assertEqual(dict(type='number', exclusiveMinimum=5),
+                          dump(NumberSchema(minimum=4, exclusive_minimum=5).simplify()))
+        self.assertEqual(dict(type='number', minimum=6),
+                          dump(NumberSchema(minimum=6, exclusive_minimum=5).simplify()))
+        self.assertEqual(dict(type='number', exclusiveMaximum=5),
+                          dump(NumberSchema(maximum=5, exclusive_maximum=5).simplify()))
+        self.assertEqual(dict(type='number', exclusiveMaximum=5),
+                          dump(NumberSchema(maximum=6, exclusive_maximum=5).simplify()))
+        self.assertEqual(dict(type='number', maximum=4),
+                          dump(NumberSchema(maximum=4, exclusive_maximum=5).simplify()))

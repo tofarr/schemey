@@ -4,24 +4,24 @@ import typing_inspect
 from marshy import ExternalType
 
 from schemey.array_schema import ArraySchema
-from schemey.factory.schema_factory_abc import SchemaFactoryABC
+from schemey.factory.json_schema_factory_abc import JsonSchemaFactoryABC
 from schemey.json_schema_abc import NoDefault, JsonSchemaABC
-from schemey.schemey_context import SchemeyContext
+from schemey.json_schema_context import JsonSchemaContext
 
 
-class ArraySchemaFactory(SchemaFactoryABC):
+class ArrayJsonSchemaFactory(JsonSchemaFactoryABC):
 
     def create(self,
                type_: Type,
-               context: SchemeyContext,
-               default_value: Union[ExternalType, Type[NoDefault]] = NoDefault
+               json_context: JsonSchemaContext,
+               default: Union[ExternalType, Type[NoDefault]] = NoDefault
                ) -> Optional[JsonSchemaABC]:
         array_type = self.get_array_type(type_)
         if array_type:
             args = typing_inspect.get_args(type_)
-            schema = context.get_schema(args[0]).json_schema
+            schema = json_context.create_schema(args[0])
             uniqueness = array_type is Set
-            return ArraySchema(item_schema=schema, default_value=default_value, uniqueness=uniqueness)
+            return ArraySchema(item_schema=schema, default=default, uniqueness=uniqueness)
 
     @staticmethod
     def get_array_type(type_: Type) -> Union[Type[List], Type[Set], Type[Tuple], None]:

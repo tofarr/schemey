@@ -4,29 +4,30 @@ from marshy import ExternalType
 from marshy.factory.impl_marshaller_factory import ImplMarshallerFactory
 
 from schemey.any_of_schema import AnyOfSchema
-from schemey.factory.schema_factory_abc import SchemaFactoryABC
+from schemey.factory.json_schema_factory_abc import JsonSchemaFactoryABC
 from schemey.json_schema_abc import NoDefault, JsonSchemaABC
+from schemey.json_schema_context import JsonSchemaContext
 from schemey.schemey_context import SchemeyContext
 
 
-class ImplSchemaFactory(SchemaFactoryABC):
+class ImplJsonSchemaFactory(JsonSchemaFactoryABC):
 
     def create(self,
                type_: Type,
-               context: SchemeyContext,
-               default_value: Union[ExternalType, Type[NoDefault]] = NoDefault
+               json_context: JsonSchemaContext,
+               default: Union[ExternalType, Type[NoDefault]] = NoDefault
                ) -> Optional[JsonSchemaABC]:
-        impls = self.get_impls(type_, context)
+        impls = self.get_impls(type_, json_context)
         if impls:
-            schemas = tuple(context.get_schema(i).json_schema for i in impls)
+            schemas = tuple(json_context.create_schema(i) for i in impls)
             return AnyOfSchema(
                 schemas=schemas,
-                default_value=default_value,
+                default=default,
                 name=type_.__name__
             )
 
-    def get_impls(self, type_: Type, context: SchemeyContext) -> Optional[Set[Type]]:
-        factories = context.marshaller_context.get_factories()
+    def get_impls(self, type_: Type, json_context: JsonSchemaContext) -> Optional[Set[Type]]:
+        factories = json_context.marshaller_context.get_factories()
         for factory in factories:
             if isinstance(factory, ImplMarshallerFactory):
                 if factory.base == type_:

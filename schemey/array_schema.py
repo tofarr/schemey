@@ -3,7 +3,9 @@ from typing import Optional, List, Iterator, Union, Type
 
 from marshy.types import ExternalItemType, ExternalType
 
+from schemey._util import filter_none
 from schemey.json_schema_abc import JsonSchemaABC, NoDefault
+from schemey.json_schema_context import JsonSchemaContext
 from schemey.schema_error import SchemaError
 
 
@@ -13,7 +15,7 @@ class ArraySchema(JsonSchemaABC):
     min_items: int = 0
     max_items: Optional[int] = None
     uniqueness: bool = False
-    default_value: Union[ExternalType, Type[NoDefault]] = NoDefault
+    default: Union[ExternalType, Type[NoDefault]] = NoDefault
 
     def get_schema_errors(self,
                           item: List[ExternalItemType],
@@ -42,3 +44,23 @@ class ArraySchema(JsonSchemaABC):
                     current_path.pop()
                     return
                 existing.add(i)
+
+    def dump_json_schema(self, json_context: JsonSchemaContext) -> ExternalItemType:
+        items = self.item_schema.dump_json_schema(json_context) if self.item_schema else None
+        dumped = filter_none(dict(
+            type='array',
+            items=items,
+            maxItems=self.max_items,
+        ))
+        if self.min_items:
+            dumped['minItems'] = self.min_items
+        if self.default is not NoDefault:
+            dumped['default'] = self.default
+        if self.uniqueness:
+            dumped['uniqueness'] = True
+        return dumped
+
+    def simplify(self) -> JsonSchemaABC:
+        item_schema = self.item_schema.simplify()
+        schema = ArraySchema(**{**self.__dict__, 'item_schema': item_schema})
+        return schema
