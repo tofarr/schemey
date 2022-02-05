@@ -17,7 +17,7 @@ _DeferredSchema = 'schemey.deferred_schema.DeferredSchema'
 class JsonSchemaContext:
     defs: Dict[str, _DeferredSchema] = field(default_factory=dict)
     defs_path: str = '#$defs'
-    schemas: Optional[Dict[Type, SchemaABC]] = None
+    schemas: Optional[Dict[Type, SchemaABC]] = field(default_factory=dict)
     loaders: Optional[List[SchemaLoaderABC]] = None
     factories: Optional[List[SchemaFactoryABC]] = None
     marshaller_context: MarshallerContext = field(default_factory=get_default_context)

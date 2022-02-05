@@ -75,12 +75,21 @@ CUSTOM_MARSHALLER_CONTEXT.register_factory(SchemaMarshallerFactory(schemey_conte
 
 class TestCustomSchema(TestCase):
 
+    def test_marshall_coordinate(self):
+        coord = Coordinate(1, 2)
+        dumped = CUSTOM_MARSHALLER_CONTEXT.dump(coord)
+        expected_dump = [1, 2]
+        self.assertEqual(expected_dump, dumped)
+        loaded = CUSTOM_MARSHALLER_CONTEXT.load(Coordinate, dumped)
+        self.assertEqual(coord, loaded)
+
     def test_schema_for_coordinate(self):
         schema = CUSTOM_CONTEXT.get_obj_schema(Coordinate)
         self.assertEqual([1, 2], CUSTOM_CONTEXT.marshaller_context.dump(Coordinate(1, 2)))
         self.assertEqual([SchemaError('', 'type', 'foo')], list(schema.get_schema_errors('foo')))
         self.assertEqual([], list(schema.get_schema_errors(Coordinate(1, 2))))
         self.assertEqual([], list(schema.json_schema.get_schema_errors([1, 2])))
+        self.assertEqual([SchemaError('', 'invalid_point', 'foo')], list(schema.json_schema.get_schema_errors('foo')))
 
     def test_is_isolated_from_default(self):
         schema = schema_for_type(Coordinate)

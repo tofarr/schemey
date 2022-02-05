@@ -8,10 +8,12 @@ from schemey.factory.dataclass_schema_factory import DataclassSchemaFactory
 from schemey.factory.enum_schema_factory import EnumSchemaFactory
 from schemey.factory.factory_schema_factory import FactorySchemaFactory
 from schemey.factory.impl_schema_factory import ImplSchemaFactory
+from schemey.factory.tuple_schema_factory import TupleSchemaFactory
 from schemey.integer_schema import IntegerSchema
 from schemey.loader.any_of_schema_loader import AnyOfSchemaLoader
 from schemey.loader.array_schema_loader import ArraySchemaLoader
 from schemey.loader.boolean_schema_loader import BooleanSchemaLoader
+from schemey.loader.const_schema_loader import ConstSchemaLoader
 from schemey.loader.enum_schema_loader import EnumSchemaLoader
 from schemey.loader.integer_schema_loader import IntegerSchemaLoader
 from schemey.loader.null_schema_loader import NullSchemaLoader
@@ -19,6 +21,7 @@ from schemey.loader.number_schema_loader import NumberSchemaLoader
 from schemey.loader.object_schema_loader import ObjectSchemaLoader
 from schemey.loader.ref_schema_loader import RefSchemaLoader
 from schemey.loader.string_schema_loader import StringSchemaLoader
+from schemey.loader.tuple_schema_loader import TupleSchemaLoader
 from schemey.null_schema import NullSchema
 from schemey.number_schema import NumberSchema
 from schemey.schemey_context import SchemeyContext
@@ -43,6 +46,7 @@ def configure_factories(context: SchemeyContext):
     context.register_schema(UUID, StringSchema(format=StringFormat.UUID))
     context.register_factory(EnumSchemaFactory())
     context.register_factory(ArraySchemaFactory())
+    context.register_factory(TupleSchemaFactory())
     context.register_factory(DataclassSchemaFactory())
     context.register_factory(EnumSchemaFactory())
     context.register_factory(FactorySchemaFactory())
@@ -54,6 +58,7 @@ def configure_loaders(context: SchemeyContext):
     context.register_loader(AnyOfSchemaLoader())
     context.register_loader(ArraySchemaLoader())
     context.register_loader(BooleanSchemaLoader())
+    context.register_loader(ConstSchemaLoader())
     context.register_loader(EnumSchemaLoader())
     context.register_loader(IntegerSchemaLoader())
     context.register_loader(NullSchemaLoader())
@@ -61,3 +66,4 @@ def configure_loaders(context: SchemeyContext):
     context.register_loader(ObjectSchemaLoader())
     context.register_loader(RefSchemaLoader())
     context.register_loader(StringSchemaLoader())
+    context.register_loader(TupleSchemaLoader())

@@ -39,7 +39,7 @@ class Coordinate3D:
 class Coordinate3DMarshaller(MarshallerABC[Coordinate3D]):
 
     def load(self, item: ExternalType) -> Coordinate3D:
-        return Coordinate3D(item[0], item[1], item[3])
+        return Coordinate3D(item[0], item[1], item[2])
 
     def dump(self, item: Coordinate3D) -> ExternalType:
         return [item.x, item.y, item.z]
@@ -76,12 +76,21 @@ get_default_schemey_context().register_loader(Coordinate3DSchemaLoader())
 
 class TestFactory(TestCase):
 
+    def test_marshall_coordinate(self):
+        coord = Coordinate3D(1, 2, 3)
+        dumped = marshy.dump(coord)
+        expected_dump = [1, 2, 3]
+        self.assertEqual(expected_dump, dumped)
+        loaded = marshy.load(Coordinate3D, dumped)
+        self.assertEqual(coord, loaded)
+
     def test_schema_for_coordinate(self):
         schema = schema_for_type(Coordinate3D)
         self.assertEqual([1, 2, 3], marshy.dump(Coordinate3D(1, 2, 3)))
         self.assertEqual([SchemaError('', 'type', 'foo')], list(schema.get_schema_errors('foo')))
         self.assertEqual([], list(schema.get_schema_errors(Coordinate3D(1, 2, 3))))
         self.assertEqual([], list(schema.json_schema.get_schema_errors([1, 2, 3])))
+        self.assertEqual([SchemaError('', 'invalid_point', 'foo')], list(schema.json_schema.get_schema_errors('foo')))
 
     def test_dump_and_load_schema(self):
         schema = schema_for_type(Coordinate3D).json_schema
