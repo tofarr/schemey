@@ -1,18 +1,16 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator, Iterable, Union, Sized, Type
+from typing import Optional, List, Iterator, Iterable, Union, Sized
 
 from marshy.types import ExternalType, ExternalItemType
 
-from schemey.json_schema_abc import JsonSchemaABC, NoDefault
+from schemey.schema_abc import SchemaABC
 from schemey.json_schema_context import JsonSchemaContext
-from schemey.null_schema import NullSchema
 from schemey.schema_error import SchemaError
 
 
 @dataclass(frozen=True)
-class AnyOfSchema(JsonSchemaABC):
-    schemas: Union[Iterable[JsonSchemaABC], Sized]
-    default: Union[ExternalType, Type[NoDefault]] = NoDefault
+class AnyOfSchema(SchemaABC):
+    schemas: Union[Iterable[SchemaABC], Sized]
     name: str = None
 
     def __post_init__(self):
@@ -38,30 +36,9 @@ class AnyOfSchema(JsonSchemaABC):
         dumped = dict(anyOf=any_of)
         if self.name:
             dumped['name'] = self.name
-        if self.default is not NoDefault:
-            dumped['default'] = self.default
         return dumped
 
-    def simplify(self) -> JsonSchemaABC:
+    def simplify(self) -> SchemaABC:
         any_of = [s.simplify() for s in self.schemas]
         schema = AnyOfSchema(**{**self.__dict__, 'schemas': any_of})
         return schema
-
-
-def optional_schema(schema: JsonSchemaABC,
-                    default_value: Union[ExternalType, Type[NoDefault]] = NoDefault
-                    ) -> JsonSchemaABC:
-    return AnyOfSchema((NullSchema(), schema), default_value)
-
-
-def strip_optional(schema: JsonSchemaABC) -> JsonSchemaABC:
-    if not isinstance(schema, AnyOfSchema):
-        return schema
-    schemas = list(schema.schemas)
-    if len(schemas) != 2:
-        return schema
-    if isinstance(schemas[0], NullSchema):
-        return schemas[1]
-    if isinstance(schemas[1], NullSchema):
-        return schemas[0]
-    return schema

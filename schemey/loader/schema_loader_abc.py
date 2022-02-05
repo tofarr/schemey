@@ -1,17 +1,19 @@
 from abc import abstractmethod, ABC
+from functools import total_ordering
 from typing import Optional
 
 from marshy.types import ExternalItemType
 
-from schemey.json_schema_abc import JsonSchemaABC
+from schemey.schema_abc import SchemaABC
 
 _JsonSchemaContext = 'schemey.json_schema_context.JsonSchemaContext'
 
 
-class JsonSchemaLoaderABC(ABC):
+@total_ordering
+class SchemaLoaderABC(ABC):
 
     @abstractmethod
-    def load(self, item: ExternalItemType, json_context: _JsonSchemaContext) -> Optional[JsonSchemaABC]:
+    def load(self, item: ExternalItemType, json_context: _JsonSchemaContext) -> Optional[SchemaABC]:
         """ Load a schema - return None if not possible using this jsonifier """
 
     @property

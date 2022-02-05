@@ -1,65 +1,58 @@
 import importlib
 import pkgutil
 from dataclasses import dataclass, field
-from typing import List, Dict, Type, Union, TypeVar
+from typing import List, Dict, Type, TypeVar, Optional
 
 from marshy import get_default_context
 from marshy.marshaller_context import MarshallerContext
-from marshy.types import ExternalType
 from marshy.utils import resolve_forward_refs
 
-from schemey._util import secure_hash
-
 from schemey.json_schema_context import JsonSchemaContext
-from schemey.loader.json_schema_loader_abc import JsonSchemaLoaderABC
-from schemey.factory.json_schema_factory_abc import JsonSchemaFactoryABC
-from schemey.json_schema_abc import JsonSchemaABC, NoDefault
-from schemey.schema import Schema
+from schemey.loader.schema_loader_abc import SchemaLoaderABC
+from schemey.factory.schema_factory_abc import SchemaFactoryABC
+from schemey.schema_abc import SchemaABC
+from schemey.obj_schema import ObjSchema
 
 T = TypeVar('T')
 
 
 @dataclass
 class SchemeyContext:
-    schema_loaders: List[JsonSchemaLoaderABC] = field(default_factory=list)
-    schema_factories: List[JsonSchemaFactoryABC] = field(default_factory=list)
-    schema_cache: Dict[str, Schema] = field(default_factory=dict)
+    schema_loaders: List[SchemaLoaderABC] = field(default_factory=list)
+    schema_factories: List[SchemaFactoryABC] = field(default_factory=list)
+    schemas: Dict[Type, ObjSchema] = field(default_factory=dict)
     marshaller_context: MarshallerContext = field(default_factory=get_default_context)
 
     def __post_init__(self):
         self.schema_factories.sort()
 
-    def get_json_schema(self, item_type: Type[T], default: Union[T, NoDefault] = NoDefault) -> JsonSchemaABC:
-        return self.get_schema(item_type, default).json_schema
-
-    def get_schema(self, item_type: Type[T], default: Union[T, NoDefault] = NoDefault) -> Schema:
-        if default is not NoDefault:
-            default = self.marshaller_context.dump(default, item_type)
-        key = self.key_for_schema(item_type, default)
-        schema = self.schema_cache.get(key)
-        if schema:
-            return schema
-        item_type = resolve_forward_refs(item_type)
-        json_schema_context = JsonSchemaContext(factories=self.schema_factories)
-        schema = json_schema_context.create_schema(item_type, default)
-        schema = schema.simplify()
-        schema = Schema(schema, self.marshaller_context.get_marshaller(item_type))
-        self.schema_cache[key] = schema
+    def get_obj_schema(self, item_type: Type[T]) -> ObjSchema:
+        schema = self.get_schema(item_type)
+        schema = ObjSchema(schema, self.marshaller_context.get_marshaller(item_type))
         return schema
 
-    def register_factory(self, schema_factory: JsonSchemaFactoryABC):
+    def get_schema(self, item_type: Type[T]) -> SchemaABC:
+        item_type = resolve_forward_refs(item_type)
+        schema = self.schemas.get(item_type)
+        if schema:
+            return schema
+        json_schema_context = JsonSchemaContext(schemas={**self.schemas}, factories=self.schema_factories)
+        schema = json_schema_context.get_schema(item_type)
+        schema = schema.simplify()
+        self.schemas[item_type] = schema
+        return schema
+
+    def register_schema(self, item_type: Type, schema: SchemaABC):
+        item_type = resolve_forward_refs(item_type)
+        self.schemas[item_type] = schema
+
+    def register_factory(self, schema_factory: SchemaFactoryABC):
         self.schema_factories.append(schema_factory)
-        self.schema_factories.sort()
+        self.schema_factories.sort(reverse=True)
 
-    def register_loader(self, jsonifier: JsonSchemaLoaderABC):
+    def register_loader(self, jsonifier: SchemaLoaderABC):
         self.schema_loaders.append(jsonifier)
-        self.schema_loaders.sort()
-
-    def key_for_schema(self, item_type, default_value: Union[ExternalType, NoDefault]):
-        key = str(item_type)
-        if default_value is not NoDefault:
-            key = f"{key}:{secure_hash(default_value)}"
-        return key
+        self.schema_loaders.sort(reverse=True)
 
 
 _default_context = None
@@ -73,8 +66,10 @@ def get_default_schemey_context() -> SchemeyContext:
     return _default_context
 
 
-def new_default_schemey_context() -> SchemeyContext:
-    context = SchemeyContext()
+def new_default_schemey_context(marshaller_context: Optional[MarshallerContext] = None) -> SchemeyContext:
+    if marshaller_context is None:
+        marshaller_context = get_default_context()
+    context = SchemeyContext(marshaller_context=marshaller_context)
     # Set up context based on naming convention
     module_info = (m for m in pkgutil.iter_modules() if m.name.startswith(CONFIG_MODULE_PREFIX))
     modules = [importlib.import_module(m.name) for m in module_info]
@@ -82,3 +77,10 @@ def new_default_schemey_context() -> SchemeyContext:
     for m in modules:
         getattr(m, 'configure')(context)
     return context
+
+
+def schema_for_type(type_: Type[T], context: Optional[SchemeyContext] = None) -> ObjSchema:
+    if context is None:
+        context = get_default_schemey_context()
+    schema = context.get_obj_schema(type_)
+    return schema

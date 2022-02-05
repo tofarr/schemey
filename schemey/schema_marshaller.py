@@ -6,18 +6,18 @@ from marshy.marshaller.marshaller_abc import MarshallerABC
 from marshy.types import ExternalItemType
 
 from schemey.deferred_schema import DeferredSchema
-from schemey.json_schema_abc import JsonSchemaABC
+from schemey.schema_abc import SchemaABC
 from schemey.json_schema_context import JsonSchemaContext
 from schemey.schemey_context import SchemeyContext, get_default_schemey_context
 
 
 @dataclass(frozen=True)
-class JsonSchemaMarshaller(MarshallerABC[JsonSchemaABC]):
-    marshalled_type: Type[JsonSchemaABC] = JsonSchemaABC
+class SchemaMarshaller(MarshallerABC[SchemaABC]):
+    marshalled_type: Type[SchemaABC] = SchemaABC
     schemey_context: SchemeyContext = field(default_factory=get_default_schemey_context)
     defs_key: str = '$defs'
 
-    def load(self, item: ExternalItemType) -> JsonSchemaABC:
+    def load(self, item: ExternalItemType) -> SchemaABC:
         raw_defs = item.get(self.defs_key) or {}
         defs = {k: DeferredSchema(k) for k in raw_defs}
         json_schema_context = JsonSchemaContext(defs=defs, loaders=self.schemey_context.schema_loaders,
@@ -29,7 +29,7 @@ class JsonSchemaMarshaller(MarshallerABC[JsonSchemaABC]):
         schema = schema.simplify()
         return schema
 
-    def dump(self, item: JsonSchemaABC) -> ExternalType:
+    def dump(self, item: SchemaABC) -> ExternalType:
         json_context = JsonSchemaContext()
         dumped = item.dump_json_schema(json_context)
         if json_context.defs:

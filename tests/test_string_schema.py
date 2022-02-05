@@ -5,8 +5,7 @@ from uuid import uuid4, UUID
 from marshy import dump, load
 from marshy.types import ExternalItemType
 
-from schemey.json_schema_abc import NoDefault, JsonSchemaABC
-from schemey.schema import Schema
+from schemey.schema_abc import SchemaABC
 from schemey.schema_error import SchemaError
 from schemey.schemey_context import get_default_schemey_context
 from schemey.string_format import StringFormat
@@ -15,20 +14,11 @@ from schemey.string_schema import StringSchema
 
 class TestIntegerSchema(TestCase):
 
-    def test_factory_no_default(self):
+    def test_factory(self):
         context = get_default_schemey_context()
         schema = context.get_schema(str)
-        expected = Schema(
-            StringSchema(default=NoDefault),
-            context.marshaller_context.get_marshaller(str)
-        )
+        expected = StringSchema()
         self.assertEqual(expected, schema)
-
-    def test_factory_with_default(self):
-        context = get_default_schemey_context()
-        schema = context.get_schema(str, 'foobar')
-        expected = StringSchema(default='foobar')
-        self.assertEqual(expected, schema.json_schema)
 
     def test_schema_max_length(self):
         schema = StringSchema(max_length=3)
@@ -71,14 +61,7 @@ class TestIntegerSchema(TestCase):
     def test_datetime(self):
         context = get_default_schemey_context()
         schema = context.get_schema(datetime)
-        self._check_dump_and_load(schema.json_schema, dict(type='string', format='date-time'))
-
-    def test_datetime_with_default(self):
-        context = get_default_schemey_context()
-        now = datetime.now()
-        schema = context.get_schema(datetime, now)
-        now_str = context.marshaller_context.get_marshaller(datetime).dump(now)
-        self._check_dump_and_load(schema.json_schema, dict(type='string', format='date-time', default=now_str))
+        self._check_dump_and_load(schema, dict(type='string', format='date-time'))
 
     def test_format_time(self):
         schema = StringSchema(format=StringFormat.TIME)
@@ -120,13 +103,7 @@ class TestIntegerSchema(TestCase):
     def test_uuid(self):
         context = get_default_schemey_context()
         schema = context.get_schema(UUID)
-        self._check_dump_and_load(schema.json_schema, dict(type='string', format='uuid'))
-
-    def test_uuid_with_default(self):
-        context = get_default_schemey_context()
-        uuid = uuid4()
-        schema = context.get_schema(UUID, uuid)
-        self._check_dump_and_load(schema.json_schema, dict(type='string', format='uuid', default=str(uuid)))
+        self._check_dump_and_load(schema, dict(type='string', format='uuid'))
 
     def test_format_uri(self):
         schema = StringSchema(format=StringFormat.URI)
@@ -134,12 +111,12 @@ class TestIntegerSchema(TestCase):
         assert list(schema.get_schema_errors("foobar")) == [SchemaError('', 'format:uri', 'foobar')]
         self._check_dump_and_load(schema, dict(type='string', format='uri'))
 
-    def test_default(self):
-        schema = StringSchema(default='foobar')
-        self._check_dump_and_load(schema, dict(type='string', default='foobar'))
+    def test_schema_wrong_type(self):
+        schema = StringSchema()
+        self.assertEqual([SchemaError('', 'type', 10)], list(schema.get_schema_errors(10)))
 
     def _check_dump_and_load(self, schema: StringSchema, expected: ExternalItemType):
         dumped = dump(schema)
         self.assertEqual(expected, dumped)
-        loaded = load(JsonSchemaABC, dumped)
+        loaded = load(SchemaABC, dumped)
         self.assertEqual(loaded, schema)

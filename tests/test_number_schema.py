@@ -2,29 +2,19 @@ from unittest import TestCase
 
 from marshy import dump, load
 
-from schemey.json_schema_abc import NoDefault, JsonSchemaABC
+from schemey.schema_abc import SchemaABC
 from schemey.number_schema import NumberSchema
-from schemey.schema import Schema
 from schemey.schema_error import SchemaError
 from schemey.schemey_context import get_default_schemey_context
 
 
 class TestNumberSchema(TestCase):
 
-    def test_factory_no_default(self):
+    def test_factory(self):
         context = get_default_schemey_context()
         schema = context.get_schema(float)
-        expected = Schema(
-            NumberSchema(default=NoDefault),
-            context.marshaller_context.get_marshaller(float)
-        )
+        expected = NumberSchema()
         self.assertEqual(expected, schema)
-
-    def test_factory_with_default(self):
-        context = get_default_schemey_context()
-        schema = context.get_schema(float, 10.5)
-        expected = NumberSchema(default=10.5)
-        self.assertEqual(expected, schema.json_schema)
 
     def test_get_schema_errors(self):
         context = get_default_schemey_context()
@@ -72,28 +62,28 @@ class TestNumberSchema(TestCase):
     def test_dump_and_load(self):
         schema = NumberSchema()
         dumped = dump(schema)
-        loaded = load(JsonSchemaABC, dumped)
+        loaded = load(SchemaABC, dumped)
         self.assertEqual(schema, loaded)
 
     def test_dump_and_load_with_range(self):
-        schema = NumberSchema(default=7, minimum=5, maximum=9)
+        schema = NumberSchema(minimum=5, maximum=9)
         dumped = dump(schema)
-        expected_dump = dict(type='number', default=7, minimum=5, maximum=9)
+        expected_dump = dict(type='number', minimum=5, maximum=9)
         self.assertEqual(expected_dump, dumped)
-        loaded = load(JsonSchemaABC, dumped)
+        loaded = load(SchemaABC, dumped)
         self.assertEqual(schema, loaded)
 
     def test_dump_and_load_with_exclusive_range(self):
-        schema = NumberSchema(default=7, exclusive_minimum=4,exclusive_maximum=10)
+        schema = NumberSchema(exclusive_minimum=4,exclusive_maximum=10)
         dumped = dump(schema)
-        expected_dump = dict(type='number', default=7, exclusiveMinimum=4, exclusiveMaximum=10)
+        expected_dump = dict(type='number', exclusiveMinimum=4, exclusiveMaximum=10)
         self.assertEqual(expected_dump, dumped)
-        loaded = load(JsonSchemaABC, dumped)
+        loaded = load(SchemaABC, dumped)
         self.assertEqual(schema, loaded)
 
     def test_load_fail(self):
         with self.assertRaises(ValueError):
-            load(JsonSchemaABC, {})
+            load(SchemaABC, {})
 
     def test_simplify(self):
         self.assertEqual(dict(type='number', exclusiveMinimum=5),

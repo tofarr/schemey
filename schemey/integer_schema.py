@@ -1,21 +1,20 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator, Union, Type
+from typing import Optional, List, Iterator, Union
 
 from marshy.types import ExternalItemType
 
 from schemey._util import filter_none
-from schemey.json_schema_abc import NoDefault, JsonSchemaABC
+from schemey.schema_abc import SchemaABC
 from schemey.json_schema_context import JsonSchemaContext
 from schemey.schema_error import SchemaError
 
 
 @dataclass(frozen=True)
-class IntegerSchema(JsonSchemaABC):
+class IntegerSchema(SchemaABC):
     minimum: Optional[int] = None
     exclusive_minimum: Optional[int] = None
     maximum: Optional[int] = None
     exclusive_maximum: Optional[int] = None
-    default: Union[int, Type[NoDefault]] = NoDefault
 
     def get_schema_errors(self, item: int, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         if not isinstance(item, int):
@@ -26,7 +25,7 @@ class IntegerSchema(JsonSchemaABC):
     def dump_json_schema(self, json_context: JsonSchemaContext) -> ExternalItemType:
         return dump_json_schema(self, 'integer')
 
-    def simplify(self) -> JsonSchemaABC:
+    def simplify(self) -> SchemaABC:
         kwargs = simplify_kwargs(self)
         return IntegerSchema(**kwargs)
 
@@ -48,8 +47,6 @@ def dump_json_schema(item, type_name: str) -> Optional[ExternalItemType]:
         maximum=item.maximum,
         exclusiveMaximum=item.exclusive_maximum,
     ))
-    if item.default is not NoDefault:
-        dumped['default'] = item.default
     return dumped
 
 

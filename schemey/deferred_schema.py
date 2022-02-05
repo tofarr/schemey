@@ -4,15 +4,15 @@ from typing import Optional, List, Iterator
 from marshy import ExternalType
 from marshy.types import ExternalItemType
 
-from schemey.json_schema_abc import JsonSchemaABC
+from schemey.schema_abc import SchemaABC
 from schemey.json_schema_context import JsonSchemaContext
 from schemey.schema_error import SchemaError
 
 
 @dataclass
-class DeferredSchema(JsonSchemaABC):
+class DeferredSchema(SchemaABC):
     ref: str
-    schema: Optional[JsonSchemaABC] = field(default=None, compare=False)
+    schema: Optional[SchemaABC] = field(default=None, compare=False)
     num_usages: int = 0
 
     def get_schema_errors(self, item: ExternalType, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
@@ -23,7 +23,7 @@ class DeferredSchema(JsonSchemaABC):
         dumped = {'$ref': f"{json_context.defs_path}/{self.ref}"}
         return dumped
 
-    def simplify(self) -> JsonSchemaABC:
+    def simplify(self) -> SchemaABC:
         if self.num_usages >= 2:
             return self
         self.num_usages = 0

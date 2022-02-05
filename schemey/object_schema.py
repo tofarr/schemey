@@ -1,21 +1,20 @@
 from dataclasses import dataclass
-from typing import Union, Optional, List, Iterator, Dict
+from typing import Optional, List, Iterator, Dict, Set
 
 from marshy.types import ExternalItemType
 
 from schemey._util import filter_none
-from schemey.json_schema_abc import JsonSchemaABC, NoDefault
+from schemey.schema_abc import SchemaABC
 from schemey.json_schema_context import JsonSchemaContext
 from schemey.schema_error import SchemaError
 
 
 @dataclass(frozen=True)
-class ObjectSchema(JsonSchemaABC):
-    properties: Dict[str, JsonSchemaABC]
+class ObjectSchema(SchemaABC):
+    properties: Dict[str, SchemaABC]
     name: Optional[str] = None
-    default: Union[ExternalItemType, NoDefault] = NoDefault
     additional_properties: bool = False
-    required: Optional[List[str]] = None
+    required: Optional[Set[str]] = None
 
     def get_schema_errors(self, item: ExternalItemType, current_path: Optional[List[str]] = None
                           ) -> Iterator[SchemaError]:
@@ -23,10 +22,15 @@ class ObjectSchema(JsonSchemaABC):
             yield SchemaError(current_path, 'type', item)
             return
         keys = set(item.keys())
-        for key, property_schema in self.properties.items():
-            if key in keys:
+        if self.required:
+            missing = self.required - keys
+            if missing:
+                yield SchemaError(current_path, 'missing_properties', ", ".join(missing))
+        for key, value in item.items():
+            property_schema = self.properties.get(key)
+            if property_schema:
                 keys.remove(key)
-            yield from property_schema.get_schema_errors(item, current_path)
+                yield from property_schema.get_schema_errors(value, current_path)
         if keys and not self.additional_properties:
             yield SchemaError(current_path, 'additional_properties', ', '.join(keys))
 
@@ -40,12 +44,12 @@ class ObjectSchema(JsonSchemaABC):
         if properties:
             dumped['properties'] = properties
         if self.required:
-            dumped['required'] = self.required
-        if self.default is not NoDefault:
-            dumped['default'] = self.default
+            required = list(self.required)
+            required.sort()
+            dumped['required'] = required
         return dumped
 
-    def simplify(self) -> JsonSchemaABC:
+    def simplify(self) -> SchemaABC:
         properties = {k: p.simplify() for k, p in self.properties.items()}
         schema = ObjectSchema(**{**self.__dict__, 'properties': properties})
         return schema

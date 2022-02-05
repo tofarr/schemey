@@ -1,21 +1,21 @@
+import copy
 from dataclasses import dataclass
-from typing import Optional, List, Iterator, Union, Type
+from typing import Optional, List, Iterator
 
-from marshy.types import ExternalItemType, ExternalType
+from marshy.types import ExternalItemType
 
 from schemey._util import filter_none
-from schemey.json_schema_abc import JsonSchemaABC, NoDefault
+from schemey.schema_abc import SchemaABC
 from schemey.json_schema_context import JsonSchemaContext
 from schemey.schema_error import SchemaError
 
 
 @dataclass(frozen=True)
-class ArraySchema(JsonSchemaABC):
-    item_schema: Optional[JsonSchemaABC] = None
+class ArraySchema(SchemaABC):
+    item_schema: Optional[SchemaABC] = None
     min_items: int = 0
     max_items: Optional[int] = None
     uniqueness: bool = False
-    default: Union[ExternalType, Type[NoDefault]] = NoDefault
 
     def get_schema_errors(self,
                           item: List[ExternalItemType],
@@ -54,13 +54,11 @@ class ArraySchema(JsonSchemaABC):
         ))
         if self.min_items:
             dumped['minItems'] = self.min_items
-        if self.default is not NoDefault:
-            dumped['default'] = self.default
         if self.uniqueness:
             dumped['uniqueness'] = True
         return dumped
 
-    def simplify(self) -> JsonSchemaABC:
+    def simplify(self) -> SchemaABC:
         item_schema = self.item_schema.simplify()
         schema = ArraySchema(**{**self.__dict__, 'item_schema': item_schema})
         return schema

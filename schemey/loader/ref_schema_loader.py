@@ -2,14 +2,14 @@ from typing import Optional
 
 from marshy.types import ExternalItemType
 
-from schemey.json_schema_abc import JsonSchemaABC
+from schemey.schema_abc import SchemaABC
 from schemey.json_schema_context import JsonSchemaContext
-from schemey.loader.json_schema_loader_abc import JsonSchemaLoaderABC
+from schemey.loader.schema_loader_abc import SchemaLoaderABC
 
 
-class RefSchemaLoader(JsonSchemaLoaderABC):
+class RefSchemaLoader(SchemaLoaderABC):
 
-    def load(self, item: ExternalItemType, json_context: JsonSchemaContext) -> Optional[JsonSchemaABC]:
+    def load(self, item: ExternalItemType, json_context: JsonSchemaContext) -> Optional[SchemaABC]:
         if '$ref' not in item:
             return None
         ref = item['$ref']

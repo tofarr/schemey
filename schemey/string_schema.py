@@ -1,26 +1,25 @@
 from dataclasses import dataclass
 from datetime import datetime, time
 import re
-from typing import Optional, List, Iterator, Union, Type
+from typing import Optional, List, Iterator
 
 import validators
 from marshy.types import ExternalItemType
 
 from schemey._util import filter_none
-from schemey.json_schema_abc import JsonSchemaABC, NoDefault
+from schemey.schema_abc import SchemaABC
 from schemey.json_schema_context import JsonSchemaContext
 from schemey.schema_error import SchemaError
 from schemey.string_format import StringFormat
 
 
 @dataclass(frozen=True)
-class StringSchema(JsonSchemaABC):
+class StringSchema(SchemaABC):
     min_length: Optional[int] = None
     max_length: Optional[int] = None
     pattern: Optional[str] = None
     format: Optional[StringFormat] = None
     _compiled_pattern = None
-    default: Union[str, Type[NoDefault]] = NoDefault
 
     def __post_init__(self):
         object.__setattr__(self, '_compiled_pattern', None if self.pattern is None else re.compile(self.pattern))
@@ -78,14 +77,4 @@ class StringSchema(JsonSchemaABC):
             pattern=self.pattern,
             format=self.format.value if self.format else None,
         ))
-        if self.default is not NoDefault:
-            dumped['default'] = self.default
         return dumped
-
-
-def date_string_schema(default: Union[str, Type[NoDefault]] = NoDefault):
-    return StringSchema(default=default, format=StringFormat.DATE_TIME)
-
-
-def uuid_string_schema(default: Union[str, Type[NoDefault]] = NoDefault):
-    return StringSchema(default=default, format=StringFormat.UUID)

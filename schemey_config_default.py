@@ -2,13 +2,12 @@ from datetime import datetime
 from uuid import UUID
 
 from schemey.boolean_schema import BooleanSchema
-from schemey.factory.any_of_schema_factory import AnyOfJsonSchemaFactory
-from schemey.factory.array_schema_factory import ArrayJsonSchemaFactory
-from schemey.factory.dataclass_schema_factory import DataclassJsonSchemaFactory
-from schemey.factory.enum_schema_factory import EnumJsonSchemaFactory
-from schemey.factory.factory_schema_factory import FactoryJsonSchemaFactory
-from schemey.factory.impl_schema_factory import ImplJsonSchemaFactory
-from schemey.factory.type_schema_factory import TypeJsonSchemaFactory
+from schemey.factory.any_of_schema_factory import AnyOfSchemaFactory
+from schemey.factory.array_schema_factory import ArraySchemaFactory
+from schemey.factory.dataclass_schema_factory import DataclassSchemaFactory
+from schemey.factory.enum_schema_factory import EnumSchemaFactory
+from schemey.factory.factory_schema_factory import FactorySchemaFactory
+from schemey.factory.impl_schema_factory import ImplSchemaFactory
 from schemey.integer_schema import IntegerSchema
 from schemey.loader.any_of_schema_loader import AnyOfSchemaLoader
 from schemey.loader.array_schema_loader import ArraySchemaLoader
@@ -23,7 +22,8 @@ from schemey.loader.string_schema_loader import StringSchemaLoader
 from schemey.null_schema import NullSchema
 from schemey.number_schema import NumberSchema
 from schemey.schemey_context import SchemeyContext
-from schemey.string_schema import StringSchema, date_string_schema, uuid_string_schema
+from schemey.string_format import StringFormat
+from schemey.string_schema import StringSchema
 
 priority = 100
 
@@ -34,20 +34,20 @@ def configure(context: SchemeyContext):
 
 
 def configure_factories(context: SchemeyContext):
-    context.register_factory(EnumJsonSchemaFactory())
-    context.register_factory(TypeJsonSchemaFactory(bool, BooleanSchema))
-    context.register_factory(TypeJsonSchemaFactory(int, IntegerSchema))
-    context.register_factory(TypeJsonSchemaFactory(type(None), NullSchema))
-    context.register_factory(TypeJsonSchemaFactory(float, NumberSchema))
-    context.register_factory(TypeJsonSchemaFactory(str, StringSchema))
-    context.register_factory(TypeJsonSchemaFactory(datetime, date_string_schema))
-    context.register_factory(TypeJsonSchemaFactory(UUID, uuid_string_schema))
-    context.register_factory(ArrayJsonSchemaFactory())
-    context.register_factory(DataclassJsonSchemaFactory())
-    context.register_factory(EnumJsonSchemaFactory())
-    context.register_factory(FactoryJsonSchemaFactory())
-    context.register_factory(ImplJsonSchemaFactory())
-    context.register_factory(AnyOfJsonSchemaFactory())
+    context.register_schema(bool, BooleanSchema())
+    context.register_schema(int, IntegerSchema())
+    context.register_schema(type(None), NullSchema())
+    context.register_schema(float, NumberSchema())
+    context.register_schema(str, StringSchema())
+    context.register_schema(datetime, StringSchema(format=StringFormat.DATE_TIME))
+    context.register_schema(UUID, StringSchema(format=StringFormat.UUID))
+    context.register_factory(EnumSchemaFactory())
+    context.register_factory(ArraySchemaFactory())
+    context.register_factory(DataclassSchemaFactory())
+    context.register_factory(EnumSchemaFactory())
+    context.register_factory(FactorySchemaFactory())
+    context.register_factory(ImplSchemaFactory())
+    context.register_factory(AnyOfSchemaFactory())
 
 
 def configure_loaders(context: SchemeyContext):

@@ -1,0 +1,22 @@
+from dataclasses import dataclass
+from typing import Optional, List, Iterator, Tuple
+
+from marshy import ExternalType
+from marshy.types import ExternalItemType
+
+from schemey.schema_abc import SchemaABC, _JsonSchemaContext
+from schemey.schema_error import SchemaError
+
+
+@dataclass
+class ConstSchema(SchemaABC):
+    """ Schema representing a single constant value """
+    const: ExternalType
+
+    def get_schema_errors(self, item: ExternalType, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
+        if item != self.const:
+            yield SchemaError(current_path, 'invalid_value', item)
+
+    def dump_json_schema(self, json_context: _JsonSchemaContext) -> ExternalItemType:
+        schema = dict(const=self.const)
+        return schema

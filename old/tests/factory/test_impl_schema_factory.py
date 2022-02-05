@@ -56,10 +56,10 @@ class TestImplSchemaFactory(TestCase):
 
     @staticmethod
     def _check_pet_schema(context: SchemaContext):
-        schema = context.create_schema(Pet)
+        schema = context.get_schema(Pet)
         schemas = [
-            context.create_schema(Cat),
-            context.create_schema(Dog),
+            context.get_schema(Cat),
+            context.get_schema(Dog),
         ]
         expected_schemas = list(sorted(schemas, key=lambda s: s.name))
         assert schemas == expected_schemas
