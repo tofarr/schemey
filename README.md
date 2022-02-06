@@ -23,11 +23,11 @@ that made using them untenable.
 
 ## Examples
 
-### The [Hello World](tests/examples/a_hello_world.py) 
+### [Hello World](tests/examples/a_hello_world.py) 
 
 This demonstrates generating a standard schema for a dataclass.
 
-### The [JSON Conversion](tests/examples/b_json_conversion.py) 
+### [JSON Conversion](tests/examples/b_json_conversion.py) 
 
 This demonstrates dumping a json schema for a dataclass
 
@@ -37,11 +37,11 @@ the document and the evolving nature of the spec). The intended
 workflow is to start with a Python dataclass and then convert to
 a json schema rather than the other way around.
 
-### The [JSON Conversion](tests/examples/c_self_references.py)
+### [JSON Conversion](tests/examples/c_self_references.py)
 
 Self referencing data structures are supported out of the box.
 
-### The [Adding Custom Schemas for Dataclass Fields](tests/examples/d_custom_field_schema.py)
+### [Adding Custom Schemas for Dataclass Fields](tests/examples/d_custom_field_schema.py)
 
 Add a schema to the `schemey` attribute of a metadata field for a dataclass to specify a custom schema
 
