@@ -8,13 +8,13 @@ from marshy.types import ExternalItemType
 from schemey.deferred_schema import DeferredSchema
 from schemey.schema_abc import SchemaABC
 from schemey.json_schema_context import JsonSchemaContext
-from schemey.schemey_context import SchemeyContext, get_default_schemey_context
+from schemey.schema_context import SchemaContext, get_default_schema_context
 
 
 @dataclass(frozen=True)
 class SchemaMarshaller(MarshallerABC[SchemaABC]):
     marshalled_type: Type[SchemaABC] = SchemaABC
-    schemey_context: SchemeyContext = field(default_factory=get_default_schemey_context)
+    schemey_context: SchemaContext = field(default_factory=get_default_schema_context)
     defs_key: str = '$defs'
 
     def load(self, item: ExternalItemType) -> SchemaABC:

@@ -14,7 +14,7 @@ from schemey.schema_abc import SchemaABC
 from schemey.object_schema import ObjectSchema
 from schemey.optional_schema import OptionalSchema
 from schemey.schema_error import SchemaError
-from schemey.schemey_context import get_default_schemey_context, schema_for_type
+from schemey.schema_context import get_default_schema_context, schema_for_type
 from schemey.string_format import StringFormat
 from schemey.string_schema import StringSchema
 
@@ -62,7 +62,7 @@ class ImmutableWidget:
 class TestDataclassSchema(TestCase):
 
     def test_generate_schema_for_tag(self):
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
         schema = context.get_schema(Tag)
         expected = ObjectSchema(name='Tag', required={'id', 'title'}, properties=dict(
             id=IntegerSchema(),
@@ -91,7 +91,7 @@ class TestDataclassSchema(TestCase):
         self.assertEqual(Tag, schema.item_type)
 
     def test_generate_schema_for_content(self):
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
         schema = context.get_schema(Content)
         expected = ObjectSchema(name='Content', required={'text'}, properties=dict(
             text=StringSchema(),
@@ -130,7 +130,7 @@ class TestDataclassSchema(TestCase):
         })
 
     def test_generate_schema_for_node(self):
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
         schema = context.get_schema(Node)
         expected = DeferredSchema(ref='Node', num_usages=2)
         expected.schema = ObjectSchema(name='Node', required={'title'}, properties=dict(
@@ -171,7 +171,7 @@ class TestDataclassSchema(TestCase):
                          list(json_schema.get_schema_errors(dict())))
 
     def test_generate_schema_for_immutable_label(self):
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
         schema = context.get_schema(ImmutableLabel)
         expected = ObjectSchema(
             properties={
@@ -199,7 +199,7 @@ class TestDataclassSchema(TestCase):
         })
 
     def test_generate_schema_for_immutable_widget(self):
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
         schema = context.get_schema(ImmutableWidget)
         label_schema = context.get_schema(ImmutableLabel)
         expected = ObjectSchema(
@@ -267,7 +267,7 @@ class TestDataclassSchema(TestCase):
         })
 
     def _check_load_and_dump(self, type_, expected_dump):
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
         schema = context.get_schema(type_)
         dumped = dump(schema)
         self.assertEqual(expected_dump, dumped)

@@ -6,7 +6,7 @@ from marshy import dump
 from schemey.factory.tuple_schema_factory import TupleSchemaFactory
 from schemey.json_schema_context import JsonSchemaContext
 from schemey.schema_abc import SchemaABC
-from schemey.schemey_context import schema_for_type
+from schemey.schema_context import schema_for_type
 
 
 class TestTupleSchema(TestCase):

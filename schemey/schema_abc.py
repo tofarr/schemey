@@ -21,7 +21,7 @@ class SchemaABC(ABC):
     def get_schema_errors(self, item: ExternalType, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         """ Get the validation errors for the item given. """
 
-    def validate(self, item: ExternalItemType, current_path: Optional[List[str]] = None):
+    def validate(self, item: ExternalType, current_path: Optional[List[str]] = None):
         """ Validate the item given """
         errors = self.get_schema_errors(item, current_path)
         error = next(errors, None)

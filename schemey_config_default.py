@@ -24,19 +24,19 @@ from schemey.loader.string_schema_loader import StringSchemaLoader
 from schemey.loader.tuple_schema_loader import TupleSchemaLoader
 from schemey.null_schema import NullSchema
 from schemey.number_schema import NumberSchema
-from schemey.schemey_context import SchemeyContext
+from schemey.schema_context import SchemaContext
 from schemey.string_format import StringFormat
 from schemey.string_schema import StringSchema
 
 priority = 100
 
 
-def configure(context: SchemeyContext):
+def configure(context: SchemaContext):
     configure_factories(context)
     configure_loaders(context)
 
 
-def configure_factories(context: SchemeyContext):
+def configure_factories(context: SchemaContext):
     context.register_schema(bool, BooleanSchema())
     context.register_schema(int, IntegerSchema())
     context.register_schema(type(None), NullSchema())
@@ -54,7 +54,7 @@ def configure_factories(context: SchemeyContext):
     context.register_factory(AnyOfSchemaFactory())
 
 
-def configure_loaders(context: SchemeyContext):
+def configure_loaders(context: SchemaContext):
     context.register_loader(AnyOfSchemaLoader())
     context.register_loader(ArraySchemaLoader())
     context.register_loader(BooleanSchemaLoader())

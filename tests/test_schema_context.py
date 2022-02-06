@@ -6,7 +6,7 @@ from schemey.boolean_schema import BooleanSchema
 from schemey.factory.impl_schema_factory import ImplSchemaFactory
 from schemey.loader.boolean_schema_loader import BooleanSchemaLoader
 from schemey.schema_error import SchemaError
-from schemey.schemey_context import schema_for_type
+from schemey.schema_context import schema_for_type
 
 
 class TestSchemaContext(TestCase):

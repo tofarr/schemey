@@ -5,7 +5,6 @@ Coordinate objects will be marshalled as [x,y] (rather than {x:...,y:...})
 These changes are isolated to the CUSTOM_CONTEXT - the default is unaffected
 Demonstrates flexibility of the system
 """
-import copy
 from dataclasses import dataclass
 from typing import Optional, List, Iterator
 from unittest import TestCase
@@ -17,10 +16,10 @@ from marshy.types import ExternalItemType
 
 from schemey.factory.schema_marshaller_factory import SchemaMarshallerFactory
 from schemey.json_schema_context import JsonSchemaContext
-from schemey.schema_abc import SchemaABC
 from schemey.loader.schema_loader_abc import SchemaLoaderABC
+from schemey.schema_abc import SchemaABC
+from schemey.schema_context import new_default_schema_context, schema_for_type
 from schemey.schema_error import SchemaError
-from schemey.schemey_context import new_default_schemey_context, schema_for_type
 
 
 @dataclass
@@ -67,7 +66,7 @@ class CoordinateSchemaLoader(SchemaLoaderABC):
 # The code below isolates the custom marshalling / schema from the defaults
 CUSTOM_MARSHALLER_CONTEXT = new_default_context()
 CUSTOM_MARSHALLER_CONTEXT.register_marshaller(CoordinateMarshaller(Coordinate))
-CUSTOM_CONTEXT = new_default_schemey_context(CUSTOM_MARSHALLER_CONTEXT)
+CUSTOM_CONTEXT = new_default_schema_context(CUSTOM_MARSHALLER_CONTEXT)
 CUSTOM_CONTEXT.register_schema(Coordinate, CoordinateSchema())
 CUSTOM_CONTEXT.register_loader(CoordinateSchemaLoader())
 CUSTOM_MARSHALLER_CONTEXT.register_factory(SchemaMarshallerFactory(schemey_context=CUSTOM_CONTEXT, priority=201))

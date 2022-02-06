@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from marshy.factory.impl_marshaller_factory import register_impl
 
-from schemey.schemey_context import schema_for_type
+from schemey.schema_context import schema_for_type
 
 
 class PetAbc(ABC):

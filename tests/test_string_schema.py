@@ -7,7 +7,7 @@ from marshy.types import ExternalItemType
 
 from schemey.schema_abc import SchemaABC
 from schemey.schema_error import SchemaError
-from schemey.schemey_context import get_default_schemey_context
+from schemey.schema_context import get_default_schema_context
 from schemey.string_format import StringFormat
 from schemey.string_schema import StringSchema
 
@@ -15,7 +15,7 @@ from schemey.string_schema import StringSchema
 class TestIntegerSchema(TestCase):
 
     def test_factory(self):
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
         schema = context.get_schema(str)
         expected = StringSchema()
         self.assertEqual(expected, schema)
@@ -59,7 +59,7 @@ class TestIntegerSchema(TestCase):
         self._check_dump_and_load(schema, dict(type='string', format='date-time'))
 
     def test_datetime(self):
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
         schema = context.get_schema(datetime)
         self._check_dump_and_load(schema, dict(type='string', format='date-time'))
 
@@ -101,7 +101,7 @@ class TestIntegerSchema(TestCase):
         self._check_dump_and_load(schema, dict(type='string', format='uuid'))
 
     def test_uuid(self):
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
         schema = context.get_schema(UUID)
         self._check_dump_and_load(schema, dict(type='string', format='uuid'))
 
@@ -113,9 +113,10 @@ class TestIntegerSchema(TestCase):
 
     def test_schema_wrong_type(self):
         schema = StringSchema()
+        # noinspection PyTypeChecker
         self.assertEqual([SchemaError('', 'type', 10)], list(schema.get_schema_errors(10)))
 
-    def _check_dump_and_load(self, schema: StringSchema, expected: ExternalItemType):
+    def _check_dump_and_load(self, schema: SchemaABC, expected: ExternalItemType):
         dumped = dump(schema)
         self.assertEqual(expected, dumped)
         loaded = load(SchemaABC, dumped)

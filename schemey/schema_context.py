@@ -17,10 +17,10 @@ T = TypeVar('T')
 
 
 @dataclass
-class SchemeyContext:
+class SchemaContext:
     schema_loaders: List[SchemaLoaderABC] = field(default_factory=list)
     schema_factories: List[SchemaFactoryABC] = field(default_factory=list)
-    schemas: Dict[Type, ObjSchema] = field(default_factory=dict)
+    schemas: Dict[Type, SchemaABC] = field(default_factory=dict)
     marshaller_context: MarshallerContext = field(default_factory=get_default_context)
 
     def __post_init__(self):
@@ -59,17 +59,17 @@ _default_context = None
 CONFIG_MODULE_PREFIX = 'schemey_config_'
 
 
-def get_default_schemey_context() -> SchemeyContext:
+def get_default_schema_context() -> SchemaContext:
     global _default_context
     if not _default_context:
-        _default_context = new_default_schemey_context()
+        _default_context = new_default_schema_context()
     return _default_context
 
 
-def new_default_schemey_context(marshaller_context: Optional[MarshallerContext] = None) -> SchemeyContext:
+def new_default_schema_context(marshaller_context: Optional[MarshallerContext] = None) -> SchemaContext:
     if marshaller_context is None:
         marshaller_context = get_default_context()
-    context = SchemeyContext(marshaller_context=marshaller_context)
+    context = SchemaContext(marshaller_context=marshaller_context)
     # Set up context based on naming convention
     module_info = (m for m in pkgutil.iter_modules() if m.name.startswith(CONFIG_MODULE_PREFIX))
     modules = [importlib.import_module(m.name) for m in module_info]
@@ -79,8 +79,8 @@ def new_default_schemey_context(marshaller_context: Optional[MarshallerContext] 
     return context
 
 
-def schema_for_type(type_: Type[T], context: Optional[SchemeyContext] = None) -> ObjSchema:
+def schema_for_type(type_: Type[T], context: Optional[SchemaContext] = None) -> ObjSchema:
     if context is None:
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
     schema = context.get_obj_schema(type_)
     return schema

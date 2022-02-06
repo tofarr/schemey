@@ -9,6 +9,7 @@ from schemey.schema_error import SchemaError
 from schemey.string_schema import StringSchema
 
 
+# noinspection PyTypeChecker
 class TestArraySchema(TestCase):
 
     def test_schema_string_array(self):

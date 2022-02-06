@@ -9,7 +9,7 @@ from schemey.const_schema import ConstSchema
 from schemey.integer_schema import IntegerSchema
 from schemey.schema_abc import SchemaABC
 from schemey.schema_error import SchemaError
-from schemey.schemey_context import get_default_schemey_context, schema_for_type
+from schemey.schema_context import get_default_schema_context, schema_for_type
 from schemey.string_schema import StringSchema
 from schemey.tuple_schema import TupleSchema
 
@@ -17,7 +17,7 @@ from schemey.tuple_schema import TupleSchema
 class TestAnyOfSchema(TestCase):
 
     def test_factory(self):
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
         schema = context.get_schema(Union[bool, str])
         expected = AnyOfSchema(schemas=(
             TupleSchema((ConstSchema('bool'), BooleanSchema())),
@@ -26,9 +26,8 @@ class TestAnyOfSchema(TestCase):
         self.assertEqual(expected, schema)
 
     def test_get_schema_errors(self):
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
         schema = context.get_schema(Union[bool, str])
-        # Boolean schema actaully accepts anything and converts it to truthy / falsy
         self.assertEqual([], list(schema.get_schema_errors(['bool', True])))
         self.assertEqual([], list(schema.get_schema_errors(['bool', False])))
         self.assertEqual([], list(schema.get_schema_errors(['str', 'True'])))

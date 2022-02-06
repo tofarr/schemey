@@ -21,14 +21,16 @@ class ImplSchemaFactory(SchemaFactoryABC):
             schemas = tuple(self.wrap_impl(i, json_context) for i in impls)
             return AnyOfSchema(schemas=schemas, name=type_.__name__)
 
-    def get_impls(self, type_: Type, json_context: JsonSchemaContext) -> Optional[Set[Type]]:
+    @staticmethod
+    def get_impls(type_: Type, json_context: JsonSchemaContext) -> Optional[Set[Type]]:
         factories = json_context.marshaller_context.get_factories()
         for factory in factories:
             if isinstance(factory, ImplMarshallerFactory):
                 if factory.base == type_:
                     return factory.impls
 
-    def wrap_impl(self, type_: Type, json_context: JsonSchemaContext):
+    @staticmethod
+    def wrap_impl(type_: Type, json_context: JsonSchemaContext):
         schema = json_context.get_schema(type_)
         schema = TupleSchema((ConstSchema(type_.__name__), schema))
         return schema

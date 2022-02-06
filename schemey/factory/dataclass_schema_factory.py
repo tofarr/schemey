@@ -23,6 +23,7 @@ class DataclassSchemaFactory(SchemaFactoryABC):
             return schema
         schema = DeferredSchema(ref=name, num_usages=1)
         json_context.defs[name] = schema
+        # noinspection PyDataclass
         fields = dataclasses.fields(type_)
         field_schemas = tuple(self._schema_for_field(f, json_context) for f in fields)
         required = {n for n, s in field_schemas if not isinstance(s, OptionalSchema)}
@@ -41,7 +42,10 @@ class DataclassSchemaFactory(SchemaFactoryABC):
             schema = json_context.get_schema(field_type)
         default = NoDefault
         if field.default is not dataclasses.MISSING:
-            default = json_context.marshaller_context.dump(field.default, field_type)
+            if field.default is None:
+                default = None
+            else:
+                default = json_context.marshaller_context.dump(field.default, field_type)
         if default is not NoDefault or field.default_factory is not dataclasses.MISSING:
             schema = OptionalSchema(schema, default)
         return field.name, schema

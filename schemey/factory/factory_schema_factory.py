@@ -1,10 +1,8 @@
-from typing import Optional, Type, Union
-
-from marshy import ExternalType
+from typing import Optional, Type
 
 from schemey.factory.schema_factory_abc import SchemaFactoryABC
-from schemey.schema_abc import SchemaABC
 from schemey.json_schema_context import JsonSchemaContext
+from schemey.schema_abc import SchemaABC
 
 SCHEMA_FACTORY = '__schema_factory__'
 

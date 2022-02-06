@@ -5,13 +5,13 @@ from marshy import dump, load
 from schemey.schema_abc import SchemaABC
 from schemey.null_schema import NullSchema
 from schemey.schema_error import SchemaError
-from schemey.schemey_context import get_default_schemey_context
+from schemey.schema_context import get_default_schema_context
 
 
 class TestBooleanSchema(TestCase):
 
     def test_factory(self):
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
         schema = context.get_schema(type(None))
         expected = NullSchema()
         self.assertEqual(expected, schema)
@@ -24,12 +24,12 @@ class TestBooleanSchema(TestCase):
         self.assertEqual(list(schema.get_schema_errors(None)), [])
 
     def test_validate(self):
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
         schema = context.get_schema(type(None))
         schema.validate(None)
 
     def test_validate_fail(self):
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
         schema = context.get_schema(type(None))
         with self.assertRaises(SchemaError):
             schema.validate('Not None!')

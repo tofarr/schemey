@@ -18,7 +18,7 @@ from schemey.json_schema_context import JsonSchemaContext
 from schemey.schema_abc import SchemaABC
 from schemey.loader.schema_loader_abc import SchemaLoaderABC
 from schemey.schema_error import SchemaError
-from schemey.schemey_context import schema_for_type, get_default_schemey_context
+from schemey.schema_context import schema_for_type, get_default_schema_context
 
 
 @dataclass
@@ -27,10 +27,12 @@ class Coordinate3D:
     y: float
     z: float
 
+    # noinspection PyUnusedLocal
     @classmethod
     def __marshaller_factory__(cls, marshaller_context):
         return Coordinate3DMarshaller(Coordinate3D)
 
+    # noinspection PyUnusedLocal
     @classmethod
     def __schema_factory__(cls, json_context):
         return Coordinate3DSchema()
@@ -71,7 +73,7 @@ class Coordinate3DSchemaLoader(SchemaLoaderABC):
             return Coordinate3DSchema()
 
 
-get_default_schemey_context().register_loader(Coordinate3DSchemaLoader())
+get_default_schema_context().register_loader(Coordinate3DSchemaLoader())
 
 
 class TestFactory(TestCase):

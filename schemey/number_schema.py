@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator, Union
+from typing import Optional, List, Iterator
 
 from marshy.types import ExternalItemType
 
 from schemey.integer_schema import check, dump_json_schema, simplify_kwargs
-from schemey.schema_abc import SchemaABC
 from schemey.json_schema_context import JsonSchemaContext
+from schemey.schema_abc import SchemaABC
 from schemey.schema_error import SchemaError
 
 

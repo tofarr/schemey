@@ -6,7 +6,7 @@ from marshy import load, dump
 from schemey.enum_schema import EnumSchema
 from schemey.schema_abc import SchemaABC
 from schemey.schema_error import SchemaError
-from schemey.schemey_context import get_default_schemey_context, schema_for_type
+from schemey.schema_context import get_default_schema_context, schema_for_type
 
 
 class MyEnum(Enum):
@@ -19,7 +19,7 @@ class MyEnum(Enum):
 class TestEnumSchema(TestCase):
 
     def test_factory(self):
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
         schema = context.get_schema(MyEnum)
         expected = EnumSchema(enum={'foo', 'bar', 'zap', 'bang'})
         self.assertEqual(expected, schema)
@@ -35,9 +35,10 @@ class TestEnumSchema(TestCase):
         self.assertEqual([SchemaError('a/b', 'value_not_permitted', 1)], list(s.get_schema_errors(1, ['a', 'b'])))
 
     def test_validate(self):
-        context = get_default_schemey_context()
+        context = get_default_schema_context()
         schema = context.get_schema(MyEnum)
         with self.assertRaises(SchemaError):
+            # noinspection PyTypeChecker
             schema.validate(10)
 
     def test_dump_and_load(self):

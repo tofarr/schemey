@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator, Tuple
+from typing import Optional, List, Iterator
 
 from marshy import ExternalType
 from marshy.types import ExternalItemType
