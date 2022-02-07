@@ -1,8 +1,11 @@
 from dataclasses import dataclass
-from typing import Optional, Type, List, Iterator, TypeVar
+from typing import Optional, Type, List, Iterator, TypeVar, Dict, Union, Tuple
 
+from marshy import ExternalType
 from marshy.marshaller.marshaller_abc import MarshallerABC
 
+from schemey.optional_schema import NoDefault
+from schemey.param_schema import ParamSchema
 from schemey.schema_abc import SchemaABC
 from schemey.schema_error import SchemaError
 
@@ -33,3 +36,13 @@ class ObjSchema:
         error = next(errors, None)
         if error:
             raise error
+
+    def get_param_schemas(self, current_path: str) -> Optional[List[ParamSchema]]:
+        """ Optional schemas allow only one parameter """
+        return self.json_schema.get_param_schemas(current_path)
+
+    def from_url_params(self, current_path: str, params: Dict[str, List[str]]) -> Union[ExternalType, NoDefault]:
+        return self.json_schema.from_url_params(current_path, params)
+
+    def to_url_params(self, current_path: str, item: ExternalType) -> Iterator[Tuple[str, str]]:
+        yield from self.json_schema.to_url_params(current_path, item)

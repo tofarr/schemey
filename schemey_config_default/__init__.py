@@ -32,11 +32,12 @@ priority = 100
 
 
 def configure(context: SchemaContext):
+    configure_schemas(context)
     configure_factories(context)
     configure_loaders(context)
 
 
-def configure_factories(context: SchemaContext):
+def configure_schemas(context: SchemaContext):
     context.register_schema(bool, BooleanSchema())
     context.register_schema(int, IntegerSchema())
     context.register_schema(type(None), NullSchema())
@@ -44,6 +45,9 @@ def configure_factories(context: SchemaContext):
     context.register_schema(str, StringSchema())
     context.register_schema(datetime, StringSchema(format=StringFormat.DATE_TIME))
     context.register_schema(UUID, StringSchema(format=StringFormat.UUID))
+
+
+def configure_factories(context: SchemaContext):
     context.register_factory(EnumSchemaFactory())
     context.register_factory(ArraySchemaFactory())
     context.register_factory(TupleSchemaFactory())

@@ -7,14 +7,14 @@ import validators
 from marshy.types import ExternalItemType
 
 from schemey._util import filter_none
-from schemey.schema_abc import SchemaABC
 from schemey.json_schema_context import JsonSchemaContext
 from schemey.schema_error import SchemaError
+from schemey.str_param_schema_abc import StrParamSchemaABC
 from schemey.string_format import StringFormat
 
 
 @dataclass(frozen=True)
-class StringSchema(SchemaABC):
+class StringSchema(StrParamSchemaABC):
     min_length: Optional[int] = None
     max_length: Optional[int] = None
     pattern: Optional[str] = None

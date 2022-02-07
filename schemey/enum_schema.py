@@ -5,12 +5,12 @@ from marshy import ExternalType
 from marshy.types import ExternalItemType
 
 from schemey.json_schema_context import JsonSchemaContext
-from schemey.schema_abc import SchemaABC
 from schemey.schema_error import SchemaError
+from schemey.str_param_schema_abc import StrParamSchemaABC
 
 
 @dataclass(frozen=True)
-class EnumSchema(SchemaABC):
+class EnumSchema(StrParamSchemaABC):
     enum: Set[ExternalType]
 
     def get_schema_errors(self, item: ExternalType, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:

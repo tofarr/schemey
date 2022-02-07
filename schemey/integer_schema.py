@@ -7,10 +7,11 @@ from schemey._util import filter_none
 from schemey.schema_abc import SchemaABC
 from schemey.json_schema_context import JsonSchemaContext
 from schemey.schema_error import SchemaError
+from schemey.str_param_schema_abc import StrParamSchemaABC
 
 
 @dataclass(frozen=True)
-class IntegerSchema(SchemaABC):
+class IntegerSchema(StrParamSchemaABC):
     minimum: Optional[int] = None
     exclusive_minimum: Optional[int] = None
     maximum: Optional[int] = None

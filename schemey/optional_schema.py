@@ -1,17 +1,14 @@
 import copy
 from dataclasses import dataclass, MISSING
-from typing import Optional, List, Iterator, Union, Type
+from typing import Optional, List, Iterator, Union, Type, Tuple, Dict
 
 from marshy import ExternalType
 from marshy.types import ExternalItemType
 
-from schemey.schema_abc import SchemaABC
+from schemey.param_schema import ParamSchema
+from schemey.schema_abc import SchemaABC, NoDefault
 from schemey.json_schema_context import JsonSchemaContext
 from schemey.schema_error import SchemaError
-
-
-class NoDefault:
-    pass
 
 
 @dataclass
@@ -37,3 +34,22 @@ class OptionalSchema(SchemaABC):
     def simplify(self) -> SchemaABC:
         schema = OptionalSchema(self.schema.simplify(), self.default)
         return schema
+
+    def get_param_schemas(self, current_path: str) -> Optional[List[ParamSchema]]:
+        """ Optional schemas allow only one parameter """
+        schemas = self.schema.get_param_schemas(current_path)
+        if schemas and len(schemas) == 1:
+            schemas[0].required = False
+            return schemas
+
+    def from_url_params(self, current_path: str, params: Dict[str, List[str]]) -> ExternalType:
+        params = self.schema.from_url_params(current_path, params)
+        if params is NoDefault:
+            if self.default is NoDefault:
+                params = None
+            else:
+                params = copy.deepcopy(self.default)
+        return params
+
+    def to_url_params(self, current_path: str, item: ExternalType) -> Iterator[Tuple[str, str]]:
+        yield from self.schema.to_url_params(current_path, item)

@@ -7,10 +7,11 @@ from schemey.integer_schema import check, dump_json_schema, simplify_kwargs
 from schemey.json_schema_context import JsonSchemaContext
 from schemey.schema_abc import SchemaABC
 from schemey.schema_error import SchemaError
+from schemey.str_param_schema_abc import StrParamSchemaABC
 
 
 @dataclass(frozen=True)
-class NumberSchema(SchemaABC):
+class NumberSchema(StrParamSchemaABC):
     minimum: Optional[float] = None
     exclusive_minimum: Optional[float] = None
     maximum: Optional[float] = None

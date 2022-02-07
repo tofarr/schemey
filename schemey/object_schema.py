@@ -1,9 +1,11 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator, Dict, Set
+from typing import Optional, List, Iterator, Dict, Set, Tuple, Union
 
-from marshy.types import ExternalItemType
+from marshy.types import ExternalItemType, ExternalType
 
 from schemey._util import filter_none
+from schemey.optional_schema import NoDefault
+from schemey.param_schema import ParamSchema
 from schemey.schema_abc import SchemaABC
 from schemey.json_schema_context import JsonSchemaContext
 from schemey.schema_error import SchemaError
@@ -53,3 +55,33 @@ class ObjectSchema(SchemaABC):
         properties = {k: p.simplify() for k, p in self.properties.items()}
         schema = ObjectSchema(**{**self.__dict__, 'properties': properties})
         return schema
+
+    def get_param_schemas(self, current_path: str) -> Optional[List[ParamSchema]]:
+        param_schemas = []
+        for name, schema in self.properties.items():
+            sub_path = f"{current_path}.{name}" if current_path else name
+            sub_schemas = schema.get_param_schemas(sub_path)
+            if sub_schemas is None:
+                return None
+            param_schemas.extend(sub_schemas)
+        return param_schemas
+
+    def from_url_params(self, current_path: str, params: Dict[str, List[str]]) -> Union[ExternalType, NoDefault]:
+        result = {}
+        for key, schema in self.properties.items():
+            sub_path = self._sub_path(current_path, key)
+            value = schema.from_url_params(sub_path, params)
+            if value is NoDefault:
+                raise SchemaError(current_path, 'missing_value')
+            result[key] = value
+        return result
+
+    def to_url_params(self, current_path: str, item: ExternalItemType) -> Iterator[Tuple[str, str]]:
+        for key, schema in self.properties.items():
+            if key in item:
+                sub_path = self._sub_path(current_path, key)
+                yield from schema.to_url_params(sub_path, item[key])
+
+    def _sub_path(self, current_path: str, key: str):
+        sub_path = f"{current_path}.{key}" if current_path else key
+        return sub_path
