@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Optional, List, Iterator
+from typing import Optional, List, Iterator, Dict, Any, Callable, Type
 
 from marshy import ExternalType
 from marshy.types import ExternalItemType
@@ -28,3 +28,6 @@ class DeferredSchema(SchemaABC):
             return self
         self.num_usages = 0
         return self.schema.simplify()
+
+    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type:
+        return self.schema.get_normalized_type(existing_types, object_wrapper)

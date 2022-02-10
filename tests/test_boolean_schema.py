@@ -1,9 +1,11 @@
+from dataclasses import dataclass
 from unittest import TestCase
 
 from marshy import load, dump
 
 from schemey.boolean_schema import BooleanSchema
-from schemey.schema_abc import SchemaABC
+from schemey.param_schema import ParamSchema
+from schemey.schema_abc import SchemaABC, NoDefault
 from schemey.schema_error import SchemaError
 from schemey.schema_context import get_default_schema_context
 
@@ -37,3 +39,26 @@ class TestBooleanSchema(TestCase):
         dumped = dump(schema)
         loaded = load(SchemaABC, dumped)
         self.assertEqual(schema, loaded)
+
+    def test_get_param_schemas(self):
+        schema = BooleanSchema()
+        param_schemas = schema.get_param_schemas('foo')
+        expected = [ParamSchema('foo', schema)]
+        self.assertEqual(expected, param_schemas)
+
+    def test_from_url_params(self):
+        schema = BooleanSchema()
+        self.assertTrue(schema.from_url_params('foo', dict(foo=['1'])))
+        self.assertFalse(schema.from_url_params('foo', dict(foo=['0'])))
+        self.assertTrue(schema.from_url_params('bar', dict(bar=['tRuE'])))
+        self.assertFalse(schema.from_url_params('bar', dict(bar=['fAlSe'])))
+        self.assertEqual(NoDefault, schema.from_url_params('bar', dict()))
+
+    def test_to_url_params(self):
+        schema = BooleanSchema()
+        self.assertEqual([('foo', '1')], list(schema.to_url_params('foo', True)))
+        self.assertEqual([('bar', '0')], list(schema.to_url_params('bar', False)))
+
+    def test_get_normalized_type(self):
+        schema = BooleanSchema()
+        self.assertEqual(bool, schema.get_normalized_type({}, dataclass))

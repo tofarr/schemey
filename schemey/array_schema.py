@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator
+from typing import Optional, List, Iterator, Dict, Any, Type, Set, Callable
 
 from marshy.types import ExternalItemType
 
@@ -61,3 +61,10 @@ class ArraySchema(SchemaABC):
         item_schema = self.item_schema.simplify()
         schema = ArraySchema(**{**self.__dict__, 'item_schema': item_schema})
         return schema
+
+    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type:
+        item_type = self.item_schema.get_normalized_type(existing_types, object_wrapper)
+        if self.uniqueness:
+            return Set[item_type]
+        else:
+            return List[item_type]

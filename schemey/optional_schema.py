@@ -1,8 +1,9 @@
 import copy
 from dataclasses import dataclass, MISSING
-from typing import Optional, List, Iterator, Union, Type, Tuple, Dict
+from typing import Optional, List, Iterator, Union, Type, Tuple, Dict, Any, Callable
 
 from marshy import ExternalType
+from marshy.factory.optional_marshaller_factory import get_optional_type
 from marshy.types import ExternalItemType
 
 from schemey.param_schema import ParamSchema
@@ -42,14 +43,20 @@ class OptionalSchema(SchemaABC):
             schemas[0].required = False
             return schemas
 
-    def from_url_params(self, current_path: str, params: Dict[str, List[str]]) -> ExternalType:
+    def from_url_params(self, current_path: str, params: Dict[str, List[str]]) -> Union[ExternalType, type(MISSING)]:
         params = self.schema.from_url_params(current_path, params)
         if params is NoDefault:
             if self.default is NoDefault:
-                params = None
+                params = MISSING
             else:
                 params = copy.deepcopy(self.default)
         return params
 
     def to_url_params(self, current_path: str, item: ExternalType) -> Iterator[Tuple[str, str]]:
         yield from self.schema.to_url_params(current_path, item)
+
+    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type:
+        type_ = self.schema.get_normalized_type(existing_types, object_wrapper)
+        if self.default is None:
+            type_ = Optional[get_optional_type(type_) or type_]
+        return type_

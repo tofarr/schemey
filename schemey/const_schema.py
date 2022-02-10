@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator
+from typing import Optional, List, Iterator, Dict, Any, Type, Callable
 
 from marshy import ExternalType
 from marshy.types import ExternalItemType
@@ -20,3 +20,6 @@ class ConstSchema(SchemaABC):
     def dump_json_schema(self, json_context: _JsonSchemaContext) -> ExternalItemType:
         schema = dict(const=self.const)
         return schema
+
+    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type:
+        return type(self.const)

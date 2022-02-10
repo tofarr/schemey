@@ -16,6 +16,9 @@ setuptools.setup(
     url="https://github.com/tofarr/schemey",
     packages=setuptools.find_packages(exclude=('tests',)),
     install_requires=['typing-inspect>=0.7.1', 'marshy>=2.3.1', 'validators>=0.18.2'],
+    extras_require={
+        "GraphQL": ["graphene>=3.0"],
+    },
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',

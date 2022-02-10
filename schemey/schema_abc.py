@@ -1,5 +1,6 @@
 from abc import abstractmethod, ABC
-from typing import Iterator, Optional, List, TypeVar, Dict, Tuple, Union
+from dataclasses import MISSING
+from typing import Iterator, Optional, List, TypeVar, Dict, Tuple, Union, Any, Type, Callable
 
 from marshy.types import ExternalItemType, ExternalType
 
@@ -9,6 +10,9 @@ T = TypeVar('T')
 _SchemaABC = f"{__name__}SchemaABC"
 _JsonSchemaContext = 'schemey.json_schema_context.JsonSchemaContext'
 _ParamSchema = 'schemey.param_schema.ParamSchema'
+# Alias so type checker will stop warning about unimplemented methods (implementation is controlled by whether the
+# get_params_schemas returns results or None)
+_NotImplementedAlias = NotImplementedError
 
 
 class NoDefault:
@@ -47,10 +51,25 @@ class SchemaABC(ABC):
         """
         return None
 
-    def from_url_params(self, current_path: str, params: Dict[str, List[str]]) -> Union[ExternalType, NoDefault]:
-        """ Convert the url params given to a json item. Raise NotImplemented if get_param_schema is none. """
-        raise NotImplemented
+    def from_url_params(self, current_path: str, params: Dict[str, List[str]]
+                        ) -> Union[ExternalType, type(MISSING), NoDefault]:
+        """
+        Convert the url params given to a json item. MISSING Implies no parameter was available, but a default is.
+        NoDefault implies no parameter was available and there was no default possible
+        """
+        return NoDefault
 
     def to_url_params(self, current_path: str, item: ExternalType) -> Iterator[Tuple[str, str]]:
         """ Convert the item given to url params Raise NotImplemented if get_param_schema is none. """
-        raise NotImplemented
+        raise _NotImplementedAlias()
+
+    @abstractmethod
+    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type:
+        """
+        Build a standard mutable primitive dataclass / list from the externalized version of this schema.
+        This is used to specify types to other python systems that do not support json schema, and to
+        specify types for graphql
+        One major thing to note about of the standardized form is that it does not support dynamic defaults,
+        so MISSING and NONE are effectively the same thing, and there is no such thing as Tuples (because graphql
+        does not support them)
+        """

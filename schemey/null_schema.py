@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator
+from typing import Optional, List, Iterator, Any, Dict, Type, Callable, Tuple
 
-from marshy.types import ExternalItemType
+from marshy.types import ExternalItemType, ExternalType
 
 from schemey.json_schema_context import JsonSchemaContext
 from schemey.schema_abc import SchemaABC
@@ -26,3 +26,6 @@ class NullSchema(SchemaABC):
     def dump_json_schema(self, json_context: JsonSchemaContext) -> ExternalItemType:
         dumped = dict(type='null')
         return dumped
+
+    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type:
+        return type(None)

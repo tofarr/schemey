@@ -1,9 +1,10 @@
-from dataclasses import dataclass, MISSING
-from typing import Optional, List, Iterator, Tuple, Dict, Union
+from dataclasses import dataclass
+from typing import Optional, List, Iterator, Tuple, Dict, Type, Callable, Any
 
 from marshy import ExternalType
 from marshy.types import ExternalItemType
 
+from schemey.object_schema import build_attributes
 from schemey.optional_schema import NoDefault
 from schemey.param_schema import ParamSchema
 from schemey.schema_abc import SchemaABC, _JsonSchemaContext
@@ -37,7 +38,8 @@ class TupleSchema(SchemaABC):
     def get_param_schemas(self, current_path: str) -> Optional[List[ParamSchema]]:
         param_schemas = []
         for index, schema in enumerate(self.schemas):
-            sub_schemas = schema.get_param_schemas(f"{current_path}.{index}")
+            sub_path = self._sub_path(current_path, index)
+            sub_schemas = schema.get_param_schemas(sub_path)
             if sub_schemas is None:
                 return None
             param_schemas.extend(sub_schemas)
@@ -58,6 +60,13 @@ class TupleSchema(SchemaABC):
             sub_path = self._sub_path(current_path, index)
             yield from schema.to_url_params(sub_path, item[index])
 
-    def _sub_path(self, current_path: str, index: int):
+    @staticmethod
+    def _sub_path(current_path: str, index: int):
         sub_path = f"{current_path}.{index}" if current_path else str(index)
         return sub_path
+
+    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type:
+        properties = ((f"t{index}", schema) for index, schema in enumerate(self.schemas))
+        attributes = build_attributes(properties, existing_types, object_wrapper)
+        type_ = object_wrapper(type('Tuple', (), attributes))
+        return type_

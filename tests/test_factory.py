@@ -6,7 +6,7 @@ Demonstrates flexibility of the system
 """
 
 from dataclasses import dataclass
-from typing import Optional, List, Iterator
+from typing import Optional, List, Iterator, Dict, Any, Type, Callable
 from unittest import TestCase
 
 import marshy
@@ -63,6 +63,10 @@ class Coordinate3DSchema(SchemaABC):
             items=dict(type='number')
         )
 
+    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type:
+        # Standard type does not support tuples, because there are no tuples in graphql
+        return List[float]
+
 
 @dataclass
 class Coordinate3DSchemaLoader(SchemaLoaderABC):
@@ -101,3 +105,8 @@ class TestFactory(TestCase):
         self.assertEqual(dumped, expected_dumped)
         loaded = marshy.load(SchemaABC, dumped)
         self.assertEqual(schema, loaded)
+
+    def test_get_normalized_type(self):
+        schema = schema_for_type(Coordinate3D).json_schema
+        standard_type = schema.get_normalized_type({}, dataclass)
+        self.assertEqual(List[float], standard_type)

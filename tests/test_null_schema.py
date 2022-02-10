@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from unittest import TestCase
 
 from marshy import dump, load
@@ -39,3 +40,6 @@ class TestBooleanSchema(TestCase):
         dumped = dump(schema)
         loaded = load(SchemaABC, dumped)
         self.assertEqual(schema, loaded)
+
+    def test_get_normalized_type(self):
+        self.assertEqual(type(None), NullSchema().get_normalized_type({}, dataclass))

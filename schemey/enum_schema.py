@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator, Set
+from enum import Enum
+from typing import Optional, List, Iterator, Set, Dict, Any, Type, Callable
 
 from marshy import ExternalType
 from marshy.types import ExternalItemType
@@ -11,6 +12,7 @@ from schemey.str_param_schema_abc import StrParamSchemaABC
 
 @dataclass(frozen=True)
 class EnumSchema(StrParamSchemaABC):
+    name: str
     enum: Set[ExternalType]
 
     def get_schema_errors(self, item: ExternalType, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
@@ -18,5 +20,14 @@ class EnumSchema(StrParamSchemaABC):
             yield SchemaError(current_path or [], 'value_not_permitted', item)
 
     def dump_json_schema(self, json_context: JsonSchemaContext) -> ExternalItemType:
-        dumped = dict(enum=list(self.enum))
+        dumped = dict(name=self.name, enum=list(self.enum))
         return dumped
+
+    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type:
+        type_ = existing_types.get(self.name)
+        if type_:
+            return type_
+        attributes = {str(e): e for e in self.enum}
+        type_ = Enum(self.name, attributes)
+        existing_types[self.name] = type_
+        return type_

@@ -13,4 +13,4 @@ class EnumSchemaFactory(SchemaFactoryABC):
     def create(self, type_: Type, json_context: JsonSchemaContext) -> Optional[SchemaABC]:
         if isclass(type_) and issubclass(type_, Enum):
             # noinspection PyTypeChecker
-            return EnumSchema(enum={e.value for e in type_})
+            return EnumSchema(enum={e.value for e in type_}, name=type_.__name__)

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 from unittest import TestCase
 from uuid import uuid4, UUID
@@ -57,6 +58,7 @@ class TestIntegerSchema(TestCase):
         assert list(schema.get_schema_errors("2021-11-01T13:04:01")) == []
         assert list(schema.get_schema_errors("foobar")) == [SchemaError('', 'format:date-time', 'foobar')]
         self._check_dump_and_load(schema, dict(type='string', format='date-time'))
+        assert datetime is schema.get_normalized_type({}, dataclass)
 
     def test_datetime(self):
         context = get_default_schema_context()

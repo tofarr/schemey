@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime, time
 import re
-from typing import Optional, List, Iterator
+from typing import Optional, List, Iterator, Dict, Any, Union, Type, Callable
+from uuid import UUID
 
 import validators
 from marshy.types import ExternalItemType
@@ -78,3 +79,11 @@ class StringSchema(StrParamSchemaABC):
             format=self.format.value if self.format else None,
         ))
         return dumped
+
+    def get_normalized_type(self, existing_types: Dict[str, Any], obj_wrapper: Callable
+                          ) -> Union[Type[str], Type[UUID], Type[datetime]]:
+        if self.format == StringFormat.DATE_TIME:
+            return datetime
+        elif self.format == StringFormat.UUID:
+            return UUID
+        return str

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from unittest import TestCase
 
 from marshy import dump, load
@@ -98,3 +99,6 @@ class TestNumberSchema(TestCase):
                          dump(NumberSchema(maximum=6, exclusive_maximum=5).simplify()))
         self.assertEqual(dict(type='number', maximum=4),
                          dump(NumberSchema(maximum=4, exclusive_maximum=5).simplify()))
+
+    def test_get_normalized_type(self):
+        self.assertEqual(float, NumberSchema().get_normalized_type({}, dataclass))

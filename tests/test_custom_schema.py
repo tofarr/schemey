@@ -6,7 +6,7 @@ These changes are isolated to the CUSTOM_CONTEXT - the default is unaffected
 Demonstrates flexibility of the system
 """
 from dataclasses import dataclass
-from typing import Optional, List, Iterator
+from typing import Optional, List, Iterator, Dict, Any, Type, Callable
 from unittest import TestCase
 
 import marshy
@@ -52,6 +52,10 @@ class CoordinateSchema(SchemaABC):
             maxLength=2,
             items=dict(type='number')
         )
+
+    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type:
+        # Standard type does not support tuples, because there are no tuples in graphql
+        return List[float]
 
 
 @dataclass
@@ -104,3 +108,8 @@ class TestCustomSchema(TestCase):
         self.assertEqual(dumped, expected_dumped)
         loaded = CUSTOM_MARSHALLER_CONTEXT.load(SchemaABC, dumped)
         self.assertEqual(schema, loaded)
+
+    def test_get_normalized_type(self):
+        schema = CUSTOM_CONTEXT.get_schema(Coordinate)
+        standard_type = schema.get_normalized_type({}, dataclass)
+        self.assertEqual(List[float], standard_type)

@@ -1,6 +1,10 @@
-from dataclasses import dataclass
-from typing import Optional, List, Iterator, Dict, Set, Tuple, Union
+from dataclasses import dataclass, field, is_dataclass, fields, MISSING
+from typing import Optional, List, Iterator, Dict, Set, Tuple, Union, Type, Any
 
+import typing
+
+import typing_inspect
+from marshy.factory.optional_marshaller_factory import get_optional_type
 from marshy.types import ExternalItemType, ExternalType
 
 from schemey._util import filter_none
@@ -59,21 +63,23 @@ class ObjectSchema(SchemaABC):
     def get_param_schemas(self, current_path: str) -> Optional[List[ParamSchema]]:
         param_schemas = []
         for name, schema in self.properties.items():
-            sub_path = f"{current_path}.{name}" if current_path else name
+            sub_path = self._sub_path(current_path, name)
             sub_schemas = schema.get_param_schemas(sub_path)
             if sub_schemas is None:
                 return None
             param_schemas.extend(sub_schemas)
         return param_schemas
 
-    def from_url_params(self, current_path: str, params: Dict[str, List[str]]) -> Union[ExternalType, NoDefault]:
+    def from_url_params(self, current_path: str, params: Dict[str, List[str]]
+                        ) -> Union[ExternalType, type(MISSING), NoDefault]:
         result = {}
         for key, schema in self.properties.items():
             sub_path = self._sub_path(current_path, key)
             value = schema.from_url_params(sub_path, params)
             if value is NoDefault:
-                raise SchemaError(current_path, 'missing_value')
-            result[key] = value
+                return NoDefault
+            elif value is not MISSING:
+                result[key] = value
         return result
 
     def to_url_params(self, current_path: str, item: ExternalItemType) -> Iterator[Tuple[str, str]]:
@@ -82,6 +88,54 @@ class ObjectSchema(SchemaABC):
                 sub_path = self._sub_path(current_path, key)
                 yield from schema.to_url_params(sub_path, item[key])
 
-    def _sub_path(self, current_path: str, key: str):
+    @staticmethod
+    def _sub_path(current_path: str, key: str):
         sub_path = f"{current_path}.{key}" if current_path else key
         return sub_path
+
+    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: typing.Callable) -> Type:
+        type_ = existing_types.get(self.name)
+        if type_:
+            return type_
+        existing_types[self.name] = typing.ForwardRef(self.name)
+        attributes = build_attributes(self.properties.items().__iter__(), existing_types, object_wrapper)
+        type_ = object_wrapper(type(self.name, (), attributes))
+        existing_types[self.name] = type_
+        _resolve_forward_refs(type_, existing_types)
+        return type_
+
+
+def build_attributes(properties: Iterator[Tuple[str, SchemaABC]],
+                     existing_types: Dict[str, Any],
+                     object_wrapper: typing.Callable):
+    annotations = {}
+    attrs = {'__annotations__': annotations}
+    default_attrs = {}
+    for name, schema in properties:
+        type_ = schema.get_normalized_type(existing_types, object_wrapper)
+        if hasattr(schema, 'default'):
+            if schema.default is NoDefault:
+                default = None
+                type_ = Optional[get_optional_type(type_) or type_]
+            else:
+                default = schema.default
+            default_attrs[name] = field(default=default)
+        else:
+            attrs[name] = field()
+        annotations[name] = type_
+    attrs.update(**default_attrs)
+    return attrs
+
+
+def _resolve_forward_refs(type_, existing_types: Dict[str, Any]) -> typing.Type:
+    if isinstance(type_, typing.ForwardRef):
+        type_ = existing_types[type_.__forward_arg__]
+        return type_
+    if is_dataclass(type_):
+        for f in fields(type_):
+            f.type = type_.__annotations__[f.name] = _resolve_forward_refs(f.type, existing_types)
+        return type_
+    origin = typing_inspect.get_origin(type_)
+    if origin is not None:
+        type_.__args__ = tuple(_resolve_forward_refs(a, existing_types) for a in type_.__args__)
+    return type_

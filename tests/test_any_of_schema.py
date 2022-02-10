@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Union
 from unittest import TestCase
 
@@ -7,7 +8,7 @@ from schemey.any_of_schema import AnyOfSchema
 from schemey.boolean_schema import BooleanSchema
 from schemey.const_schema import ConstSchema
 from schemey.integer_schema import IntegerSchema
-from schemey.schema_abc import SchemaABC
+from schemey.schema_abc import SchemaABC, NoDefault
 from schemey.schema_error import SchemaError
 from schemey.schema_context import get_default_schema_context, schema_for_type
 from schemey.string_schema import StringSchema
@@ -74,3 +75,21 @@ class TestAnyOfSchema(TestCase):
         self.assertEqual(expected_dump, dumped)
         loaded = load(SchemaABC, dumped)
         self.assertEqual(schema, loaded)
+
+    def test_get_normalized_type(self):
+        schema = AnyOfSchema([IntegerSchema(), StringSchema()])
+        standard_type = schema.get_normalized_type({}, dataclass)
+        expected = Union[int, str]
+        self.assertEqual(expected, standard_type)
+
+    def test_get_normalized_type_named(self):
+        schema = AnyOfSchema(schemas=[IntegerSchema(), StringSchema()], name='Foo')
+        expected = Union[int, str]
+        standard_type = schema.get_normalized_type(dict(Foo=expected), dataclass)
+        self.assertEqual(expected, standard_type)
+
+    def test_url_params(self):
+        schema = AnyOfSchema([IntegerSchema(), StringSchema()])
+        self.assertEqual(NoDefault, schema.from_url_params('', {}))
+        with self.assertRaises(NotImplementedError):
+            schema.to_url_params('', {})

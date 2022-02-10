@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator, Dict, Tuple, Union
+from typing import Optional, List, Iterator, Dict, Tuple, Union, Any, Type, Callable
 
 from marshy.types import ExternalItemType, ExternalType
 
@@ -42,3 +42,6 @@ class BooleanSchema(SchemaABC):
     def to_url_params(self, current_path: str, item: bool) -> Iterator[Tuple[str, str]]:
         value = '1' if item else '0'
         yield current_path, value
+
+    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type[bool]:
+        return bool

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, MISSING
 from typing import Optional, Type, List, Iterator, TypeVar, Dict, Union, Tuple
 
 from marshy import ExternalType
@@ -37,12 +37,19 @@ class ObjSchema:
         if error:
             raise error
 
-    def get_param_schemas(self, current_path: str) -> Optional[List[ParamSchema]]:
+    def get_param_schemas(self, current_path: str = '') -> Optional[List[ParamSchema]]:
         """ Optional schemas allow only one parameter """
         return self.json_schema.get_param_schemas(current_path)
 
-    def from_url_params(self, current_path: str, params: Dict[str, List[str]]) -> Union[ExternalType, NoDefault]:
-        return self.json_schema.from_url_params(current_path, params)
+    def from_url_params(self, params: Dict[str, List[str]], current_path: str = '') -> Union[ExternalType, NoDefault]:
+        item = self.json_schema.from_url_params(current_path, params)
+        if item is MISSING:
+            return None
+        elif item is NoDefault:
+            raise ValueError('missing_required_fields')
+        loaded = self.marshaller.load(item)
+        return loaded
 
-    def to_url_params(self, current_path: str, item: ExternalType) -> Iterator[Tuple[str, str]]:
-        yield from self.json_schema.to_url_params(current_path, item)
+    def to_url_params(self, item: T, current_path: str = '') -> Iterator[Tuple[str, str]]:
+        dumped = self.marshaller.dump(item)
+        yield from self.json_schema.to_url_params(current_path, dumped)

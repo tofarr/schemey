@@ -1,4 +1,4 @@
-from dataclasses import field, dataclass
+from dataclasses import field, dataclass, fields, is_dataclass, MISSING
 from datetime import datetime
 from typing import Optional, List, Set, Tuple
 from unittest import TestCase
@@ -10,6 +10,8 @@ from schemey.array_schema import ArraySchema
 from schemey.boolean_schema import BooleanSchema
 from schemey.deferred_schema import DeferredSchema
 from schemey.integer_schema import IntegerSchema
+from schemey.obj_schema import ObjSchema
+from schemey.param_schema import ParamSchema
 from schemey.schema_abc import SchemaABC
 from schemey.object_schema import ObjectSchema
 from schemey.optional_schema import OptionalSchema
@@ -90,6 +92,64 @@ class TestDataclassSchema(TestCase):
         self.assertEqual([SchemaError('', 'type', 'not a tag!')], list(json_schema.get_schema_errors('not a tag!')))
         self.assertEqual(Tag, schema.item_type)
 
+    def test_tag_normalized_type(self):
+        standard_type = schema_for_type(Tag).json_schema.get_normalized_type({}, dataclass)
+        self.assertTrue(is_dataclass(standard_type))
+        self.assertEqual('Tag', standard_type.__name__)
+        # noinspection PyDataclass
+        attributes = {f.name: (f.type, f.default) for f in fields(standard_type)}
+        expected = {f.name: (f.type, f.default) for f in fields(Tag)}
+        self.assertEqual(expected, attributes)
+
+    def test_tag_get_params_schema(self):
+        schema = schema_for_type(Tag)
+        param_schemas = schema.get_param_schemas('')
+        expected = [
+            ParamSchema('id', IntegerSchema()),
+            ParamSchema('title', StringSchema(max_length=255)),
+            ParamSchema('active', BooleanSchema(), required=False)
+        ]
+        self.assertEqual(expected, param_schemas)
+
+    def test_tag_url_params(self):
+        schema = schema_for_type(Tag)
+        tag = Tag(1, 'A Tag', True)
+        url_params = list(schema.to_url_params(tag))
+        self.assertEqual([
+            ('id', '1'), ('title', 'A Tag'), ('active', '1')
+        ], url_params)
+        loaded = schema.from_url_params({
+            'id': ['1'],
+            'title': ['A Tag'],
+            'active': ['1']
+        })
+        self.assertEqual(tag, loaded)
+
+    def test_tag_url_params_missing_optional(self):
+        schema = schema_for_type(Tag)
+        expected = Tag(1, 'A Tag')
+        loaded = schema.from_url_params({
+            'id': ['1'],
+            'title': ['A Tag']
+        })
+        self.assertEqual(expected, loaded)
+
+    def test_tag_url_params_missing_required(self):
+        schema = schema_for_type(Tag)
+        with self.assertRaises(ValueError):
+            schema.from_url_params({
+                'id': ['1'],
+                'active': ['1']
+            })
+
+    def test_tag_url_params_missing_all_optional(self):
+        context = get_default_schema_context()
+        schema = ObjSchema(
+            json_schema=OptionalSchema(context.get_schema(Tag)),
+            marshaller=get_default_schema_context().marshaller_context.get_marshaller(Optional[Tag])
+        )
+        self.assertIsNone(schema.from_url_params({}))
+
     def test_generate_schema_for_content(self):
         context = get_default_schema_context()
         schema = context.get_schema(Content)
@@ -128,6 +188,25 @@ class TestDataclassSchema(TestCase):
             'required': ['text'],
             'type': 'object'
         })
+
+    def test_content_normalized_type(self):
+        existing_types = {}
+        standard_type = schema_for_type(Content).json_schema.get_normalized_type(existing_types, dataclass)
+        self.assertTrue(is_dataclass(standard_type))
+        self.assertEqual('Content', standard_type.__name__)
+        # noinspection PyDataclass
+        attributes = {f.name: (f.type, f.default) for f in fields(standard_type)}
+        expected = {
+            'text': (str, MISSING),
+            'id': (Optional[UUID], None),
+            'title': (Optional[str], None),
+            'tags': (Optional[Set[existing_types.get('Tag')]], None),
+        }
+        self.assertEqual(expected, attributes)
+
+    def test_content_url_params(self):
+        schema = schema_for_type(Content)
+        self.assertIsNone(schema.json_schema.get_param_schemas(''))
 
     def test_generate_schema_for_node(self):
         context = get_default_schema_context()
@@ -170,6 +249,19 @@ class TestDataclassSchema(TestCase):
         self.assertEqual([SchemaError('', 'missing_properties', 'title')],
                          list(json_schema.get_schema_errors(dict())))
 
+    def test_node_normalized_type(self):
+        existing_types = {}
+        standard_type = schema_for_type(Node).json_schema.get_normalized_type(existing_types, dataclass)
+        self.assertTrue(is_dataclass(standard_type))
+        self.assertEqual('Node', standard_type.__name__)
+        # noinspection PyDataclass
+        attributes = {f.name: (f.type, f.default) for f in fields(standard_type)}
+        expected = {
+            'title': (str, MISSING),
+            'children': (Optional[List[existing_types.get('Node')]], None),
+        }
+        self.assertEqual(expected, attributes)
+
     def test_generate_schema_for_immutable_label(self):
         context = get_default_schema_context()
         schema = context.get_schema(ImmutableLabel)
@@ -197,6 +289,34 @@ class TestDataclassSchema(TestCase):
                 'updated_at': {'type': 'string', 'format': 'date-time'}
             }
         })
+
+    def test_immutable_label_get_params_schema(self):
+        schema = schema_for_type(ImmutableLabel)
+        param_schemas = schema.get_param_schemas()
+        expected = [
+            ParamSchema('title', StringSchema(), required=False),
+            ParamSchema('updated_at', StringSchema(format=StringFormat.DATE_TIME), required=False),
+        ]
+        self.assertEqual(expected, param_schemas)
+
+    def test_immutable_label_url_params(self):
+        schema = schema_for_type(ImmutableLabel)
+        label = ImmutableLabel()
+        url_params = list(schema.to_url_params(label))
+        self.assertEqual([
+            ('title', label.title), ('updated_at', label.updated_at.isoformat())
+        ], url_params)
+        loaded = schema.from_url_params({
+            'title': [label.title],
+            'updated_at': [label.updated_at.isoformat()]
+        })
+        self.assertEqual(label, loaded)
+
+    def test_immutable_label_url_params_missing_optional(self):
+        schema = schema_for_type(ImmutableLabel)
+        loaded = schema.from_url_params({})
+        self.assertEqual("Label", loaded.title)
+        self.assertTrue(isinstance(loaded.updated_at, datetime))
 
     def test_generate_schema_for_immutable_widget(self):
         context = get_default_schema_context()

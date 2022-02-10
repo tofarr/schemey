@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator
+from typing import Optional, List, Iterator, Dict, Any, Type, Callable
 
 from marshy.types import ExternalItemType
 
@@ -29,3 +29,6 @@ class NumberSchema(StrParamSchemaABC):
     def simplify(self) -> SchemaABC:
         kwargs = simplify_kwargs(self)
         return NumberSchema(**kwargs)
+
+    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type[float]:
+        return float

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import Enum
 from unittest import TestCase
 
@@ -21,7 +22,7 @@ class TestEnumSchema(TestCase):
     def test_factory(self):
         context = get_default_schema_context()
         schema = context.get_schema(MyEnum)
-        expected = EnumSchema(enum={'foo', 'bar', 'zap', 'bang'})
+        expected = EnumSchema(name='MyEnum', enum={'foo', 'bar', 'zap', 'bang'})
         self.assertEqual(expected, schema)
 
     def test_get_schema_errors(self):
@@ -42,9 +43,20 @@ class TestEnumSchema(TestCase):
             schema.validate(10)
 
     def test_dump_and_load(self):
-        schema = EnumSchema(enum={'foo', 'bar', 'zap', 'bang'})
+        schema = EnumSchema(name='foobar', enum={'foo', 'bar', 'zap', 'bang'})
         dumped = dump(schema)
-        expected_dump = dict(enum=list(schema.enum))
+        expected_dump = dict(name='foobar', enum=list(schema.enum))
         self.assertEqual(expected_dump, dumped)
         loaded = load(SchemaABC, dumped)
         self.assertEqual(schema, loaded)
+
+    def test_get_normalized_type(self):
+        existing_types = {}
+        schema = EnumSchema(name='Foobar', enum={'foo', 'bar', 'zap', 'bang'})
+        standard_type = schema.get_normalized_type(existing_types, dataclass)
+        self.assertTrue(issubclass(standard_type, Enum))
+        # noinspection PyTypeChecker
+        self.assertEqual({'foo', 'bar', 'zap', 'bang'}, set(s.name for s in standard_type))
+        # noinspection PyTypeChecker
+        self.assertEqual({'foo', 'bar', 'zap', 'bang'}, set(s.value for s in standard_type))
+        self.assertIs(standard_type, schema.get_normalized_type(existing_types, dataclass))

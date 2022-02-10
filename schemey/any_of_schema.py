@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator, Iterable, Union, Sized
+from typing import Optional, List, Iterator, Iterable, Union, Sized, Dict, Any, Type, Callable, Tuple
 
 from marshy.types import ExternalType, ExternalItemType
 
@@ -42,3 +42,11 @@ class AnyOfSchema(SchemaABC):
         any_of = [s.simplify() for s in self.schemas]
         schema = AnyOfSchema(**{**self.__dict__, 'schemas': any_of})
         return schema
+
+    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type:
+        type_ = existing_types.get(self.name)
+        if type_:
+            return type_
+        type_ = Union[tuple(s.get_normalized_type(existing_types, object_wrapper) for s in self.schemas)]
+        existing_types[self.name] = type_
+        return type_

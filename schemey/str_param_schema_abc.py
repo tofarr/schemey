@@ -20,4 +20,4 @@ class StrParamSchemaABC(SchemaABC, ABC):
         return values[0]
 
     def to_url_params(self, current_path: str, item: str) -> Iterator[Tuple[str, str]]:
-        yield current_path, item
+        yield current_path, str(item)
