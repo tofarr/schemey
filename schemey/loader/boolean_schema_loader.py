@@ -13,5 +13,5 @@ class BooleanSchemaLoader(SchemaLoaderABC):
     def load(self, item: ExternalItemType, json_context: JsonSchemaContext) -> Optional[SchemaABC]:
         if item.get('type') != 'boolean':
             return None
-        loaded = BooleanSchema()
+        loaded = BooleanSchema(item.get('description'))
         return loaded

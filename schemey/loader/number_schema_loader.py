@@ -17,6 +17,7 @@ class NumberSchemaLoader(SchemaLoaderABC):
             minimum=item.get('minimum'),
             exclusive_minimum=item.get('exclusiveMinimum'),
             maximum=item.get('maximum'),
-            exclusive_maximum=item.get('exclusiveMaximum')
+            exclusive_maximum=item.get('exclusiveMaximum'),
+            description=item.get('description')
         )
         return loaded

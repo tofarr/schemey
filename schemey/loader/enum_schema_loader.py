@@ -13,5 +13,5 @@ class EnumSchemaLoader(SchemaLoaderABC):
     def load(self, item: ExternalItemType, json_context: JsonSchemaContext) -> Optional[SchemaABC]:
         if 'enum' not in item or 'name' not in item:
             return None
-        loaded = EnumSchema(name=item.get('name'), enum=set(item.get('enum')))
+        loaded = EnumSchema(name=item.get('name'), enum=set(item.get('enum')), description=item.get('description'))
         return loaded

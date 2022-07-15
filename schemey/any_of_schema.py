@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List, Iterator, Iterable, Union, Sized, Dict, Any, Type, Callable, Tuple
+from typing import Optional, List, Iterator, Iterable, Union, Sized, Dict, Any, Type, Callable
 
 from marshy.types import ExternalType, ExternalItemType
 
@@ -12,6 +12,7 @@ from schemey.schema_error import SchemaError
 class AnyOfSchema(SchemaABC):
     schemas: Union[Iterable[SchemaABC], Sized]
     name: str = None
+    description: str = None
 
     def __post_init__(self):
         schemas = []
@@ -36,6 +37,8 @@ class AnyOfSchema(SchemaABC):
         dumped = dict(anyOf=any_of)
         if self.name:
             dumped['name'] = self.name
+        if self.description:
+            dumped['description'] = self.description
         return dumped
 
     def simplify(self) -> SchemaABC:

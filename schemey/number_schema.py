@@ -16,6 +16,7 @@ class NumberSchema(StrParamSchemaABC):
     exclusive_minimum: Optional[float] = None
     maximum: Optional[float] = None
     exclusive_maximum: Optional[float] = None
+    description: Optional[str] = None
 
     def get_schema_errors(self, item: float, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         if not isinstance(item, float) and item.__class__ is not int:

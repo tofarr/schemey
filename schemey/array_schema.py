@@ -15,6 +15,7 @@ class ArraySchema(SchemaABC):
     min_items: int = 0
     max_items: Optional[int] = None
     uniqueness: bool = False
+    description: str = None
 
     def get_schema_errors(self,
                           item: List[ExternalItemType],
@@ -50,6 +51,7 @@ class ArraySchema(SchemaABC):
             type='array',
             items=items,
             maxItems=self.max_items,
+            description=self.description
         ))
         if self.min_items:
             dumped['minItems'] = self.min_items

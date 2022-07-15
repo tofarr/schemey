@@ -14,12 +14,7 @@ _instance = None
 
 @dataclass(frozen=True)
 class BooleanSchema(SchemaABC):
-
-    def __new__(cls, *args, **kwargs):
-        global _instance
-        if not _instance:
-            _instance = super(BooleanSchema, cls).__new__(cls, *args, **kwargs)
-        return _instance
+    description: str = None
 
     def get_schema_errors(self, item: bool, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         if not isinstance(item, bool):
@@ -27,6 +22,8 @@ class BooleanSchema(SchemaABC):
 
     def dump_json_schema(self, json_context: JsonSchemaContext) -> ExternalItemType:
         dumped = dict(type='boolean')
+        if self.description:
+            dumped['description'] = self.description
         return dumped
 
     def get_param_schemas(self, current_path: str) -> List[ParamSchema]:

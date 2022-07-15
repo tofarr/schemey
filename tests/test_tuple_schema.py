@@ -29,6 +29,18 @@ class TestTupleSchema(TestCase):
         }
         self.assertEqual(expected, dumped)
 
+    def test_load_dump_schema(self):
+        my_tuple = Tuple[int, str, bool]
+        schema = TupleSchema(schemas=(StringSchema(), BooleanSchema()), description='A str or bool')
+        dumped = dump(schema, SchemaABC)
+        expected = {
+            'items': False,
+            'prefixItems': [{'type': 'string'}, {'type': 'boolean'}],
+            'type': 'array',
+            'description': 'A str or bool'
+        }
+        self.assertEqual(expected, dumped)
+
     def test_factory_ellipsis(self):
         type_ = Tuple[int, ...]
         json_schema_context = JsonSchemaContext()

@@ -21,6 +21,7 @@ class StringSchema(StrParamSchemaABC):
     pattern: Optional[str] = None
     format: Optional[StringFormat] = None
     _compiled_pattern = None
+    description: Optional[str] = None
 
     def __post_init__(self):
         object.__setattr__(self, '_compiled_pattern', None if self.pattern is None else re.compile(self.pattern))
@@ -77,6 +78,7 @@ class StringSchema(StrParamSchemaABC):
             maxLength=self.max_length,
             pattern=self.pattern,
             format=self.format.value if self.format else None,
+            description=self.description
         ))
         return dumped
 

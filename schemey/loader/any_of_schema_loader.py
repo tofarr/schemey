@@ -18,5 +18,6 @@ class AnyOfSchemaLoader(SchemaLoaderABC):
         loaded = AnyOfSchema(**dict(
             schemas=schemas,
             name=item.get('name'),
+            description=item.get('description')
         ))
         return loaded

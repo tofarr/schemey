@@ -14,6 +14,7 @@ from schemey.str_param_schema_abc import StrParamSchemaABC
 class EnumSchema(StrParamSchemaABC):
     name: str
     enum: Set[ExternalType]
+    description: Optional[str] = None
 
     def get_schema_errors(self, item: ExternalType, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         if item not in self.enum:
@@ -21,6 +22,8 @@ class EnumSchema(StrParamSchemaABC):
 
     def dump_json_schema(self, json_context: JsonSchemaContext) -> ExternalItemType:
         dumped = dict(name=self.name, enum=list(self.enum))
+        if self.description:
+            dumped['description'] = self.description
         return dumped
 
     def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type:

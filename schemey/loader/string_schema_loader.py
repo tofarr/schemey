@@ -18,6 +18,7 @@ class StringSchemaLoader(SchemaLoaderABC):
             min_length=item.get('minLength'),
             max_length=item.get('maxLength'),
             pattern=item.get('pattern'),
-            format=StringFormat(item.get('format')) if item.get('format') else None
+            format=StringFormat(item.get('format')) if item.get('format') else None,
+            description=item.get('description')
         )
         return loaded

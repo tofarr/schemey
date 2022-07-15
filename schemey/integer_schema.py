@@ -16,6 +16,7 @@ class IntegerSchema(StrParamSchemaABC):
     exclusive_minimum: Optional[int] = None
     maximum: Optional[int] = None
     exclusive_maximum: Optional[int] = None
+    description: Optional[str] = None
 
     def get_schema_errors(self, item: int, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         if not isinstance(item, int):
@@ -50,6 +51,7 @@ def dump_json_schema(item, type_name: str) -> Optional[ExternalItemType]:
         exclusiveMinimum=item.exclusive_minimum,
         maximum=item.maximum,
         exclusiveMaximum=item.exclusive_maximum,
+        description=item.description
     ))
     return dumped
 

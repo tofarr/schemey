@@ -14,6 +14,7 @@ from schemey.schema_error import SchemaError
 @dataclass
 class TupleSchema(SchemaABC):
     schemas: Tuple[SchemaABC, ...]
+    description: Optional[str] = None
 
     def get_schema_errors(self, item: ExternalType, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
         if current_path is None:
@@ -28,12 +29,14 @@ class TupleSchema(SchemaABC):
             current_path.pop()
 
     def dump_json_schema(self, json_context: _JsonSchemaContext) -> ExternalItemType:
-        schema = {
+        dumped = {
             "type": "array",
             "prefixItems": [i.dump_json_schema(json_context) for i in self.schemas],
             "items": False
         }
-        return schema
+        if self.description:
+            dumped['description'] = self.description
+        return dumped
 
     def get_param_schemas(self, current_path: str) -> Optional[List[ParamSchema]]:
         param_schemas = []

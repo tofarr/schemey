@@ -43,9 +43,9 @@ class TestEnumSchema(TestCase):
             schema.validate(10)
 
     def test_dump_and_load(self):
-        schema = EnumSchema(name='foobar', enum={'foo', 'bar', 'zap', 'bang'})
+        schema = EnumSchema(name='foobar', enum={'foo', 'bar', 'zap', 'bang'}, description='Foobar')
         dumped = dump(schema)
-        expected_dump = dict(name='foobar', enum=list(schema.enum))
+        expected_dump = dict(name='foobar', enum=list(schema.enum), description='Foobar')
         self.assertEqual(expected_dump, dumped)
         loaded = load(SchemaABC, dumped)
         self.assertEqual(schema, loaded)

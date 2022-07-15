@@ -22,5 +22,6 @@ class ArraySchemaLoader(SchemaLoaderABC):
             min_items=item.get('minItems'),
             max_items=item.get('maxItems'),
             uniqueness=item.get('uniqueness'),
+            description=item.get('description')
         )))
         return loaded

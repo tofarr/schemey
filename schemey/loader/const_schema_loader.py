@@ -16,5 +16,5 @@ class ConstSchemaLoader(SchemaLoaderABC):
     def load(self, item: ExternalItemType, json_context: JsonSchemaContext) -> Optional[SchemaABC]:
         if 'const' not in item:
             return None
-        schema = ConstSchema(item['const'])
+        schema = ConstSchema(item['const'], item.get('description'))
         return schema

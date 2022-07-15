@@ -17,5 +17,5 @@ class TupleSchemaLoader(SchemaLoaderABC):
         if item.get('type') != 'array' or item.get('prefixItems') is None or item.get('items') is not False:
             return None
         schemas = tuple(json_context.load(s) for s in item.get('prefixItems'))
-        loaded = TupleSchema(schemas)
+        loaded = TupleSchema(schemas, description=item.get('description'))
         return loaded

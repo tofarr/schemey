@@ -24,6 +24,7 @@ class ObjectSchemaLoader(SchemaLoaderABC):
             properties=properties,
             additional_properties=item.get('additionalProperties'),
             required=required or None,
+            description=item.get('description')
         )
         return loaded
 

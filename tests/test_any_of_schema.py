@@ -56,11 +56,13 @@ class TestAnyOfSchema(TestCase):
         self.assertEqual(schema, loaded)
 
     def test_dump_and_load_with_name(self):
-        schema = AnyOfSchema(schemas=(BooleanSchema(), StringSchema()), name='A Bool or String')
+        schema = AnyOfSchema(schemas=(BooleanSchema(), StringSchema()), name='A Bool or String',
+                             description='A description')
         dumped = dump(schema)
         expected_dump = dict(
             anyOf=[dict(type='boolean'), dict(type='string')],
-            name='A Bool or String'
+            name='A Bool or String',
+            description='A description'
         )
         self.assertEqual(expected_dump, dumped)
         loaded = load(SchemaABC, dumped)

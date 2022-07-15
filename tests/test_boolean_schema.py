@@ -40,6 +40,14 @@ class TestBooleanSchema(TestCase):
         loaded = load(SchemaABC, dumped)
         self.assertEqual(schema, loaded)
 
+    def test_dump_and_load_with_description(self):
+        schema = BooleanSchema(description='A flag')
+        dumped = dump(schema)
+        expected = dict(type='boolean', description='A flag')
+        self.assertEqual(expected, dumped)
+        loaded = load(SchemaABC, dumped)
+        self.assertEqual(schema, loaded)
+
     def test_get_param_schemas(self):
         schema = BooleanSchema()
         param_schemas = schema.get_param_schemas('foo')

@@ -21,6 +21,7 @@ class ObjectSchema(SchemaABC):
     name: Optional[str] = None
     additional_properties: bool = False
     required: Optional[Set[str]] = None
+    description: Optional[str] = None
 
     def get_schema_errors(self, item: ExternalItemType, current_path: Optional[List[str]] = None
                           ) -> Iterator[SchemaError]:
@@ -44,7 +45,8 @@ class ObjectSchema(SchemaABC):
         dumped = filter_none(dict(
             type='object',
             name=self.name,
-            additionalProperties=self.additional_properties
+            additionalProperties=self.additional_properties,
+            description=self.description
         ))
         properties = {k: s.dump_json_schema(json_context) for k, s in self.properties.items()}
         if properties:
