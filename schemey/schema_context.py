@@ -13,7 +13,7 @@ from schemey.factory.schema_factory_abc import SchemaFactoryABC
 from schemey.schema_abc import SchemaABC
 from schemey.obj_schema import ObjSchema
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 @dataclass
@@ -36,7 +36,9 @@ class SchemaContext:
         schema = self.schemas.get(item_type)
         if schema:
             return schema
-        json_schema_context = JsonSchemaContext(schemas={**self.schemas}, factories=self.schema_factories)
+        json_schema_context = JsonSchemaContext(
+            schemas={**self.schemas}, factories=self.schema_factories
+        )
         schema = json_schema_context.get_schema(item_type)
         schema = schema.simplify()
         self.schemas[item_type] = schema
@@ -56,7 +58,7 @@ class SchemaContext:
 
 
 _default_context = None
-CONFIG_MODULE_PREFIX = 'schemey_config_'
+CONFIG_MODULE_PREFIX = "schemey_config_"
 
 
 def get_default_schema_context() -> SchemaContext:
@@ -66,20 +68,26 @@ def get_default_schema_context() -> SchemaContext:
     return _default_context
 
 
-def new_default_schema_context(marshaller_context: Optional[MarshallerContext] = None) -> SchemaContext:
+def new_default_schema_context(
+    marshaller_context: Optional[MarshallerContext] = None,
+) -> SchemaContext:
     if marshaller_context is None:
         marshaller_context = get_default_context()
     context = SchemaContext(marshaller_context=marshaller_context)
     # Set up context based on naming convention
-    module_info = (m for m in pkgutil.iter_modules() if m.name.startswith(CONFIG_MODULE_PREFIX))
+    module_info = (
+        m for m in pkgutil.iter_modules() if m.name.startswith(CONFIG_MODULE_PREFIX)
+    )
     modules = [importlib.import_module(m.name) for m in module_info]
     modules.sort(key=lambda m: m.priority, reverse=True)
     for m in modules:
-        getattr(m, 'configure')(context)
+        getattr(m, "configure")(context)
     return context
 
 
-def schema_for_type(type_: Type[T], context: Optional[SchemaContext] = None) -> ObjSchema:
+def schema_for_type(
+    type_: Type[T], context: Optional[SchemaContext] = None
+) -> ObjSchema:
     if context is None:
         context = get_default_schema_context()
     schema = context.get_obj_schema(type_)

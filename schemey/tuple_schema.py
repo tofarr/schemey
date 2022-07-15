@@ -16,11 +16,13 @@ class TupleSchema(SchemaABC):
     schemas: Tuple[SchemaABC, ...]
     description: Optional[str] = None
 
-    def get_schema_errors(self, item: ExternalType, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
+    def get_schema_errors(
+        self, item: ExternalType, current_path: Optional[List[str]] = None
+    ) -> Iterator[SchemaError]:
         if current_path is None:
             current_path = []
         if not isinstance(item, list) or len(item) != len(self.schemas):
-            yield SchemaError(current_path, 'type', item)
+            yield SchemaError(current_path, "type", item)
             return
         for index, sub_item in enumerate(item):
             current_path.append(str(index))
@@ -32,10 +34,10 @@ class TupleSchema(SchemaABC):
         dumped = {
             "type": "array",
             "prefixItems": [i.dump_json_schema(json_context) for i in self.schemas],
-            "items": False
+            "items": False,
         }
         if self.description:
-            dumped['description'] = self.description
+            dumped["description"] = self.description
         return dumped
 
     def get_param_schemas(self, current_path: str) -> Optional[List[ParamSchema]]:
@@ -48,17 +50,21 @@ class TupleSchema(SchemaABC):
             param_schemas.extend(sub_schemas)
         return param_schemas
 
-    def from_url_params(self, current_path: str, params: Dict[str, List[str]]) -> ExternalType:
+    def from_url_params(
+        self, current_path: str, params: Dict[str, List[str]]
+    ) -> ExternalType:
         values = []
         for index, schema in enumerate(self.schemas):
             sub_path = self._sub_path(current_path, index)
             value = schema.from_url_params(sub_path, params)
             if value is NoDefault:
-                raise SchemaError(current_path, 'missing_value')
+                raise SchemaError(current_path, "missing_value")
             values.append(value)
         return values
 
-    def to_url_params(self, current_path: str, item: ExternalType) -> Iterator[Tuple[str, str]]:
+    def to_url_params(
+        self, current_path: str, item: ExternalType
+    ) -> Iterator[Tuple[str, str]]:
         for index, schema in enumerate(self.schemas):
             sub_path = self._sub_path(current_path, index)
             yield from schema.to_url_params(sub_path, item[index])
@@ -68,8 +74,12 @@ class TupleSchema(SchemaABC):
         sub_path = f"{current_path}.{index}" if current_path else str(index)
         return sub_path
 
-    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type:
-        properties = ((f"t{index}", schema) for index, schema in enumerate(self.schemas))
+    def get_normalized_type(
+        self, existing_types: Dict[str, Any], object_wrapper: Callable
+    ) -> Type:
+        properties = (
+            (f"t{index}", schema) for index, schema in enumerate(self.schemas)
+        )
         attributes = build_attributes(properties, existing_types, object_wrapper)
-        type_ = object_wrapper(type('Tuple', (), attributes))
+        type_ = object_wrapper(type("Tuple", (), attributes))
         return type_

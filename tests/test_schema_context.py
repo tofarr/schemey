@@ -10,7 +10,6 @@ from schemey.schema_context import schema_for_type
 
 
 class TestSchemaContext(TestCase):
-
     def test_version(self):
         assert tests
         assert __version__

@@ -16,7 +16,9 @@ class SchemaMarshallerFactory(MarshallerFactoryABC):
     priority: int = 200
     schemey_context: Optional[SchemaContext] = None
 
-    def create(self, context: MarshallerContext, type_: Type) -> Optional[MarshallerABC]:
+    def create(
+        self, context: MarshallerContext, type_: Type
+    ) -> Optional[MarshallerABC]:
         if inspect.isclass(type_) and issubclass(type_, SchemaABC):
             schemey_context = self.schemey_context or get_default_schema_context()
             return SchemaMarshaller(schemey_context=schemey_context)

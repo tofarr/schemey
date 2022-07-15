@@ -10,7 +10,7 @@ from schemey.schema_context import schema_for_type
 class PetAbc(ABC):
     @abstractmethod
     def annunciate(self):
-        """ Introduce yourself! """
+        """Introduce yourself!"""
 
 
 @dataclass
@@ -34,7 +34,6 @@ register_impl(PetAbc, Parrot)
 
 
 class TestImplSchema(TestCase):
-
     def test_impl(self):
         schema = schema_for_type(PetAbc)
         Dog().annunciate()

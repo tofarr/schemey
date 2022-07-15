@@ -19,17 +19,20 @@ class OptionalSchema(SchemaABC):
     and all other properties should be Optional - and may have a default value (NoDefault is used
     for dynamic defaults - e.g.: field(default_factory=uuid4)
     """
+
     schema: SchemaABC
     default: Union[ExternalType, Type[NoDefault]] = NoDefault
 
-    def get_schema_errors(self, item: ExternalType, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
+    def get_schema_errors(
+        self, item: ExternalType, current_path: Optional[List[str]] = None
+    ) -> Iterator[SchemaError]:
         if item is not None and item is not MISSING:
             yield from self.schema.get_schema_errors(item, current_path)
 
     def dump_json_schema(self, json_context: JsonSchemaContext) -> ExternalItemType:
         schema = self.schema.dump_json_schema(json_context)
         if self.default is not NoDefault:
-            schema['default'] = copy.deepcopy(self.default)
+            schema["default"] = copy.deepcopy(self.default)
         return schema
 
     def simplify(self) -> SchemaABC:
@@ -37,13 +40,15 @@ class OptionalSchema(SchemaABC):
         return schema
 
     def get_param_schemas(self, current_path: str) -> Optional[List[ParamSchema]]:
-        """ Optional schemas allow only one parameter """
+        """Optional schemas allow only one parameter"""
         schemas = self.schema.get_param_schemas(current_path)
         if schemas and len(schemas) == 1:
             schemas[0].required = False
             return schemas
 
-    def from_url_params(self, current_path: str, params: Dict[str, List[str]]) -> Union[ExternalType, type(MISSING)]:
+    def from_url_params(
+        self, current_path: str, params: Dict[str, List[str]]
+    ) -> Union[ExternalType, type(MISSING)]:
         params = self.schema.from_url_params(current_path, params)
         if params is NoDefault:
             if self.default is NoDefault:
@@ -52,10 +57,14 @@ class OptionalSchema(SchemaABC):
                 params = copy.deepcopy(self.default)
         return params
 
-    def to_url_params(self, current_path: str, item: ExternalType) -> Iterator[Tuple[str, str]]:
+    def to_url_params(
+        self, current_path: str, item: ExternalType
+    ) -> Iterator[Tuple[str, str]]:
         yield from self.schema.to_url_params(current_path, item)
 
-    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type:
+    def get_normalized_type(
+        self, existing_types: Dict[str, Any], object_wrapper: Callable
+    ) -> Type:
         type_ = self.schema.get_normalized_type(existing_types, object_wrapper)
         if self.default is None:
             type_ = Optional[get_optional_type(type_) or type_]

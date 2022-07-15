@@ -9,9 +9,10 @@ from schemey.json_schema_context import JsonSchemaContext
 
 
 class BooleanSchemaLoader(SchemaLoaderABC):
-
-    def load(self, item: ExternalItemType, json_context: JsonSchemaContext) -> Optional[SchemaABC]:
-        if item.get('type') != 'boolean':
+    def load(
+        self, item: ExternalItemType, json_context: JsonSchemaContext
+    ) -> Optional[SchemaABC]:
+        if item.get("type") != "boolean":
             return None
-        loaded = BooleanSchema(item.get('description'))
+        loaded = BooleanSchema(item.get("description"))
         return loaded

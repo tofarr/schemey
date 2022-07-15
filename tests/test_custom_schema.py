@@ -29,7 +29,6 @@ class Coordinate:
 
 
 class CoordinateMarshaller(MarshallerABC[Coordinate]):
-
     def load(self, item: ExternalType) -> Coordinate:
         return Coordinate(item[0], item[1])
 
@@ -39,21 +38,18 @@ class CoordinateMarshaller(MarshallerABC[Coordinate]):
 
 @dataclass
 class CoordinateSchema(SchemaABC):
-
-    def get_schema_errors(self, item: ExternalItemType, current_path: Optional[List[str]] = None
-                          ) -> Iterator[SchemaError]:
+    def get_schema_errors(
+        self, item: ExternalItemType, current_path: Optional[List[str]] = None
+    ) -> Iterator[SchemaError]:
         if not isinstance(item, list) or len(item) != 2:
-            yield SchemaError(current_path, 'invalid_point', item)
+            yield SchemaError(current_path, "invalid_point", item)
 
     def dump_json_schema(self, json_context: JsonSchemaContext) -> ExternalItemType:
-        return dict(
-            type='array',
-            minLength=2,
-            maxLength=2,
-            items=dict(type='number')
-        )
+        return dict(type="array", minLength=2, maxLength=2, items=dict(type="number"))
 
-    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type:
+    def get_normalized_type(
+        self, existing_types: Dict[str, Any], object_wrapper: Callable
+    ) -> Type:
         # Standard type does not support tuples, because there are no tuples in graphql
         return List[float]
 
@@ -62,8 +58,14 @@ class CoordinateSchema(SchemaABC):
 class CoordinateSchemaLoader(SchemaLoaderABC):
     priority: int = 200
 
-    def load(self, item: ExternalItemType, json_context: JsonSchemaContext) -> Optional[SchemaABC]:
-        if item.get('type') == 'array' and item.get('minLength') == 2 and item.get('maxLength') == 2:
+    def load(
+        self, item: ExternalItemType, json_context: JsonSchemaContext
+    ) -> Optional[SchemaABC]:
+        if (
+            item.get("type") == "array"
+            and item.get("minLength") == 2
+            and item.get("maxLength") == 2
+        ):
             return CoordinateSchema()
 
 
@@ -73,11 +75,12 @@ CUSTOM_MARSHALLER_CONTEXT.register_marshaller(CoordinateMarshaller(Coordinate))
 CUSTOM_CONTEXT = new_default_schema_context(CUSTOM_MARSHALLER_CONTEXT)
 CUSTOM_CONTEXT.register_schema(Coordinate, CoordinateSchema())
 CUSTOM_CONTEXT.register_loader(CoordinateSchemaLoader())
-CUSTOM_MARSHALLER_CONTEXT.register_factory(SchemaMarshallerFactory(schemey_context=CUSTOM_CONTEXT, priority=201))
+CUSTOM_MARSHALLER_CONTEXT.register_factory(
+    SchemaMarshallerFactory(schemey_context=CUSTOM_CONTEXT, priority=201)
+)
 
 
 class TestCustomSchema(TestCase):
-
     def test_marshall_coordinate(self):
         coord = Coordinate(1, 2)
         dumped = CUSTOM_MARSHALLER_CONTEXT.dump(coord)
@@ -88,23 +91,37 @@ class TestCustomSchema(TestCase):
 
     def test_schema_for_coordinate(self):
         schema = CUSTOM_CONTEXT.get_obj_schema(Coordinate)
-        self.assertEqual([1, 2], CUSTOM_CONTEXT.marshaller_context.dump(Coordinate(1, 2)))
-        self.assertEqual([SchemaError('', 'type', 'foo')], list(schema.get_schema_errors('foo')))
+        self.assertEqual(
+            [1, 2], CUSTOM_CONTEXT.marshaller_context.dump(Coordinate(1, 2))
+        )
+        self.assertEqual(
+            [SchemaError("", "type", "foo")], list(schema.get_schema_errors("foo"))
+        )
         self.assertEqual([], list(schema.get_schema_errors(Coordinate(1, 2))))
         self.assertEqual([], list(schema.json_schema.get_schema_errors([1, 2])))
-        self.assertEqual([SchemaError('', 'invalid_point', 'foo')], list(schema.json_schema.get_schema_errors('foo')))
+        self.assertEqual(
+            [SchemaError("", "invalid_point", "foo")],
+            list(schema.json_schema.get_schema_errors("foo")),
+        )
 
     def test_is_isolated_from_default(self):
         schema = schema_for_type(Coordinate)
         self.assertEqual(dict(x=1, y=2), marshy.dump(Coordinate(1, 2)))
-        self.assertEqual([SchemaError('', 'type', 'foo')], list(schema.get_schema_errors('foo')))
+        self.assertEqual(
+            [SchemaError("", "type", "foo")], list(schema.get_schema_errors("foo"))
+        )
         self.assertEqual([], list(schema.get_schema_errors(Coordinate(1, 2))))
         self.assertEqual([], list(schema.json_schema.get_schema_errors(dict(x=1, y=2))))
 
     def test_dump_and_load_schema(self):
         schema = CUSTOM_CONTEXT.get_schema(Coordinate)
         dumped = CUSTOM_MARSHALLER_CONTEXT.dump(schema)
-        expected_dumped = {'items': {'type': 'number'}, 'maxLength': 2, 'minLength': 2, 'type': 'array'}
+        expected_dumped = {
+            "items": {"type": "number"},
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "array",
+        }
         self.assertEqual(dumped, expected_dumped)
         loaded = CUSTOM_MARSHALLER_CONTEXT.load(SchemaABC, dumped)
         self.assertEqual(schema, loaded)

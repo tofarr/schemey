@@ -16,8 +16,10 @@ schema = schema_for_type(HelloWorld)
 
 # A full listing of errors for an item can be retrieved:
 # noinspection PyTypeChecker
-errors = list(schema.get_schema_errors(HelloWorld(None)))  # [SchemaError(path='name', code='type', value='You')]
+errors = list(
+    schema.get_schema_errors(HelloWorld(None))
+)  # [SchemaError(path='name', code='type', value='You')]
 
 # ...or validation errors can be thrown:
-schema.validate(HelloWorld('You'))  # No errors
+schema.validate(HelloWorld("You"))  # No errors
 # schema.validate(HelloWorld(None)) # raises SchemaError(path='name', code='type', value=None)

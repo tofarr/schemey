@@ -6,9 +6,13 @@ from schemey.param_schema import ParamSchema
 
 
 class TestParamSchema(TestCase):
-
     def test_dump_json(self):
-        schema = ParamSchema('foo', IntegerSchema(), False, 'path')
+        schema = ParamSchema("foo", IntegerSchema(), False, "path")
         dumped = schema.dump_json(JsonSchemaContext())
-        expected = {'in': 'path', 'name': 'foo', 'required': False, 'schema': {'type': 'integer'}}
+        expected = {
+            "in": "path",
+            "name": "foo",
+            "required": False,
+            "schema": {"type": "integer"},
+        }
         self.assertEqual(expected, dumped)

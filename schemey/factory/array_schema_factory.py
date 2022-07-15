@@ -10,8 +10,9 @@ from schemey.json_schema_context import JsonSchemaContext
 
 
 class ArraySchemaFactory(SchemaFactoryABC):
-
-    def create(self, type_: Type, json_context: JsonSchemaContext) -> Optional[SchemaABC]:
+    def create(
+        self, type_: Type, json_context: JsonSchemaContext
+    ) -> Optional[SchemaABC]:
         array_type = self.get_array_type(type_)
         if array_type:
             args = typing_inspect.get_args(type_)

@@ -11,8 +11,9 @@ from schemey.tuple_schema import TupleSchema
 
 
 class AnyOfSchemaFactory(SchemaFactoryABC):
-
-    def create(self, type_: Type, json_context: JsonSchemaContext) -> Optional[SchemaABC]:
+    def create(
+        self, type_: Type, json_context: JsonSchemaContext
+    ) -> Optional[SchemaABC]:
         origin = typing_inspect.get_origin(type_)
         if origin == Union:
             args = typing_inspect.get_args(type_)

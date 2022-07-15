@@ -9,11 +9,12 @@ from schemey.schema_abc import SchemaABC
 
 
 class StrParamSchemaABC(SchemaABC, ABC):
-
     def get_param_schemas(self, current_path: str) -> List[ParamSchema]:
         return [ParamSchema(name=current_path, schema=self)]
 
-    def from_url_params(self, current_path: str, params: Dict[str, List[str]]) -> Union[ExternalType, NoDefault]:
+    def from_url_params(
+        self, current_path: str, params: Dict[str, List[str]]
+    ) -> Union[ExternalType, NoDefault]:
         if current_path not in params:
             return NoDefault
         values = params.get(current_path)

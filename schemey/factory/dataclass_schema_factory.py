@@ -12,8 +12,9 @@ from schemey.optional_schema import OptionalSchema, NoDefault
 
 
 class DataclassSchemaFactory(SchemaFactoryABC):
-
-    def create(self, type_: Type, json_context: JsonSchemaContext) -> Optional[SchemaABC]:
+    def create(
+        self, type_: Type, json_context: JsonSchemaContext
+    ) -> Optional[SchemaABC]:
         if not dataclasses.is_dataclass(type_):
             return
         name = type_.__name__
@@ -30,13 +31,15 @@ class DataclassSchemaFactory(SchemaFactoryABC):
         schema.schema = ObjectSchema(
             properties={n: s for n, s in field_schemas},
             name=type_.__name__,
-            required=required or None
+            required=required or None,
         )
         return schema
 
     @staticmethod
-    def _schema_for_field(field: dataclasses.Field, json_context: JsonSchemaContext) -> Tuple[str, SchemaABC]:
-        schema = field.metadata.get('schemey')
+    def _schema_for_field(
+        field: dataclasses.Field, json_context: JsonSchemaContext
+    ) -> Tuple[str, SchemaABC]:
+        schema = field.metadata.get("schemey")
         field_type = get_optional_type(field.type) or field.type
         if not schema:
             schema = json_context.get_schema(field_type)
@@ -45,7 +48,9 @@ class DataclassSchemaFactory(SchemaFactoryABC):
             if field.default is None:
                 default = None
             else:
-                default = json_context.marshaller_context.dump(field.default, field_type)
+                default = json_context.marshaller_context.dump(
+                    field.default, field_type
+                )
         if default is not NoDefault or field.default_factory is not dataclasses.MISSING:
             schema = OptionalSchema(schema, default)
         return field.name, schema

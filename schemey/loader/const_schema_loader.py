@@ -13,8 +13,10 @@ from schemey.json_schema_context import JsonSchemaContext
 class ConstSchemaLoader(SchemaLoaderABC):
     priority: int = 10
 
-    def load(self, item: ExternalItemType, json_context: JsonSchemaContext) -> Optional[SchemaABC]:
-        if 'const' not in item:
+    def load(
+        self, item: ExternalItemType, json_context: JsonSchemaContext
+    ) -> Optional[SchemaABC]:
+        if "const" not in item:
             return None
-        schema = ConstSchema(item['const'], item.get('description'))
+        schema = ConstSchema(item["const"], item.get("description"))
         return schema

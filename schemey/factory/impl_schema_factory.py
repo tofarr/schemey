@@ -15,7 +15,9 @@ from schemey.tuple_schema import TupleSchema
 class ImplSchemaFactory(SchemaFactoryABC):
     priority: int = 150
 
-    def create(self, type_: Type, json_context: JsonSchemaContext) -> Optional[SchemaABC]:
+    def create(
+        self, type_: Type, json_context: JsonSchemaContext
+    ) -> Optional[SchemaABC]:
         impls = self.get_impls(type_, json_context)
         if impls:
             schemas = tuple(self.wrap_impl(i, json_context) for i in impls)

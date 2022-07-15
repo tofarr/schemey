@@ -9,7 +9,8 @@ from schemey.null_schema import NullSchema
 
 
 class NullSchemaLoader(SchemaLoaderABC):
-
-    def load(self, item: ExternalItemType, json_context: JsonSchemaContext) -> Optional[SchemaABC]:
-        loaded = NullSchema() if item.get('type') == 'null' else None
+    def load(
+        self, item: ExternalItemType, json_context: JsonSchemaContext
+    ) -> Optional[SchemaABC]:
+        loaded = NullSchema() if item.get("type") == "null" else None
         return loaded

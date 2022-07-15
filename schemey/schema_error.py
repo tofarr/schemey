@@ -10,10 +10,12 @@ class SchemaError(Exception):
     code: str
     value: Any
 
-    def __init__(self, path: Union[str, List[str]], code: str, value: ExternalType = None):
+    def __init__(
+        self, path: Union[str, List[str]], code: str, value: ExternalType = None
+    ):
         if not isinstance(path, str):
             path = "/".join(path or [])
-        super().__init__(f':{code}:{path}:{value}')
-        object.__setattr__(self, 'path', path)
-        object.__setattr__(self, 'code', code)
-        object.__setattr__(self, 'value', value)
+        super().__init__(f":{code}:{path}:{value}")
+        object.__setattr__(self, "path", path)
+        object.__setattr__(self, "code", code)
+        object.__setattr__(self, "value", value)

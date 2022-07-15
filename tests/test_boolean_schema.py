@@ -11,7 +11,6 @@ from schemey.schema_context import get_default_schema_context
 
 
 class TestBooleanSchema(TestCase):
-
     def test_factory(self):
         context = get_default_schema_context()
         schema = context.get_schema(bool)
@@ -24,8 +23,13 @@ class TestBooleanSchema(TestCase):
         # Boolean schema actually accepts anything and converts it to truthy / falsy
         self.assertEqual([], list(schema.get_schema_errors(True)))
         self.assertEqual([], list(schema.get_schema_errors(False)))
-        self.assertEqual([SchemaError('', 'type', 'True')], list(schema.get_schema_errors('True')))
-        self.assertEqual([SchemaError('a/b', 'type', 'True')], list(schema.get_schema_errors('True', ['a', 'b'])))
+        self.assertEqual(
+            [SchemaError("", "type", "True")], list(schema.get_schema_errors("True"))
+        )
+        self.assertEqual(
+            [SchemaError("a/b", "type", "True")],
+            list(schema.get_schema_errors("True", ["a", "b"])),
+        )
 
     def test_validate(self):
         context = get_default_schema_context()
@@ -41,31 +45,31 @@ class TestBooleanSchema(TestCase):
         self.assertEqual(schema, loaded)
 
     def test_dump_and_load_with_description(self):
-        schema = BooleanSchema(description='A flag')
+        schema = BooleanSchema(description="A flag")
         dumped = dump(schema)
-        expected = dict(type='boolean', description='A flag')
+        expected = dict(type="boolean", description="A flag")
         self.assertEqual(expected, dumped)
         loaded = load(SchemaABC, dumped)
         self.assertEqual(schema, loaded)
 
     def test_get_param_schemas(self):
         schema = BooleanSchema()
-        param_schemas = schema.get_param_schemas('foo')
-        expected = [ParamSchema('foo', schema)]
+        param_schemas = schema.get_param_schemas("foo")
+        expected = [ParamSchema("foo", schema)]
         self.assertEqual(expected, param_schemas)
 
     def test_from_url_params(self):
         schema = BooleanSchema()
-        self.assertTrue(schema.from_url_params('foo', dict(foo=['1'])))
-        self.assertFalse(schema.from_url_params('foo', dict(foo=['0'])))
-        self.assertTrue(schema.from_url_params('bar', dict(bar=['tRuE'])))
-        self.assertFalse(schema.from_url_params('bar', dict(bar=['fAlSe'])))
-        self.assertEqual(NoDefault, schema.from_url_params('bar', dict()))
+        self.assertTrue(schema.from_url_params("foo", dict(foo=["1"])))
+        self.assertFalse(schema.from_url_params("foo", dict(foo=["0"])))
+        self.assertTrue(schema.from_url_params("bar", dict(bar=["tRuE"])))
+        self.assertFalse(schema.from_url_params("bar", dict(bar=["fAlSe"])))
+        self.assertEqual(NoDefault, schema.from_url_params("bar", dict()))
 
     def test_to_url_params(self):
         schema = BooleanSchema()
-        self.assertEqual([('foo', '1')], list(schema.to_url_params('foo', True)))
-        self.assertEqual([('bar', '0')], list(schema.to_url_params('bar', False)))
+        self.assertEqual([("foo", "1")], list(schema.to_url_params("foo", True)))
+        self.assertEqual([("bar", "0")], list(schema.to_url_params("bar", False)))
 
     def test_get_normalized_type(self):
         schema = BooleanSchema()

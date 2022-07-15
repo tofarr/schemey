@@ -10,15 +10,16 @@ from schemey.string_format import StringFormat
 
 
 class StringSchemaLoader(SchemaLoaderABC):
-
-    def load(self, item: ExternalItemType, json_context: JsonSchemaContext) -> Optional[SchemaABC]:
-        if item.get('type') != 'string':
+    def load(
+        self, item: ExternalItemType, json_context: JsonSchemaContext
+    ) -> Optional[SchemaABC]:
+        if item.get("type") != "string":
             return None
         loaded = StringSchema(
-            min_length=item.get('minLength'),
-            max_length=item.get('maxLength'),
-            pattern=item.get('pattern'),
-            format=StringFormat(item.get('format')) if item.get('format') else None,
-            description=item.get('description')
+            min_length=item.get("minLength"),
+            max_length=item.get("maxLength"),
+            pattern=item.get("pattern"),
+            format=StringFormat(item.get("format")) if item.get("format") else None,
+            description=item.get("description"),
         )
         return loaded

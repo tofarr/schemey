@@ -9,13 +9,13 @@ from schemey.factory.schema_factory_abc import SchemaFactoryABC
 from schemey.loader.schema_loader_abc import SchemaLoaderABC
 from schemey.schema_abc import SchemaABC
 
-_DeferredSchema = 'schemey.deferred_schema.DeferredSchema'
+_DeferredSchema = "schemey.deferred_schema.DeferredSchema"
 
 
 @dataclass
 class JsonSchemaContext:
     defs: Dict[str, _DeferredSchema] = field(default_factory=dict)
-    defs_path: str = '#$defs'
+    defs_path: str = "#$defs"
     schemas: Optional[Dict[Type, SchemaABC]] = field(default_factory=dict)
     loaders: Optional[List[SchemaLoaderABC]] = None
     factories: Optional[List[SchemaFactoryABC]] = None
@@ -26,7 +26,7 @@ class JsonSchemaContext:
             schema = loader.load(item, self)
             if schema:
                 return schema
-        raise ValueError(f'could_not_load:{item}')
+        raise ValueError(f"could_not_load:{item}")
 
     def get_schema(self, item_type: Type) -> SchemaABC:
         schema = self.schemas.get(item_type)
@@ -37,4 +37,4 @@ class JsonSchemaContext:
             if schema:
                 self.schemas[item_type] = schema
                 return schema
-        raise ValueError(f'could_not_create:{item_type}')
+        raise ValueError(f"could_not_create:{item_type}")

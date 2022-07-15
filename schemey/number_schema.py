@@ -18,18 +18,29 @@ class NumberSchema(StrParamSchemaABC):
     exclusive_maximum: Optional[float] = None
     description: Optional[str] = None
 
-    def get_schema_errors(self, item: float, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
+    def get_schema_errors(
+        self, item: float, current_path: Optional[List[str]] = None
+    ) -> Iterator[SchemaError]:
         if not isinstance(item, float) and item.__class__ is not int:
-            yield SchemaError(current_path or [], 'type', item)
+            yield SchemaError(current_path or [], "type", item)
             return
-        yield from check(item, current_path, self.minimum, self.maximum, self.exclusive_minimum, self.exclusive_maximum)
+        yield from check(
+            item,
+            current_path,
+            self.minimum,
+            self.maximum,
+            self.exclusive_minimum,
+            self.exclusive_maximum,
+        )
 
     def dump_json_schema(self, json_context: JsonSchemaContext) -> ExternalItemType:
-        return dump_json_schema(self, 'number')
+        return dump_json_schema(self, "number")
 
     def simplify(self) -> SchemaABC:
         kwargs = simplify_kwargs(self)
         return NumberSchema(**kwargs)
 
-    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type[float]:
+    def get_normalized_type(
+        self, existing_types: Dict[str, Any], object_wrapper: Callable
+    ) -> Type[float]:
         return float

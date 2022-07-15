@@ -7,9 +7,13 @@ from schemey.schema_context import schema_for_type
 @dataclass
 class Person:
     name: str
-    age: Optional[int] = field(default=None, metadata=dict(schemey=NumberSchema(minimum=0)))
+    age: Optional[int] = field(
+        default=None, metadata=dict(schemey=NumberSchema(minimum=0))
+    )
 
 
 schema = schema_for_type(Person)
 
-errors = list(schema.get_schema_errors(Person('You', -1)))  # [SchemaError(path='age', code='minimum', value=-1)]
+errors = list(
+    schema.get_schema_errors(Person("You", -1))
+)  # [SchemaError(path='age', code='minimum', value=-1)]

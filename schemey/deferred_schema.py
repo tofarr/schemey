@@ -15,12 +15,14 @@ class DeferredSchema(SchemaABC):
     schema: Optional[SchemaABC] = field(default=None, compare=False)
     num_usages: int = 0
 
-    def get_schema_errors(self, item: ExternalType, current_path: Optional[List[str]] = None) -> Iterator[SchemaError]:
+    def get_schema_errors(
+        self, item: ExternalType, current_path: Optional[List[str]] = None
+    ) -> Iterator[SchemaError]:
         yield from self.schema.get_schema_errors(item, current_path)
 
     def dump_json_schema(self, json_context: JsonSchemaContext) -> ExternalItemType:
         json_context.defs[self.ref] = self
-        dumped = {'$ref': f"{json_context.defs_path}/{self.ref}"}
+        dumped = {"$ref": f"{json_context.defs_path}/{self.ref}"}
         return dumped
 
     def simplify(self) -> SchemaABC:
@@ -29,5 +31,7 @@ class DeferredSchema(SchemaABC):
         self.num_usages = 0
         return self.schema.simplify()
 
-    def get_normalized_type(self, existing_types: Dict[str, Any], object_wrapper: Callable) -> Type:
+    def get_normalized_type(
+        self, existing_types: Dict[str, Any], object_wrapper: Callable
+    ) -> Type:
         return self.schema.get_normalized_type(existing_types, object_wrapper)
