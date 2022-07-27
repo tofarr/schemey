@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Type, Optional, Tuple
+from typing import Type, Optional, Tuple, get_type_hints
 
 from marshy.factory.optional_marshaller_factory import get_optional_type
 
@@ -26,7 +26,11 @@ class DataclassSchemaFactory(SchemaFactoryABC):
         json_context.defs[name] = schema
         # noinspection PyDataclass
         fields = dataclasses.fields(type_)
-        field_schemas = tuple(self._schema_for_field(f, json_context) for f in fields)
+        try:
+            types = get_type_hints(type_, globalns=None, localns=None)
+        except NameError:
+            types = {f.name: f.type for f in fields}
+        field_schemas = tuple(self._schema_for_field(f, types, json_context) for f in fields)
         required = {n for n, s in field_schemas if not isinstance(s, OptionalSchema)}
         schema.schema = ObjectSchema(
             properties={n: s for n, s in field_schemas},
@@ -37,10 +41,13 @@ class DataclassSchemaFactory(SchemaFactoryABC):
 
     @staticmethod
     def _schema_for_field(
-        field: dataclasses.Field, json_context: JsonSchemaContext
+        field: dataclasses.Field, types, json_context: JsonSchemaContext
     ) -> Tuple[str, SchemaABC]:
         schema = field.metadata.get("schemey")
-        field_type = get_optional_type(field.type) or field.type
+        field_type = field.type
+        if isinstance(field_type, str):
+            field_type = types[field.name]
+        field_type = get_optional_type(field_type) or field_type
         if not schema:
             schema = json_context.get_schema(field_type)
         default = NoDefault
