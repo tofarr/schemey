@@ -13,7 +13,6 @@ from schemey.validator import validator_from_type
 
 
 class Point:
-
     def __init__(self, x: float, y: float):
         self.x = x
         self.y = y
@@ -23,7 +22,6 @@ class Point:
     def __marshaller_factory__(cls, context: MarshallerContext):
         # Marshy already lets us define marshalling any way we choose.
         class PointMarshaller(MarshallerABC[Point]):
-
             def load(self, item: ExternalType) -> Point:
                 return Point(*item)
 
@@ -44,7 +42,7 @@ class Point:
                 "maxLength": 2,
                 "items": {
                     "type": "number",
-                }
+                },
             },
             Point,
         )

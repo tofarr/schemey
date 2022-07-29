@@ -30,7 +30,7 @@ class _ValidatingInstanceWrapper:
     def __eq__(self, other):
         wrapped = object.__getattribute__(self, "__wrapped__")
         if isinstance(other, _ValidatingInstanceWrapper):
-            other = object.__getattribute__(other, '__wrapped__')
+            other = object.__getattribute__(other, "__wrapped__")
         return wrapped.__eq__(other)
 
 
