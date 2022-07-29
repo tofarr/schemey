@@ -41,6 +41,7 @@ class TestImplSchemaFactory(TestCase):
         schema = context.schema_from_type(PetABC)
         expected = Schema(
             {
+                "name": "PetABC",
                 "anyOf": [
                     {
                         "type": "array",
@@ -70,7 +71,7 @@ class TestImplSchemaFactory(TestCase):
                         ],
                         "items": False,
                     },
-                ]
+                ],
             },
             PetABC,
         )
@@ -83,3 +84,9 @@ class TestImplSchemaFactory(TestCase):
         item = context.marshaller_context.dump(Dog("Bowser"), PetABC)
         schema = context.schema_from_type(PetABC)
         schema.validate(item)
+
+    def test_pet_from_json(self):
+        context = self.get_context()
+        expected = context.schema_from_type(PetABC)
+        from_json = context.schema_from_json(expected.schema)
+        self.assertEqual(expected, from_json)

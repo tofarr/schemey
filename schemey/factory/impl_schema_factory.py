@@ -37,7 +37,8 @@ class ImplSchemaFactory(SchemaFactoryABC):
                 any_of.append(
                     {"type": "array", "prefixItems": prefix_items, "items": False}
                 )
-            return Schema({"anyOf": any_of}, type_)
+            # We overload the name annotation here to try and identify the impl when reading...
+            return Schema({"name": type_.__name__, "anyOf": any_of}, type_)
 
     def from_json(
         self,
@@ -46,7 +47,16 @@ class ImplSchemaFactory(SchemaFactoryABC):
         path: str,
         ref_schemas: Dict[str, Schema],
     ) -> Optional[Schema]:
-        """No implementation since it is unlikely to be needed"""
+        """We read any named anyOf schema, and simply use what is defined locally rather than in the schema"""
+        name = item.get("name")
+        if not name or not item.get("anyOf"):
+            return
+        factories = context.marshaller_context.get_factories()
+        for factory in factories:
+            if isinstance(factory, ImplMarshallerFactory):
+                if factory.base.__name__ == name:
+                    schema = self.from_type(factory.base, context, path)
+                    return schema
 
     @staticmethod
     def get_impls(type_: Type, context: SchemaContext) -> Optional[Set[Type]]:
