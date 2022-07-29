@@ -1,59 +1,93 @@
+from typing import List, Set, Union, Tuple
 from unittest import TestCase
 
-from marshy import dump
-
-from schemey.array_schema import ArraySchema
-from schemey.integer_schema import IntegerSchema
-from schemey.number_schema import NumberSchema
-from schemey.schema_error import SchemaError
-from schemey.string_schema import StringSchema
-
+from jsonschema import ValidationError
+from marshy import dump, load
 
 # noinspection PyTypeChecker
+from schemey import schema_from_type, Schema
+
+
 class TestArraySchema(TestCase):
-    def test_schema_string_array(self):
-        schema = ArraySchema(item_schema=StringSchema())
-        assert list(schema.get_schema_errors(["a", "b", "c"])) == []
-        assert list(schema.get_schema_errors("foo")) == [SchemaError("", "type", "foo")]
-        assert list(schema.get_schema_errors([10])) == [SchemaError("0", "type", 10)]
-
-    def test_schema_unique_int_array(self):
-        schema = ArraySchema(item_schema=IntegerSchema(), uniqueness=True)
-        assert list(schema.get_schema_errors([1, 2, 3])) == []
-        assert list(schema.get_schema_errors([1, 2, 2])) == [
-            SchemaError("2", "non_unique", 2)
-        ]
-        assert list(schema.get_schema_errors([])) == []
-
-    def test_schema_min_items(self):
-        schema = ArraySchema(item_schema=IntegerSchema(), min_items=2)
-        assert list(schema.get_schema_errors([1, 2, 3])) == []
-        assert list(schema.get_schema_errors([1, 2])) == []
-        assert list(schema.get_schema_errors([1], ["foobar"])) == [
-            SchemaError("foobar", "min_items", [1])
-        ]
-
-    def test_schema_max_items(self):
-        schema = ArraySchema(item_schema=IntegerSchema(), max_items=2)
-        assert list(schema.get_schema_errors([1])) == []
-        assert list(schema.get_schema_errors([1, 2])) == [
-            SchemaError("", "max_items", [1, 2])
-        ]
-        errors = list(schema.get_schema_errors([1, 2, 3], ["foobar"]))
-        assert errors == [SchemaError("foobar", "max_items", [1, 2, 3])]
-
-    def test_dump_and_load(self):
-        dumped = dump(ArraySchema(NumberSchema()))
-        assert dumped == dict(type="array", items=dict(type="number"))
-        json_schema = dict(
-            type="array",
-            items=dict(type="string"),
-            minItems=5,
-            maxItems=10,
-            uniqueness=True,
+    def test_factory(self):
+        schema = schema_from_type(List[bool])
+        expected = Schema(
+            schema={"type": "array", "items": {"type": "boolean"}},
+            python_type=List[bool],
         )
-        schema = ArraySchema(
-            item_schema=StringSchema(), min_items=5, max_items=10, uniqueness=True
-        )
+        self.assertEqual(expected, schema)
         dumped = dump(schema)
-        assert dumped == json_schema
+        loaded = load(Schema, dumped)
+        self.assertEqual(expected, loaded)
+        schema.validate([True, False])
+        with self.assertRaises(ValidationError):
+            schema.validate("string")
+        with self.assertRaises(ValidationError):
+            schema.validate([True, "string"])
+
+    def test_no_type(self):
+        schema = schema_from_type(List)
+        expected = Schema(
+            schema={"type": "array"},
+            python_type=List,
+        )
+        self.assertEqual(expected, schema)
+        dumped = dump(schema)
+        loaded = load(Schema, dumped)
+        self.assertEqual(expected, loaded)
+        schema.validate([True, "foobar"])
+        with self.assertRaises(ValidationError):
+            schema.validate("string")
+
+    def test_set(self):
+        schema = schema_from_type(Set[Union[type(None), bool, str]])
+        expected = Schema(
+            schema={
+                "type": "array",
+                "items": {
+                    "anyOf": [{"type": "null"}, {"type": "boolean"}, {"type": "string"}]
+                },
+                "uniqueItems": True,
+            },
+            python_type=Set[Union[type(None), bool, str]],
+        )
+        self.assertEqual(expected, schema)
+        dumped = dump(schema)
+        loaded = load(Schema, dumped)
+        self.assertEqual(expected, loaded)
+        schema.validate([True, "foobar", None])
+        with self.assertRaises(ValidationError):
+            schema.validate([True, "string", 10])
+
+    def test_tuple(self):
+        schema = schema_from_type(Tuple[int, ...])
+        expected = Schema(
+            schema={"type": "array", "items": {"type": "integer"}, "tuple": True},
+            python_type=Tuple[int, ...],
+        )
+        self.assertEqual(expected, schema)
+        dumped = dump(schema)
+        loaded = load(Schema, dumped)
+        self.assertEqual(expected, loaded)
+        schema.validate([1, 2])
+        schema.validate([1.0, 2])
+        with self.assertRaises(ValidationError):
+            schema.validate([1.5, 2])
+
+    def test_max_items(self):
+        schema = Schema(
+            schema={"type": "array", "items": {"type": "boolean"}, "maxItems": 2},
+            python_type=List[bool],
+        )
+        schema.validate([True, False])
+        with self.assertRaises(ValidationError):
+            schema.validate([True, False, False])
+
+    def test_unique(self):
+        schema = Schema(
+            schema={"type": "array", "items": {"type": "boolean"}, "uniqueItems": True},
+            python_type=List[bool],
+        )
+        schema.validate([True, False])
+        with self.assertRaises(ValidationError):
+            schema.validate([True, False, False])

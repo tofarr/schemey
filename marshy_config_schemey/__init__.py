@@ -1,9 +1,9 @@
 from marshy.marshaller_context import MarshallerContext
 
-from schemey.factory.schema_marshaller_factory import SchemaMarshallerFactory
+from schemey.schema_marshaller import SchemaMarshaller
 
 priority = 100
 
 
 def configure(context: MarshallerContext):
-    context.register_factory(SchemaMarshallerFactory())
+    context.register_marshaller(SchemaMarshaller())

@@ -8,16 +8,21 @@ class TestExamples(TestCase):
         assert a_hello_world.errors
 
     def test_b(self):
-        from tests.examples import b_json_conversion
+        from tests.examples import b_validated_dataclass
 
-        assert b_json_conversion.schema_json
+        assert b_validated_dataclass.greeter
 
     def test_c(self):
-        from tests.examples import c_self_references
+        from tests.examples import c_dataclass_validations
 
-        assert c_self_references.schema_json
+        assert c_dataclass_validations.validator
 
     def test_d(self):
-        from tests.examples import d_custom_field_schema
+        from tests.examples import d_custom_validations
 
-        assert d_custom_field_schema.errors
+        assert d_custom_validations.validator
+
+    def test_e(self):
+        from tests.examples import e_from_json
+
+        assert e_from_json.User

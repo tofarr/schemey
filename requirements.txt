@@ -1,8 +1,4 @@
-coverage==6.1.1
-decorator==5.1.0
-marshy==2.4.0
-mypy-extensions==0.4.3
-six==1.16.0
-typing-extensions==3.10.0.2
-typing-inspect==0.7.1
-validators==0.18.2
+marshy~=2.4
+jsonschema~=4.8
+black~=22.6
+coverage~=6.4

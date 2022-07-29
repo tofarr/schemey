@@ -1,38 +1,44 @@
 from dataclasses import dataclass
-from typing import Type, Optional, Set
+from typing import Type, Optional, Set, List, Dict
 
 from marshy.factory.impl_marshaller_factory import ImplMarshallerFactory
+from marshy.types import ExternalItemType
 
-from schemey.any_of_schema import AnyOfSchema
-from schemey.const_schema import ConstSchema
 from schemey.factory.schema_factory_abc import SchemaFactoryABC
-from schemey.schema_abc import SchemaABC
-from schemey.json_schema_context import JsonSchemaContext
-from schemey.tuple_schema import TupleSchema
+from schemey.schema import Schema
+from schemey.schema_context import SchemaContext
 
 
 @dataclass
 class ImplSchemaFactory(SchemaFactoryABC):
     priority: int = 150
 
-    def create(
-        self, type_: Type, json_context: JsonSchemaContext
-    ) -> Optional[SchemaABC]:
-        impls = self.get_impls(type_, json_context)
+    def from_type(
+        self, type_: Type, context: SchemaContext, path: str
+    ) -> Optional[Schema]:
+        impls = self.get_impls(type_, context)
         if impls:
-            schemas = tuple(self.wrap_impl(i, json_context) for i in impls)
-            return AnyOfSchema(schemas=schemas, name=type_.__name__)
+            schemas = {
+                "anyOf": [
+                    context.schema_from_type(t, f"{path}/anyOf/{i}")
+                    for i, t in enumerate(impls)
+                ]
+            }
+            return Schema(schemas, type_)
+
+    def from_json(
+        self,
+        item: ExternalItemType,
+        context: SchemaContext,
+        path: str,
+        ref_schemas: Dict[str, Schema],
+    ) -> Optional[Schema]:
+        """No implementation"""
 
     @staticmethod
-    def get_impls(type_: Type, json_context: JsonSchemaContext) -> Optional[Set[Type]]:
-        factories = json_context.marshaller_context.get_factories()
+    def get_impls(type_: Type, context: SchemaContext) -> Optional[Set[Type]]:
+        factories = context.marshaller_context.get_factories()
         for factory in factories:
             if isinstance(factory, ImplMarshallerFactory):
                 if factory.base == type_:
                     return factory.impls
-
-    @staticmethod
-    def wrap_impl(type_: Type, json_context: JsonSchemaContext):
-        schema = json_context.get_schema(type_)
-        schema = TupleSchema((ConstSchema(type_.__name__), schema))
-        return schema

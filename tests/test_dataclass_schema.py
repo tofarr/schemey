@@ -1,24 +1,14 @@
-from dataclasses import field, dataclass, fields, is_dataclass, MISSING
+from dataclasses import field, dataclass, fields
 from datetime import datetime
-from typing import Optional, List, Set, Tuple
+from typing import Optional, List
 from unittest import TestCase
 from uuid import uuid4, UUID
 
+from jsonschema import ValidationError
 from marshy import dump, load
 
-from schemey.array_schema import ArraySchema
-from schemey.boolean_schema import BooleanSchema
-from schemey.deferred_schema import DeferredSchema
-from schemey.integer_schema import IntegerSchema
-from schemey.obj_schema import ObjSchema
-from schemey.param_schema import ParamSchema
-from schemey.schema_abc import SchemaABC
-from schemey.object_schema import ObjectSchema
-from schemey.optional_schema import OptionalSchema
-from schemey.schema_error import SchemaError
-from schemey.schema_context import get_default_schema_context, schema_for_type
-from schemey.string_format import StringFormat
-from schemey.string_schema import StringSchema
+from schemey import schema_from_type, schema_from_json
+from schemey.schema import str_schema, Schema
 
 _Node = f"{__name__}.Node"
 _Immutable = f"{__name__}.Immutable"
@@ -27,20 +17,24 @@ _Immutable = f"{__name__}.Immutable"
 @dataclass
 class Tag:  # Simple test
     id: int
-    title: str = field(metadata=dict(schemey=StringSchema(max_length=255)))
+    title: str = field(metadata=dict(schemey=str_schema(max_length=255)))
     active: bool = False
 
 
 @dataclass
 class Content:  # Tests dataclasses referencing others
+    """A content object"""
+
     text: str
-    id: UUID = field(default_factory=uuid4())
+    id: UUID = field(default_factory=uuid4)
     title: Optional[str] = None
-    tags: Set[Tag] = field(default_factory=set)
+    tags: List[Tag] = field(default_factory=set)
 
 
 @dataclass
 class Node:  # Mainly tests self referential dataclasses
+    """A node object"""
+
     title: str
     children: List[_Node] = field(default_factory=list)
 
@@ -51,381 +45,152 @@ class ImmutableLabel:  # Tests immutability and having no required properties
     updated_at: datetime = field(default_factory=datetime.now)
 
 
-DEFAULT_PRIMARY_LABEL = ImmutableLabel("Primary")
-DEFAULT_SECONDARY_LABEL = (ImmutableLabel("Secondary"),)
-
-
-@dataclass(frozen=True)
-class ImmutableWidget:
-    label: ImmutableLabel = DEFAULT_PRIMARY_LABEL
-    secondary_labels: Tuple[ImmutableLabel, ...] = DEFAULT_SECONDARY_LABEL
-
-
 class TestDataclassSchema(TestCase):
     def test_generate_schema_for_tag(self):
-        context = get_default_schema_context()
-        schema = context.get_schema(Tag)
-        expected = ObjectSchema(
-            name="Tag",
-            required={"id", "title"},
-            properties=dict(
-                id=IntegerSchema(),
-                title=StringSchema(max_length=255),
-                active=OptionalSchema(BooleanSchema(), False),
-            ),
+        schema = schema_from_type(Tag)
+        expected = Schema(
+            schema={
+                "type": "object",
+                "name": "Tag",
+                "properties": {
+                    "id": {"type": "integer"},
+                    "title": {"type": "string", "maxLength": 255},
+                    "active": {"type": "boolean", "default": False},
+                },
+                "additionalProperties": False,
+                "required": ["id", "title"],
+                "description": "Tag(id: int, title: str, active: bool = False)",
+            },
+            python_type=Tag,
         )
         self.assertEqual(expected, schema)
 
-    def test_load_and_dump_tag(self):
-        self._check_load_and_dump(
-            Tag,
-            dict(
-                name="Tag",
-                type="object",
-                additionalProperties=False,
-                required=["id", "title"],
-                properties=dict(
-                    id=dict(type="integer"),
-                    title=dict(type="string", maxLength=255),
-                    active=dict(type="boolean", default=False),
-                ),
-            ),
-        )
-
-    def test_validate_tag_wrong_type(self):
-        schema = schema_for_type(Tag)
-        json_schema = schema.json_schema
-        self.assertEqual(
-            [SchemaError("", "type", "not a tag!")],
-            list(json_schema.get_schema_errors("not a tag!")),
-        )
-        self.assertEqual(Tag, schema.item_type)
-
-    def test_tag_normalized_type(self):
-        standard_type = schema_for_type(Tag).json_schema.get_normalized_type(
-            {}, dataclass
-        )
-        self.assertTrue(is_dataclass(standard_type))
-        self.assertEqual("Tag", standard_type.__name__)
-        # noinspection PyDataclass
-        attributes = {f.name: (f.type, f.default) for f in fields(standard_type)}
-        expected = {f.name: (f.type, f.default) for f in fields(Tag)}
-        self.assertEqual(expected, attributes)
-
-    def test_tag_get_params_schema(self):
-        schema = schema_for_type(Tag)
-        param_schemas = schema.get_param_schemas("")
-        expected = [
-            ParamSchema("id", IntegerSchema()),
-            ParamSchema("title", StringSchema(max_length=255)),
-            ParamSchema("active", BooleanSchema(), required=False),
-        ]
-        self.assertEqual(expected, param_schemas)
-
-    def test_tag_url_params(self):
-        schema = schema_for_type(Tag)
-        tag = Tag(1, "A Tag", True)
-        url_params = list(schema.to_url_params(tag))
-        self.assertEqual([("id", "1"), ("title", "A Tag"), ("active", "1")], url_params)
-        loaded = schema.from_url_params(
-            {"id": ["1"], "title": ["A Tag"], "active": ["1"]}
-        )
-        self.assertEqual(tag, loaded)
-
-    def test_tag_url_params_missing_optional(self):
-        schema = schema_for_type(Tag)
-        expected = Tag(1, "A Tag")
-        loaded = schema.from_url_params({"id": ["1"], "title": ["A Tag"]})
-        self.assertEqual(expected, loaded)
-
-    def test_tag_url_params_missing_required(self):
-        schema = schema_for_type(Tag)
-        with self.assertRaises(ValueError):
-            schema.from_url_params({"id": ["1"], "active": ["1"]})
-
-    def test_tag_url_params_missing_all_optional(self):
-        context = get_default_schema_context()
-        schema = ObjSchema(
-            json_schema=OptionalSchema(context.get_schema(Tag)),
-            marshaller=get_default_schema_context().marshaller_context.get_marshaller(
-                Optional[Tag]
-            ),
-        )
-        self.assertIsNone(schema.from_url_params({}))
+    def test_validate_tag(self):
+        schema = schema_from_type(Tag)
+        item = dump(Tag(10, "Ten", True))
+        schema.validate(item)
+        schema.validate({"id": 10, "title": "Ten"})
+        with self.assertRaises(ValidationError):
+            schema.validate({})
+        with self.assertRaises(ValidationError):
+            schema.validate({"id": 10, "title": 5})
 
     def test_generate_schema_for_content(self):
-        context = get_default_schema_context()
-        schema = context.get_schema(Content)
-        expected = ObjectSchema(
-            name="Content",
-            required={"text"},
-            properties=dict(
-                text=StringSchema(),
-                id=OptionalSchema(StringSchema(format=StringFormat.UUID)),
-                title=OptionalSchema(StringSchema(), None),
-                tags=OptionalSchema(
-                    ArraySchema(item_schema=context.get_schema(Tag), uniqueness=True)
-                ),
-            ),
-        )
-        self.assertEqual(expected, schema)
-
-    def test_load_and_dump_content(self):
-        self._check_load_and_dump(
-            Content,
-            {
-                "additionalProperties": False,
+        schema = schema_from_type(Content)
+        expected = Schema(
+            schema={
+                "type": "object",
                 "name": "Content",
                 "properties": {
-                    "id": {"format": "uuid", "type": "string"},
+                    "text": {"type": "string"},
+                    "id": {"type": "string", "format": "uuid"},
+                    "title": {
+                        "anyOf": [{"type": "string"}, {"type": "null"}],
+                        "default": None,
+                    },
                     "tags": {
+                        "type": "array",
                         "items": {
-                            "additionalProperties": False,
+                            "type": "object",
                             "name": "Tag",
                             "properties": {
-                                "active": {"default": False, "type": "boolean"},
                                 "id": {"type": "integer"},
-                                "title": {"maxLength": 255, "type": "string"},
+                                "title": {"type": "string", "maxLength": 255},
+                                "active": {"type": "boolean", "default": False},
                             },
+                            "additionalProperties": False,
                             "required": ["id", "title"],
-                            "type": "object",
+                            "description": "Tag(id: int, title: str, active: bool = False)",
                         },
-                        "type": "array",
-                        "uniqueness": True,
                     },
-                    "text": {"type": "string"},
-                    "title": {"type": "string", "default": None},
                 },
+                "additionalProperties": False,
                 "required": ["text"],
-                "type": "object",
+                "description": "A content object",
             },
-        )
-
-    def test_content_normalized_type(self):
-        existing_types = {}
-        standard_type = schema_for_type(Content).json_schema.get_normalized_type(
-            existing_types, dataclass
-        )
-        self.assertTrue(is_dataclass(standard_type))
-        self.assertEqual("Content", standard_type.__name__)
-        # noinspection PyDataclass
-        attributes = {f.name: (f.type, f.default) for f in fields(standard_type)}
-        expected = {
-            "text": (str, MISSING),
-            "id": (Optional[UUID], None),
-            "title": (Optional[str], None),
-            "tags": (Optional[Set[existing_types.get("Tag")]], None),
-        }
-        self.assertEqual(expected, attributes)
-
-    def test_content_url_params(self):
-        schema = schema_for_type(Content)
-        self.assertIsNone(schema.json_schema.get_param_schemas(""))
-
-    def test_generate_schema_for_node(self):
-        context = get_default_schema_context()
-        schema = context.get_schema(Node)
-        expected = DeferredSchema(ref="Node", num_usages=2)
-        expected.schema = ObjectSchema(
-            name="Node",
-            required={"title"},
-            properties=dict(
-                title=StringSchema(),
-                children=OptionalSchema(ArraySchema(item_schema=expected)),
-            ),
+            python_type=Content,
         )
         self.assertEqual(expected, schema)
 
-    def test_load_and_dump_node(self):
-        self._check_load_and_dump(
-            Node,
-            {
-                "$ref": "#$defs/Node",
-                "$defs": {
-                    "Node": {
-                        "name": "Node",
-                        "type": "object",
-                        "additionalProperties": False,
-                        "required": ["title"],
-                        "properties": {
-                            "title": {"type": "string"},
-                            "children": {
-                                "type": "array",
-                                "items": {"$ref": "#$defs/Node"},
-                            },
-                        },
-                    }
+    def test_validate_content(self):
+        schema = schema_from_type(Content)
+        item = dump(Content(text="Some content", tags=[Tag(1, "Foo"), Tag(2, "Bar")]))
+        schema.validate(item)
+
+    def test_generate_schema_for_node(self):
+        schema = schema_from_type(Node)
+        expected = Schema(
+            schema={
+                "type": "object",
+                "name": "Node",
+                "properties": {
+                    "title": {"type": "string"},
+                    "children": {"type": "array", "items": {"$ref": "#"}},
                 },
+                "additionalProperties": False,
+                "required": ["title"],
+                "description": "A node object",
             },
+            python_type=Node,
+        )
+        self.assertEqual(expected, schema)
+
+    def test_generate_node_from_schema(self):
+        expected = schema_from_type(Node)
+        schema = schema_from_json(expected.schema)
+        Node_ = schema.python_type
+        self.assertEqual(['title', 'children'], [f.name for f in fields(Node_)])
+        self.assertEqual([str, List[Node_]], [f.type for f in fields(Node_)])
+        string = str(Node_("Foobar", [Node_("Child", [])]))
+        expected_str = "Node(title='Foobar', children=[Node(title='Child', children=[])])"
+        self.assertEqual(expected_str, string)
+
+    def test_load_and_dump_node(self):
+        schema = schema_from_type(Node)
+        dumped = dump(schema)
+        loaded = load(Schema, dumped)
+        self.assertEqual(schema.schema, loaded.schema)
+        self.assertEqual(Node.__doc__.strip(), loaded.python_type.__doc__)
+        # noinspection PyDataclass
+        self.assertEqual(
+            [f.name for f in fields(Node)],
+            [f.name for f in fields(loaded.python_type)],
         )
 
     def test_validate_node(self):
-        schema = schema_for_type(Node)
-        self.assertEqual(
-            [], list(schema.get_schema_errors(Node("a", [Node("b"), Node("c")])))
-        )
-        json_schema = schema.json_schema
-        self.assertEqual(
-            [SchemaError("", "additional_properties", "invalid_attr")],
-            list(json_schema.get_schema_errors(dict(title="foo", invalid_attr="bar"))),
-        )
-        self.assertEqual(
-            [SchemaError("", "missing_properties", "title")],
-            list(json_schema.get_schema_errors(dict())),
-        )
-
-    def test_node_normalized_type(self):
-        existing_types = {}
-        standard_type = schema_for_type(Node).json_schema.get_normalized_type(
-            existing_types, dataclass
-        )
-        self.assertTrue(is_dataclass(standard_type))
-        self.assertEqual("Node", standard_type.__name__)
-        # noinspection PyDataclass
-        attributes = {f.name: (f.type, f.default) for f in fields(standard_type)}
-        expected = {
-            "title": (str, MISSING),
-            "children": (Optional[List[existing_types.get("Node")]], None),
-        }
-        self.assertEqual(expected, attributes)
+        schema = schema_from_type(Node)
+        item = dump(Node("a", [Node("b"), Node("c")]))
+        schema.validate(item)
 
     def test_generate_schema_for_immutable_label(self):
-        context = get_default_schema_context()
-        schema = context.get_schema(ImmutableLabel)
-        expected = ObjectSchema(
-            properties={
-                "title": OptionalSchema(
-                    schema=StringSchema(
-                        min_length=None, max_length=None, pattern=None, format=None
-                    ),
-                    default="Label",
-                ),
-                "updated_at": OptionalSchema(
-                    StringSchema(
-                        min_length=None,
-                        max_length=None,
-                        pattern=None,
-                        format=StringFormat.DATE_TIME,
-                    )
-                ),
-            },
-            name="ImmutableLabel",
-        )
-        self.assertEqual(expected, schema)
-
-    def test_load_and_dump_immutable_label(self):
-        self._check_load_and_dump(
-            ImmutableLabel,
-            {
-                "name": "ImmutableLabel",
+        schema = schema_from_type(ImmutableLabel)
+        expected = Schema(
+            schema={
                 "type": "object",
-                "additionalProperties": False,
+                "name": "ImmutableLabel",
                 "properties": {
                     "title": {"type": "string", "default": "Label"},
                     "updated_at": {"type": "string", "format": "date-time"},
                 },
+                "additionalProperties": False,
+                "required": [],
+                "description": "ImmutableLabel(title: str = 'Label', updated_at: datetime.datetime = <factory>)",
             },
-        )
-
-    def test_immutable_label_get_params_schema(self):
-        schema = schema_for_type(ImmutableLabel)
-        param_schemas = schema.get_param_schemas()
-        expected = [
-            ParamSchema("title", StringSchema(), required=False),
-            ParamSchema(
-                "updated_at",
-                StringSchema(format=StringFormat.DATE_TIME),
-                required=False,
-            ),
-        ]
-        self.assertEqual(expected, param_schemas)
-
-    def test_immutable_label_url_params(self):
-        schema = schema_for_type(ImmutableLabel)
-        label = ImmutableLabel()
-        url_params = list(schema.to_url_params(label))
-        self.assertEqual(
-            [("title", label.title), ("updated_at", label.updated_at.isoformat())],
-            url_params,
-        )
-        loaded = schema.from_url_params(
-            {"title": [label.title], "updated_at": [label.updated_at.isoformat()]}
-        )
-        self.assertEqual(label, loaded)
-
-    def test_immutable_label_url_params_missing_optional(self):
-        schema = schema_for_type(ImmutableLabel)
-        loaded = schema.from_url_params({})
-        self.assertEqual("Label", loaded.title)
-        self.assertTrue(isinstance(loaded.updated_at, datetime))
-
-    def test_generate_schema_for_immutable_widget(self):
-        context = get_default_schema_context()
-        schema = context.get_schema(ImmutableWidget)
-        label_schema = context.get_schema(ImmutableLabel)
-        expected = ObjectSchema(
-            properties={
-                "label": OptionalSchema(
-                    context.get_schema(ImmutableLabel), dump(DEFAULT_PRIMARY_LABEL)
-                ),
-                "secondary_labels": OptionalSchema(
-                    schema=ArraySchema(item_schema=label_schema),
-                    default=dump(DEFAULT_SECONDARY_LABEL, Tuple[ImmutableLabel, ...]),
-                ),
-            },
-            name="ImmutableWidget",
+            python_type=ImmutableLabel,
         )
         self.assertEqual(expected, schema)
 
-    def test_load_and_dump_immutable_widget(self):
-        self._check_load_and_dump(
-            ImmutableWidget,
-            {
-                "additionalProperties": False,
-                "name": "ImmutableWidget",
-                "properties": {
-                    "label": {
-                        "additionalProperties": False,
-                        "default": {
-                            "title": "Primary",
-                            "updated_at": DEFAULT_PRIMARY_LABEL.updated_at.isoformat(),
-                        },
-                        "name": "ImmutableLabel",
-                        "properties": {
-                            "title": {"default": "Label", "type": "string"},
-                            "updated_at": {"format": "date-time", "type": "string"},
-                        },
-                        "type": "object",
-                    },
-                    "secondary_labels": {
-                        "default": [
-                            {
-                                "title": "Secondary",
-                                "updated_at": DEFAULT_SECONDARY_LABEL[
-                                    0
-                                ].updated_at.isoformat(),
-                            }
-                        ],
-                        "items": {
-                            "additionalProperties": False,
-                            "name": "ImmutableLabel",
-                            "properties": {
-                                "title": {"default": "Label", "type": "string"},
-                                "updated_at": {"format": "date-time", "type": "string"},
-                            },
-                            "type": "object",
-                        },
-                        "type": "array",
-                    },
-                },
-                "type": "object",
-            },
-        )
+    def test_generate_immutable_label_from_schema(self):
+        expected = schema_from_type(ImmutableLabel)
+        schema = schema_from_json(expected.schema)
+        ImmutableLabel_ = schema.python_type
+        self.assertEqual(['updated_at', "title"], [f.name for f in fields(ImmutableLabel_)])
+        self.assertEqual([datetime, str], [f.type for f in fields(ImmutableLabel_)])
+        string = str(ImmutableLabel_(datetime.fromisoformat('2020-01-01T00:00:00'), "Foobar"))
+        expected_str = 'ImmutableLabel(updated_at=datetime.datetime(2020, 1, 1, 0, 0), title=\'Foobar\')'
+        self.assertEqual(expected_str, string)
 
-    def _check_load_and_dump(self, type_, expected_dump):
-        context = get_default_schema_context()
-        schema = context.get_schema(type_)
-        dumped = dump(schema)
-        self.assertEqual(expected_dump, dumped)
-        loaded = load(SchemaABC, dumped)
-        self.assertEqual(schema, loaded)
+    def test_resolve_futures(self):
+        from schemey.factory.dataclass_schema_factory import _resolve_futures
+        # noinspection PyTypeChecker
+        self.assertEqual(Node, _resolve_futures('Node', 'Node', Node))

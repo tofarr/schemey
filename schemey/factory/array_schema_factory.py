@@ -1,25 +1,58 @@
-from typing import Type, Optional, Set, List, Tuple, Union
+from typing import Type, Optional, Set, List, Tuple, Union, Dict
 
 import typing_inspect
+from marshy.types import ExternalItemType
 from marshy.utils import resolve_forward_refs
 
-from schemey.array_schema import ArraySchema
 from schemey.factory.schema_factory_abc import SchemaFactoryABC
-from schemey.schema_abc import SchemaABC
-from schemey.json_schema_context import JsonSchemaContext
+from schemey.schema import Schema
+from schemey.schema_context import SchemaContext
 
 
 class ArraySchemaFactory(SchemaFactoryABC):
-    def create(
-        self, type_: Type, json_context: JsonSchemaContext
-    ) -> Optional[SchemaABC]:
+    def from_type(
+        self, type_: Type, context: SchemaContext, path: str
+    ) -> Optional[Schema]:
         array_type = self.get_array_type(type_)
         if array_type:
+            schema = {"type": "array"}
             args = typing_inspect.get_args(type_)
-            item_type = resolve_forward_refs(args[0])
-            schema = json_context.get_schema(item_type)
-            uniqueness = array_type is Set
-            return ArraySchema(item_schema=schema, uniqueness=uniqueness)
+            if args:
+                item_type = resolve_forward_refs(args[0])
+                if item_type and not typing_inspect.is_typevar(item_type):
+                    item_schema = context.schema_from_type(item_type, f"{path}/items")
+                    schema["items"] = item_schema.schema
+            if array_type is Set:
+                schema["uniqueItems"] = True
+            elif array_type is Tuple:
+                schema["tuple"] = True  # Custom annotation
+            return Schema(schema, type_)
+
+    def from_json(
+        self,
+        item: ExternalItemType,
+        context: SchemaContext,
+        path: str,
+        ref_schemas: Dict[str, Schema],
+    ) -> Optional[Schema]:
+        if item.get("type") == "array":
+            type_ = List
+            if item.get("uniqueItems") is True:
+                type_ = Set
+            elif item.get("tuple") is True:  # Custom annotation
+                type_ = Tuple
+            items = item.get("items")
+            if not items:
+                return Schema(item, type_)
+            # noinspection PyTypeChecker
+            item_schema = context.schema_from_json(items, f"{path}/items", ref_schemas)
+            if type_ is Tuple:
+                # noinspection PyTypeChecker
+                python_type = type_[item_schema.python_type, ...]
+            else:
+                # noinspection PyTypeChecker
+                python_type = type_[item_schema.python_type]
+            return Schema(item, python_type)
 
     @staticmethod
     def get_array_type(type_: Type) -> Union[Type[List], Type[Set], Type[Tuple], None]:
