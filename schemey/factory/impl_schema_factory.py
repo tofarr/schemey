@@ -46,7 +46,7 @@ class ImplSchemaFactory(SchemaFactoryABC):
         path: str,
         ref_schemas: Dict[str, Schema],
     ) -> Optional[Schema]:
-        """ No implementation since it is unlikely to be needed """
+        """No implementation since it is unlikely to be needed"""
 
     @staticmethod
     def get_impls(type_: Type, context: SchemaContext) -> Optional[Set[Type]]:

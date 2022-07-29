@@ -23,7 +23,6 @@ def configure(context: SchemaContext):
     context.register_factory(SimpleTypeFactory(str, "string"))
     context.register_factory(DatetimeFactory())
     context.register_factory(UuidFactory())
-    context.register_factory(EnumSchemaFactory())
     context.register_factory(ArraySchemaFactory())
     context.register_factory(TupleSchemaFactory())
     context.register_factory(DataclassSchemaFactory())

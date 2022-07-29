@@ -29,6 +29,8 @@ class _ValidatingInstanceWrapper:
 
     def __eq__(self, other):
         wrapped = object.__getattribute__(self, "__wrapped__")
+        if isinstance(other, _ValidatingInstanceWrapper):
+            other = object.__getattribute__(other, '__wrapped__')
         return wrapped.__eq__(other)
 
 
@@ -40,14 +42,6 @@ class _ValidatingClassWrapper:
     def __getattr__(self, item):
         wrapped = object.__getattribute__(self, "__wrapped__")
         return getattr(wrapped, item)
-
-    def __repr__(self):
-        wrapped = object.__getattribute__(self, "__wrapped__")
-        return wrapped.__repr__()
-
-    def __eq__(self, other):
-        wrapped = object.__getattribute__(self, "__wrapped__")
-        return wrapped.__eq__(other)
 
     def __call__(self, *args, **kwargs):
         wrapped_class = object.__getattribute__(self, "__wrapped__")
