@@ -139,10 +139,12 @@ class TestDataclassSchema(TestCase):
         expected = schema_from_type(Node)
         schema = schema_from_json(expected.schema)
         Node_ = schema.python_type
-        self.assertEqual(['title', 'children'], [f.name for f in fields(Node_)])
+        self.assertEqual(["title", "children"], [f.name for f in fields(Node_)])
         self.assertEqual([str, List[Node_]], [f.type for f in fields(Node_)])
         string = str(Node_("Foobar", [Node_("Child", [])]))
-        expected_str = "Node(title='Foobar', children=[Node(title='Child', children=[])])"
+        expected_str = (
+            "Node(title='Foobar', children=[Node(title='Child', children=[])])"
+        )
         self.assertEqual(expected_str, string)
 
     def test_load_and_dump_node(self):
@@ -184,13 +186,18 @@ class TestDataclassSchema(TestCase):
         expected = schema_from_type(ImmutableLabel)
         schema = schema_from_json(expected.schema)
         ImmutableLabel_ = schema.python_type
-        self.assertEqual(['updated_at', "title"], [f.name for f in fields(ImmutableLabel_)])
+        self.assertEqual(
+            ["updated_at", "title"], [f.name for f in fields(ImmutableLabel_)]
+        )
         self.assertEqual([datetime, str], [f.type for f in fields(ImmutableLabel_)])
-        string = str(ImmutableLabel_(datetime.fromisoformat('2020-01-01T00:00:00'), "Foobar"))
-        expected_str = 'ImmutableLabel(updated_at=datetime.datetime(2020, 1, 1, 0, 0), title=\'Foobar\')'
+        string = str(
+            ImmutableLabel_(datetime.fromisoformat("2020-01-01T00:00:00"), "Foobar")
+        )
+        expected_str = "ImmutableLabel(updated_at=datetime.datetime(2020, 1, 1, 0, 0), title='Foobar')"
         self.assertEqual(expected_str, string)
 
     def test_resolve_futures(self):
         from schemey.factory.dataclass_schema_factory import _resolve_futures
+
         # noinspection PyTypeChecker
-        self.assertEqual(Node, _resolve_futures('Node', 'Node', Node))
+        self.assertEqual(Node, _resolve_futures("Node", "Node", Node))

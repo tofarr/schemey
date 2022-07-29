@@ -34,8 +34,5 @@ class SchemaFactoryABC(ABC):
         Create a schema for the type given, or return None if that was not possible
         """
 
-    def __ne__(self, other):
-        return self.priority != getattr(other, "priority", None)
-
     def __lt__(self, other):
         return self.priority < getattr(other, "priority", None)

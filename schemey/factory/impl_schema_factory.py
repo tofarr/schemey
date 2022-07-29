@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Type, Optional, Set, List, Dict
+from typing import Type, Optional, Set, Dict
 
 from marshy.factory.impl_marshaller_factory import ImplMarshallerFactory
 from marshy.types import ExternalItemType
@@ -11,6 +11,13 @@ from schemey.schema_context import SchemaContext
 
 @dataclass
 class ImplSchemaFactory(SchemaFactoryABC):
+    """
+    Schema factory which generates schemas for base classes with implmentations
+    as set up in marshy. There is no facility for turning this back into a class
+    structure - though the UnionFactory will make a reasonably standardized class
+    structure from the result.
+    """
+
     priority: int = 150
 
     def from_type(
@@ -18,13 +25,19 @@ class ImplSchemaFactory(SchemaFactoryABC):
     ) -> Optional[Schema]:
         impls = self.get_impls(type_, context)
         if impls:
-            schemas = {
-                "anyOf": [
-                    context.schema_from_type(t, f"{path}/anyOf/{i}")
-                    for i, t in enumerate(impls)
+            impls = sorted(list(impls), key=lambda i: i.__name__)
+            any_of = []
+            for impl in impls:
+                prefix_items = [
+                    {"const": impl.__name__},
+                    context.schema_from_type(
+                        impl, f"{path}/anyOf/{len(any_of)}/prefixItems/1"
+                    ).schema,
                 ]
-            }
-            return Schema(schemas, type_)
+                any_of.append(
+                    {"type": "array", "prefixItems": prefix_items, "items": False}
+                )
+            return Schema({"anyOf": any_of}, type_)
 
     def from_json(
         self,
@@ -33,7 +46,7 @@ class ImplSchemaFactory(SchemaFactoryABC):
         path: str,
         ref_schemas: Dict[str, Schema],
     ) -> Optional[Schema]:
-        """No implementation"""
+        """ No implementation since it is unlikely to be needed """
 
     @staticmethod
     def get_impls(type_: Type, context: SchemaContext) -> Optional[Set[Type]]:

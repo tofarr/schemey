@@ -105,7 +105,9 @@ class DataclassSchemaFactory(SchemaFactoryABC):
             annotations[field_name] = field.type
             p[field_name] = field
         params.update(**params_with_default)
-        params["__annotations__"] = {k: annotations[k] for k in params}  # dataclasses uses annotation order...
+        params["__annotations__"] = {
+            k: annotations[k] for k in params
+        }  # dataclasses uses annotation order...
         description = item.get("description")
         if description:
             params["__doc__"] = description
