@@ -13,9 +13,9 @@ class TestExamples(TestCase):
         assert b_validated_dataclass.greeter
 
     def test_c(self):
-        from tests.examples import c_dataclass_validations
+        from tests.examples import c_field_validations
 
-        assert c_dataclass_validations.validator
+        assert c_field_validations.validator
 
     def test_d(self):
         from tests.examples import d_custom_validations

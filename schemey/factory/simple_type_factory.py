@@ -1,12 +1,11 @@
-from abc import abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional, Type, Dict
+from typing import Optional, Type, Dict
 
 from marshy.types import ExternalItemType
 
+from schemey.factory.schema_factory_abc import SchemaFactoryABC
 from schemey.schema import Schema
 from schemey.schema_context import SchemaContext
-from schemey.factory.schema_factory_abc import SchemaFactoryABC
 
 
 @dataclass

@@ -1,4 +1,4 @@
-from typing import Optional, Type, List, Dict
+from typing import Optional, Type, Dict
 
 from marshy.types import ExternalItemType
 

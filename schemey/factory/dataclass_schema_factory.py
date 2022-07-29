@@ -1,5 +1,4 @@
 import dataclasses
-from collections import OrderedDict
 from typing import Type, Optional, get_type_hints, Dict
 
 import typing_inspect

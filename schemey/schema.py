@@ -83,7 +83,7 @@ def float_schema(
     return Schema(
         filter_none(
             {
-                "type": "integer",
+                "type": "number",
                 "minimum": minimum,
                 "maximum": maximum,
                 "exclusiveMinimum": exclusive_minimum,

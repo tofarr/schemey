@@ -28,7 +28,8 @@ class Cat(PetABC):
 
 
 class TestImplSchemaFactory(TestCase):
-    def get_context(self):
+    @staticmethod
+    def get_context():
         marshaller_context = new_default_context()
         register_impl(PetABC, Dog, marshaller_context)
         register_impl(PetABC, Cat, marshaller_context)

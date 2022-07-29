@@ -1,8 +1,12 @@
 # Schemey - Json Schemas for Python.
 
-This project allows for generation of json schema objects based on python
-dataclasses, along with customization of said schemas. Schemas may then
-be used to validate object graphs.
+This project allows for generation of json schemas based on python
+classes, or python classes based on json schemas. It also allows for
+generation of validated dataclasses, where setters cannot violate
+the invariants established in a schema.
+
+It uses the fantastic [JSON Schema](https://github.com/python-jsonschema/jsonschema)
+library for python. (Though older versions did not.)
 
 The general idea is that the framework should not insist on any particular
 data structure or paradigm - it is designed to be extensible, and out of the box support
@@ -14,84 +18,64 @@ Current test coverage is at 100%
 
 ## Why did you build this?
 
-There were undocumented gaps in the functionality of existing solutions
-that made using them untenable.
+There were gaps in the functionality of existing solutions (Like pydantic)
+that made using them untenable for my use cases.
 
 ## Installation
 
 `pip install schemey`
 
+## Concepts
+
+* A [Schema](schemey/schema.py) contains a link between a JSON Schema and a Python Type
+* A [Validator](schemey/validator.py) is used to validate python objects using a schema
+* A [SchemaContext](schemey/schema_context.py) is used to generate python objects for json schemas / vice versa
+* A [SchemaFactory](schemey/factory/schema_factory_abc.py) is used to plug new translation rules into a SchemaContext (more below)
+
 ## Examples
 
 ### [Hello World](tests/examples/a_hello_world.py) 
 
-This demonstrates generating a standard schema for a dataclass.
+This demonstrates generating a validator for a dataclass.
 
-### [JSON Conversion](tests/examples/b_json_conversion.py) 
+### [Validated Dataclass](tests/examples/b_validated_dataclass.py) 
 
-This demonstrates dumping a json schema for a dataclass
+This demonstrates generating a validated dataclass
 
-Deserializing json schemas is currently minimally supported.
-(Due to the complexity of extracting references from anywhere in
-the document and the evolving nature of the spec). The intended 
-workflow is to start with a Python dataclass and then convert to
-a json schema rather than the other way around.
+### [Validated Fields](tests/examples/c_field_validations.py)
 
-### [JSON Conversion](tests/examples/c_self_references.py)
+This demonstrates adding custom validation rules to dataclass fields
 
-Self referencing data structures are supported out of the box.
+### [Custom Class Validations](tests/examples/d_custom_validations.py)
 
-### [Adding Custom Schemas for Dataclass Fields](tests/examples/d_custom_field_schema.py)
+This demonstrates adding fully custom marshalling and validations for a class
 
-Add a schema to the `schemey` attribute of a metadata field for a dataclass to specify a custom schema
+### [Beginning with a JSON Schema](tests/examples/e_from_json.py)
 
-The following schemas are defined out of the box (Feel free to add your own!):
+This demonstrates starting with a json schema and generating python dataclasses from it.
 
-* [AnyOfSchema](schemey/any_of_schema.py): For polymorphic constraints
-* [ArraySchema](schemey/array_schema.py): For arrays
-* [BooleanSchema](schemey/boolean_schema.py): For boolean values
-* [ConstSchema](schemey/const_schema.py): For constant values
-* [DeferredSchema](schemey/deferred_schema.py): Deferred schema - (used for self referential schemas)
-* [EnumSchema](schemey/enum_schema.py): For enums
-* [IntegerSchema](schemey/integer_schema.py): For integer validation
-* [NullSchema](schemey/null_schema.py): For null validation
-* [NumberSchema](schemey/number_schema.py): For float validation
-* [NullSchema](schemey/null_schema.py): For None / null values
-* [ObjectSchema](schemey/object_schema.py): For objects
-* [OptionalSchema](schemey/optional_schema.py): For optional values
-* [StringSchema](schemey/string_schema.py): For string validation. (Including regex, format and length constraints)
-* [TupleSchema](schemey/tuple_schema.py): For tuple validation.
+### Configuring the Context itself
 
-## Architectural Concepts.
+Schemey uses a strategy very similar to marshy for configuration.
 
-* A [Schema](schemey/schema_abc.py) is used to validate instances of a type
-* A [Factory](schemey/factory/schema_factory_abc.py) is used to create schemas for python types
-* A [Loader](schemey/loader/schema_loader_abc.py) is used to generate schemas from raw json. (An alternative to factories)
-* A [Context](schemey/schema_context.py) coordinates the operations between schemas and factories (Using
-  the default context leads to a shorter syntax, but less flexibility)
+Schemey looks for top level modules starting with the name `schemey_config_*`,
+sorts them by `priority`, and applies them to the default context by invoking their
+`configure` function. [schemey_config_default/__init__.py](schemey_config_default/__init__.py)
+contains the default set of factories. 
 
-## Specifying a Schema for a Class
+For example, for a project named `no_more_uuids`, I may add a file `schemey_config_no_more_uuids/__init__.py`:
 
-Below we outline the process of completely customizing schema generation and marshalling.
-The simplest way to specify a schema for a class is to define the __schema_factory__ class
-property. For example, imagine a situation where a 3D point is defined in javascript
-as an array of 3 numbers, [x, y, z].
+```
+priority = 120  # Applied after default
 
-You write a dataclass to describe this in python, with a custom marshaller (As per the marshy
-documentation), but the marshalled schema no longer matches the marshalled dataclass.
-You will need to define a custom schema and marshaller for the class too.
+def configure(context):
+    # For some reason, I don't want to be able to generate schemas for uuids!
+    context.factories = [
+        f for f in context.factories 
+        if 'uuid' not in f.__class__.__name__.lower()
+    ]
 
-* [3D Example - Affects the Global Context](tests/test_factory.py)
-
-### Specify a Schema for a Class by factory
-
-Instead of overriding the __schema_factory__ / __marshaller_factory__
-methods, it is possible to register a factory for your schema with
-your schema context using the `register_schema` method.
-
-It is also possible to register implementations for abstract classes / duck typing via the 
-* [2D Example - Isolated from Other Contexts](tests/test_custom_schema.py)
-
+```
 
 ## Building The Project
 

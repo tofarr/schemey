@@ -12,7 +12,7 @@ from schemey.schema_context import SchemaContext
 @dataclass
 class ImplSchemaFactory(SchemaFactoryABC):
     """
-    Schema factory which generates schemas for base classes with implmentations
+    Schema factory which generates schemas for base classes with implementations
     as set up in marshy. There is no facility for turning this back into a class
     structure - though the UnionFactory will make a reasonably standardized class
     structure from the result.

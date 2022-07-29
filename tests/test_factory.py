@@ -6,13 +6,12 @@ Demonstrates flexibility of the system
 """
 
 from dataclasses import dataclass
-from typing import Optional, List, Iterator, Dict, Any, Type, Callable
+from typing import List
 from unittest import TestCase
 
 import marshy
 from marshy import ExternalType
 from marshy.marshaller.marshaller_abc import MarshallerABC
-from marshy.types import ExternalItemType
 
 from schemey import Schema, schema_from_type
 

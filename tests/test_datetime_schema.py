@@ -1,6 +1,6 @@
 from datetime import datetime
 from unittest import TestCase
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from jsonschema import ValidationError
 from marshy import dump, load

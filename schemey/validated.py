@@ -66,9 +66,9 @@ def validated(cls: Type[T], schema_context: Optional[SchemaContext] = None):
         properties = schema.schema["properties"]
         validators = {}
         for field in fields(type_):
-            property = properties.get(field.name)
-            if property:
-                schema = Schema(property, field.type)
+            prop = properties.get(field.name)
+            if prop:
+                schema = Schema(prop, field.type)
                 marshaller = marshaller_context.get_marshaller(field.type)
                 validators[field.name] = Validator(schema, marshaller)
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from inspect import isclass
-from typing import Type, Optional, List, Dict
+from typing import Type, Optional, Dict
 
 from marshy.types import ExternalItemType
 

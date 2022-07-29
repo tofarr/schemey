@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from jsonschema import ValidationError
 
-from schemey.schema import str_schema, Schema
+from schemey.schema import str_schema
 from schemey.string_format import StringFormat
 from schemey.validator import validator_from_type
 

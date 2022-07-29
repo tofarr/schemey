@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Type, Optional, TYPE_CHECKING
+from typing import List, Dict, Type, Optional
 
 from marshy import get_default_context
 from marshy.marshaller_context import MarshallerContext

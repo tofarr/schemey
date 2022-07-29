@@ -1,13 +1,13 @@
 import setuptools
 
-from schemey.__version__ import __version__
+from schemey.version import __version__
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="schemey",
-    version="5.0.0",
+    version=__version__,
     author="Tim O'Farrell",
     author_email="tofarr@gmail.com",
     description="Convention over configuration Object Schemas for python",

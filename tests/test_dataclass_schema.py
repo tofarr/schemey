@@ -45,6 +45,7 @@ class ImmutableLabel:  # Tests immutability and having no required properties
     updated_at: datetime = field(default_factory=datetime.now)
 
 
+# noinspection PyPep8Naming
 class TestDataclassSchema(TestCase):
     def test_generate_schema_for_tag(self):
         schema = schema_from_type(Tag)
@@ -135,9 +136,11 @@ class TestDataclassSchema(TestCase):
         )
         self.assertEqual(expected, schema)
 
+    # noinspection PyDataclass
     def test_generate_node_from_schema(self):
         expected = schema_from_type(Node)
         schema = schema_from_json(expected.schema)
+        # noinspection PyPep8Naming
         Node_ = schema.python_type
         self.assertEqual(["title", "children"], [f.name for f in fields(Node_)])
         self.assertEqual([str, List[Node_]], [f.type for f in fields(Node_)])
@@ -182,6 +185,7 @@ class TestDataclassSchema(TestCase):
         )
         self.assertEqual(expected, schema)
 
+    # noinspection PyDataclass
     def test_generate_immutable_label_from_schema(self):
         expected = schema_from_type(ImmutableLabel)
         schema = schema_from_json(expected.schema)

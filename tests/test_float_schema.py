@@ -52,7 +52,7 @@ class TestFloatSchema(TestCase):
         )
         expected = Schema(
             {
-                "type": "integer",
+                "type": "number",
                 "minimum": 2.0,
                 "maximum": 6.0,
                 "exclusiveMinimum": 1.0,
