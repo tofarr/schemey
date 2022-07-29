@@ -3,7 +3,7 @@ from schemey.factory.array_schema_factory import ArraySchemaFactory
 from schemey.factory.dataclass_schema_factory import DataclassSchemaFactory
 from schemey.factory.datetime_factory import DatetimeFactory
 from schemey.factory.enum_schema_factory import EnumSchemaFactory
-from schemey.factory.external_item_type_factory import ExternalItemTypeFactory
+from schemey.factory.external_type_factory import ExternalTypeFactory
 from schemey.factory.factory_schema_factory import FactorySchemaFactory
 from schemey.factory.impl_schema_factory import ImplSchemaFactory
 from schemey.factory.ref_schema_factory import RefSchemaFactory
@@ -26,7 +26,7 @@ def configure(context: SchemaContext):
     context.register_factory(UuidFactory())
     context.register_factory(ArraySchemaFactory())
     context.register_factory(TupleSchemaFactory())
-    context.register_factory(ExternalItemTypeFactory())
+    context.register_factory(ExternalTypeFactory())
     context.register_factory(DataclassSchemaFactory())
     context.register_factory(EnumSchemaFactory())
     context.register_factory(FactorySchemaFactory())
