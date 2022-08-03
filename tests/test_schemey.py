@@ -1,6 +1,8 @@
+from copy import deepcopy
 from unittest import TestCase
 
 from schemey import schema_from_json, schema_from_type
+from schemey.schema import update_refs
 from schemey.version import __version__
 
 
@@ -21,3 +23,25 @@ class TestSchemey(TestCase):
 
     def test_version(self):
         self.assertTrue(isinstance(__version__, str))
+
+    def test_update_refs(self):
+        un_updated = {
+            'a': {'$ref': 'ref_a'},
+            'b': [
+                {'$ref': 'ref_b'},
+                {'$ref': 'ref_a'}
+            ],
+            'c': 10
+        }
+        expected = {
+            'a': {'$ref': 'ref_c'},
+            'b': [
+                {'$ref': 'ref_b'},
+                {'$ref': 'ref_c'}
+            ],
+            'c': 10
+        }
+        schema = deepcopy(un_updated)
+        updated = update_refs(schema, 'ref_a', 'ref_c')
+        self.assertEqual(expected, updated)
+        self.assertEqual(schema, un_updated)

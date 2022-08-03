@@ -100,3 +100,15 @@ def uuid_schema():
 
 def datetime_schema():
     return Schema({"type": "string", "format": "date-time"}, datetime)
+
+
+def update_refs(schema: ExternalType, from_location: str, to_location: str):
+    """ Swap a referenced schema from one location to another """
+    if isinstance(schema, dict):
+        schema = {k: update_refs(s, from_location, to_location) for k, s in schema.items()}
+        ref = schema.get('$ref')
+        if ref == from_location:
+            schema['$ref'] = to_location
+    elif isinstance(schema, list):
+        return [update_refs(s, from_location, to_location) for s in schema]
+    return schema
