@@ -1,4 +1,4 @@
-from typing import Type, Optional, Set, List, Tuple, Union, Dict
+from typing import Type, Optional, Set, List, Tuple, Union, Dict, FrozenSet
 
 import typing_inspect
 from marshy.types import ExternalItemType
@@ -22,10 +22,10 @@ class ArraySchemaFactory(SchemaFactoryABC):
                 if item_type and not typing_inspect.is_typevar(item_type):
                     item_schema = context.schema_from_type(item_type, f"{path}/items")
                     schema["items"] = item_schema.schema
-            if array_type is Set:
+            if array_type in (Set, FrozenSet):
                 schema["uniqueItems"] = True
-            elif array_type is Tuple:
-                schema["tuple"] = True  # Custom annotation
+            if array_type in (Tuple, FrozenSet):
+                schema["frozen"] = True  # Custom annotation
             return Schema(schema, type_)
 
     def from_json(
@@ -38,8 +38,11 @@ class ArraySchemaFactory(SchemaFactoryABC):
         if item.get("type") == "array":
             type_ = List
             if item.get("uniqueItems") is True:
-                type_ = Set
-            elif item.get("tuple") is True:  # Custom annotation
+                if item.get("frozen") is True:  # Custom annotation
+                    type_ = FrozenSet
+                else:
+                    type_ = Set
+            elif item.get("frozen") is True:  # Custom annotation
                 type_ = Tuple
             items = item.get("items")
             if not items:
@@ -55,12 +58,16 @@ class ArraySchemaFactory(SchemaFactoryABC):
             return Schema(item, python_type)
 
     @staticmethod
-    def get_array_type(type_: Type) -> Union[Type[List], Type[Set], Type[Tuple], None]:
+    def get_array_type(
+        type_: Type,
+    ) -> Union[Type[List], Type[Set], Type[Tuple], Type[FrozenSet], None]:
         origin = typing_inspect.get_origin(type_)
         if origin is list:
             return List
         if origin is set:
             return Set
+        if origin is frozenset:
+            return FrozenSet
         if origin is tuple:
             args = typing_inspect.get_args(type_)
             if len(args) == 2 and args[1] is Ellipsis:

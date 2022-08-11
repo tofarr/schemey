@@ -1,4 +1,4 @@
-from typing import List, Set, Union, Tuple
+from typing import List, Set, Union, Tuple, FrozenSet
 from unittest import TestCase
 
 from jsonschema import ValidationError
@@ -58,11 +58,13 @@ class TestArraySchema(TestCase):
         schema.validate([True, "foobar", None])
         with self.assertRaises(ValidationError):
             schema.validate([True, "string", 10])
+        with self.assertRaises(ValidationError):
+            schema.validate([2, 2])
 
     def test_tuple(self):
         schema = schema_from_type(Tuple[int, ...])
         expected = Schema(
-            schema={"type": "array", "items": {"type": "integer"}, "tuple": True},
+            schema={"type": "array", "items": {"type": "integer"}, "frozen": True},
             python_type=Tuple[int, ...],
         )
         self.assertEqual(expected, schema)
@@ -73,6 +75,29 @@ class TestArraySchema(TestCase):
         schema.validate([1.0, 2])
         with self.assertRaises(ValidationError):
             schema.validate([1.5, 2])
+        schema.validate([2, 2])
+
+    def test_frozen_set(self):
+        schema = schema_from_type(FrozenSet[int])
+        expected = Schema(
+            schema={
+                "type": "array",
+                "items": {"type": "integer"},
+                "uniqueItems": True,
+                "frozen": True,
+            },
+            python_type=FrozenSet[int],
+        )
+        self.assertEqual(expected, schema)
+        dumped = dump(schema)
+        loaded = load(Schema, dumped)
+        self.assertEqual(expected, loaded)
+        schema.validate([1, 2])
+        schema.validate([1.0, 2])
+        with self.assertRaises(ValidationError):
+            schema.validate([1.5, 2])
+        with self.assertRaises(ValidationError):
+            schema.validate([2, 2])
 
     def test_max_items(self):
         schema = Schema(
