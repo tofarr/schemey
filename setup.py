@@ -15,7 +15,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/tofarr/schemey",
     packages=setuptools.find_packages(exclude=("tests", "tests.*")),
-    install_requires=["marshy~=2.4", "jsonschema~=4.8"],
+    install_requires=["marshy~=3.0", "jsonschema~=4.8"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
