@@ -15,4 +15,4 @@ class SchemeyFormatChecker(FormatChecker):
 
 
 def is_datetime(value: str):
-    return datetime.fromisoformat(value)
+    return value and datetime.fromisoformat(value)
