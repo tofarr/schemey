@@ -16,7 +16,7 @@ class DataclassSchemaFactory(SchemaFactoryABC):
         if not dataclasses.is_dataclass(type_):
             return
         # Setting this here will mean any nested references will not fail
-        schema = Schema({"$ref": "/".join(path)}, type_)
+        schema = Schema({"$ref": path}, type_)
         context.schemas_by_type[type_] = schema
         # noinspection PyDataclass
         fields = dataclasses.fields(type_)
