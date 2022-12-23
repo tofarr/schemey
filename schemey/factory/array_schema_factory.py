@@ -11,7 +11,11 @@ from schemey.schema_context import SchemaContext
 
 class ArraySchemaFactory(SchemaFactoryABC):
     def from_type(
-        self, type_: Type, context: SchemaContext, path: str
+        self,
+        type_: Type,
+        context: SchemaContext,
+        path: str,
+        ref_schemas: Dict[Type, Schema],
     ) -> Optional[Schema]:
         array_type = self.get_array_type(type_)
         if array_type:
@@ -20,7 +24,9 @@ class ArraySchemaFactory(SchemaFactoryABC):
             if args:
                 item_type = resolve_forward_refs(args[0])
                 if item_type and not typing_inspect.is_typevar(item_type):
-                    item_schema = context.schema_from_type(item_type, f"{path}/items")
+                    item_schema = context.schema_from_type(
+                        item_type, f"{path}/items", ref_schemas
+                    )
                     schema["items"] = item_schema.schema
             if array_type in (Set, FrozenSet):
                 schema["uniqueItems"] = True

@@ -15,7 +15,11 @@ class DatetimeFactory(SchemaFactoryABC):
     priority: int = 210
 
     def from_type(
-        self, type_: Type, context: SchemaContext, path: str
+        self,
+        type_: Type,
+        context: SchemaContext,
+        path: str,
+        ref_schemas: Dict[Type, Schema],
     ) -> Optional[Schema]:
         if type_ is datetime:
             return datetime_schema()

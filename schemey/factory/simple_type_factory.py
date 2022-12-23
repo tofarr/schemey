@@ -15,7 +15,11 @@ class SimpleTypeFactory(SchemaFactoryABC):
     priority: int = 200
 
     def from_type(
-        self, type_: Type, context: SchemaContext, path: str
+        self,
+        type_: Type,
+        context: SchemaContext,
+        path: str,
+        ref_schemas: Dict[Type, Schema],
     ) -> Optional[Schema]:
         if type_ == self.python_type:
             return Schema({"type": self.json_type}, type_)

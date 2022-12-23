@@ -205,3 +205,43 @@ class TestDataclassSchema(TestCase):
 
         # noinspection PyTypeChecker
         self.assertEqual(Node, _resolve_futures("Node", "Node", Node))
+
+    def test_schema_for_optional_node(self):
+        optional_node_schema = schema_from_type(Optional[Node])
+        self.assertEqual(
+            {
+                "anyOf": [
+                    {
+                        "additionalProperties": False,
+                        "description": "A node object",
+                        "name": "Node",
+                        "properties": {
+                            "children": {
+                                "items": {"$ref": "#/anyOf/0"},
+                                "type": "array",
+                            },
+                            "title": {"type": "string"},
+                        },
+                        "required": ["title"],
+                        "type": "object",
+                    },
+                    {"type": "null"},
+                ]
+            },
+            optional_node_schema.schema,
+        )
+        node_schema = schema_from_type(Node)
+        self.assertEqual(
+            {
+                "additionalProperties": False,
+                "description": "A node object",
+                "name": "Node",
+                "properties": {
+                    "children": {"items": {"$ref": "#"}, "type": "array"},
+                    "title": {"type": "string"},
+                },
+                "required": ["title"],
+                "type": "object",
+            },
+            node_schema.schema,
+        )

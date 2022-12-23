@@ -6,7 +6,7 @@ Demonstrates flexibility of the system
 """
 
 from dataclasses import dataclass
-from typing import List
+from typing import List, Dict, Type
 from unittest import TestCase
 
 import marshy
@@ -29,7 +29,7 @@ class Coordinate3D:
 
     # noinspection PyUnusedLocal
     @classmethod
-    def __schema_factory__(cls, context, path):
+    def __schema_factory__(cls, context, path, ref_schemas: Dict[Type, Schema]):
         return Schema(
             dict(type="array", minLength=3, maxLength=3, items=dict(type="number")),
             Coordinate3D,

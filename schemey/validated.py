@@ -1,3 +1,4 @@
+import dataclasses
 from dataclasses import dataclass, fields
 from typing import Optional, Type, TypeVar
 
@@ -60,18 +61,19 @@ def validated(cls: Type[T], schema_context: Optional[SchemaContext] = None):
     def wrap(cls_):
         from schemey.validator import Validator
 
-        type_ = dataclass(cls_)
+        if not dataclasses.is_dataclass(cls_):
+            cls_ = dataclass(cls_)
         marshaller_context = schema_context.marshaller_context
-        schema = schema_context.schema_from_type(type_)
+        schema = schema_context.schema_from_type(cls_)
         properties = schema.schema["properties"]
         validators = {}
-        for field in fields(type_):
+        for field in fields(cls_):
             prop = properties.get(field.name)
             if prop:
                 schema = Schema(prop, field.type)
                 marshaller = marshaller_context.get_marshaller(field.type)
                 validators[field.name] = Validator(schema, marshaller)
 
-        return _ValidatingClassWrapper(type_, validators)
+        return _ValidatingClassWrapper(cls_, validators)
 
     return wrap if cls is None else wrap(cls)

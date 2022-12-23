@@ -12,14 +12,18 @@ class AnyOfSchemaFactory(SchemaFactoryABC):
     priority: int = 110
 
     def from_type(
-        self, type_: Type, context: SchemaContext, path: str
+        self,
+        type_: Type,
+        context: SchemaContext,
+        path: str,
+        ref_schemas: Dict[Type, Schema],
     ) -> Optional[Schema]:
         origin = typing_inspect.get_origin(type_)
         if origin == Union:
             args = typing_inspect.get_args(type_)
             schemas = {
                 "anyOf": [
-                    context.schema_from_type(a, f"{path}/anyOf/{i}").schema
+                    context.schema_from_type(a, f"{path}/anyOf/{i}", ref_schemas).schema
                     for i, a in enumerate(args)
                 ]
             }

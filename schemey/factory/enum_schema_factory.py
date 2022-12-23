@@ -15,7 +15,11 @@ class EnumSchemaFactory(SchemaFactoryABC):
     priority: int = 190
 
     def from_type(
-        self, type_: Type, context: SchemaContext, path: str
+        self,
+        type_: Type,
+        context: SchemaContext,
+        path: str,
+        ref_schemas: Dict[Type, Schema],
     ) -> Optional[Schema]:
         if isclass(type_) and issubclass(type_, Enum):
             # noinspection PyTypeChecker

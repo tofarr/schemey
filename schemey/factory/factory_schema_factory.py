@@ -13,11 +13,15 @@ class FactorySchemaFactory(SchemaFactoryABC):
     priority: int = 110
 
     def from_type(
-        self, type_: Type, context: SchemaContext, path: str
+        self,
+        type_: Type,
+        context: SchemaContext,
+        path: str,
+        ref_schemas: Dict[Type, Schema],
     ) -> Optional[Schema]:
         factory = getattr(type_, SCHEMA_FACTORY, None)
         if factory is not None:
-            return factory(context, path)
+            return factory(context, path, ref_schemas)
 
     def from_json(
         self,

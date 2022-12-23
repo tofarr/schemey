@@ -12,7 +12,11 @@ class TupleSchemaFactory(SchemaFactoryABC):
     priority: int = 110
 
     def from_type(
-        self, type_: Type, context: SchemaContext, path: str
+        self,
+        type_: Type,
+        context: SchemaContext,
+        path: str,
+        ref_schemas: Dict[Type, Schema],
     ) -> Optional[Schema]:
         origin = typing_inspect.get_origin(type_)
         if origin is tuple:
@@ -22,7 +26,9 @@ class TupleSchemaFactory(SchemaFactoryABC):
             schema = {
                 "type": "array",
                 "prefixItems": [
-                    context.schema_from_type(a, f"{path}/prefixItems/{i}").schema
+                    context.schema_from_type(
+                        a, f"{path}/prefixItems/{i}", ref_schemas
+                    ).schema
                     for i, a in enumerate(args)
                 ],
                 "items": False,

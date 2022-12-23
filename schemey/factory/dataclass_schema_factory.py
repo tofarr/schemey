@@ -11,13 +11,17 @@ from schemey.schema_context import SchemaContext
 
 class DataclassSchemaFactory(SchemaFactoryABC):
     def from_type(
-        self, type_: Type, context: SchemaContext, path: str
+        self,
+        type_: Type,
+        context: SchemaContext,
+        path: str,
+        ref_schemas: Dict[Type, Schema],
     ) -> Optional[Schema]:
         if not dataclasses.is_dataclass(type_):
             return
         # Setting this here will mean any nested references will not fail
         schema = Schema({"$ref": path}, type_)
-        context.schemas_by_type[type_] = schema
+        ref_schemas[type_] = schema
         # noinspection PyDataclass
         fields = dataclasses.fields(type_)
         try:
@@ -31,7 +35,7 @@ class DataclassSchemaFactory(SchemaFactoryABC):
             field_schema = field.metadata.get("schemey")
             if not field_schema:
                 field_schema = context.schema_from_type(
-                    types[field.name], f"{path}/properties/{field.name}"
+                    types[field.name], f"{path}/properties/{field.name}", ref_schemas
                 )
             if (
                 field.default is dataclasses.MISSING

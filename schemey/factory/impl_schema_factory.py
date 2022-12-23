@@ -21,7 +21,11 @@ class ImplSchemaFactory(SchemaFactoryABC):
     priority: int = 150
 
     def from_type(
-        self, type_: Type, context: SchemaContext, path: str
+        self,
+        type_: Type,
+        context: SchemaContext,
+        path: str,
+        ref_schemas: Dict[Type, Schema],
     ) -> Optional[Schema]:
         impls = self.get_impls(type_, context)
         if impls:
@@ -31,7 +35,7 @@ class ImplSchemaFactory(SchemaFactoryABC):
                 prefix_items = [
                     {"const": impl.__name__},
                     context.schema_from_type(
-                        impl, f"{path}/anyOf/{len(any_of)}/prefixItems/1"
+                        impl, f"{path}/anyOf/{len(any_of)}/prefixItems/1", ref_schemas
                     ).schema,
                 ]
                 any_of.append(
@@ -45,7 +49,7 @@ class ImplSchemaFactory(SchemaFactoryABC):
         item: ExternalItemType,
         context: SchemaContext,
         path: str,
-        ref_schemas: Dict[str, Schema],
+        ref_schemas: Dict[Type, Schema],
     ) -> Optional[Schema]:
         """We read any named anyOf schema, and simply use what is defined locally rather than in the schema"""
         name = item.get("name")
@@ -55,7 +59,7 @@ class ImplSchemaFactory(SchemaFactoryABC):
         for factory in factories:
             if isinstance(factory, ImplMarshallerFactory):
                 if factory.base.__name__ == name:
-                    schema = self.from_type(factory.base, context, path)
+                    schema = self.from_type(factory.base, context, path, ref_schemas)
                     return schema
 
     @staticmethod

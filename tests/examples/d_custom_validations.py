@@ -1,3 +1,5 @@
+from typing import Dict, Type
+
 import marshy
 from marshy import ExternalType
 from marshy.marshaller.marshaller_abc import MarshallerABC
@@ -32,7 +34,9 @@ class Point:
 
     # noinspection PyUnusedLocal
     @classmethod
-    def __schema_factory__(cls, context: SchemaContext, path: str):
+    def __schema_factory__(
+        cls, context: SchemaContext, path: str, ref_schemas: Dict[Type, Schema]
+    ):
         # The simplest way to specify a schema for a class is to define the __schema_factory__ method
         # Here we define our schema in standard json...
         return Schema(

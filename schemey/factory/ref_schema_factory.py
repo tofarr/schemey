@@ -12,7 +12,11 @@ class RefSchemaFactory(SchemaFactoryABC):
     priority: int = 220
 
     def from_type(
-        self, type_: Type, context: SchemaContext, path: str
+        self,
+        type_: Type,
+        context: SchemaContext,
+        path: str,
+        ref_schemas: Dict[Type, Schema],
     ) -> Optional[Schema]:
         pass
 

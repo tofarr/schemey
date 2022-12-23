@@ -16,7 +16,11 @@ class SchemaFactoryABC(ABC):
 
     @abstractmethod
     def from_type(
-        self, type_: Type, context: SchemaContext, path: str
+        self,
+        type_: Type,
+        context: SchemaContext,
+        path: str,
+        ref_schemas: Dict[Type, Schema],
     ) -> Optional[Schema]:
         """
         Create a schema for the type given, or return None if that was not possible
