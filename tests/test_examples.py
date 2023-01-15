@@ -23,6 +23,11 @@ class TestExamples(TestCase):
         assert d_custom_validations.validator
 
     def test_e(self):
-        from tests.examples import e_from_json
+        from tests.examples import e_custom_json_schema_validations
 
-        assert e_from_json.User
+        assert e_custom_json_schema_validations.errors
+
+    def test_f(self):
+        from tests.examples import f_from_json
+
+        assert f_from_json.User

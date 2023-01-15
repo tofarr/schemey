@@ -11,6 +11,9 @@ from schemey.factory.simple_type_factory import SimpleTypeFactory
 from schemey.factory.tuple_schema_factory import TupleSchemaFactory
 from schemey.factory.uuid_factory import UuidFactory
 from schemey.schema_context import SchemaContext
+from schemey.json_schema import register_custom_json_schema_validator
+from schemey.json_schema.ranges import ranges
+from schemey.json_schema.timestamp import timestamp
 
 priority = 100
 
@@ -32,3 +35,6 @@ def configure(context: SchemaContext):
     context.register_factory(FactorySchemaFactory())
     context.register_factory(ImplSchemaFactory())
     context.register_factory(AnyOfSchemaFactory())
+
+    register_custom_json_schema_validator('timestamp', timestamp)
+    register_custom_json_schema_validator('ranges', ranges)

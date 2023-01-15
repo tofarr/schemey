@@ -10,6 +10,7 @@ from marshy.types import ExternalItemType, ExternalType
 from schemey.schemey_format_checker import SchemeyFormatChecker
 from schemey.string_format import StringFormat
 from schemey.util import filter_none
+from schemey.json_schema import get_custom_json_schema_validators
 
 
 @dataclass
@@ -21,6 +22,7 @@ class Schema:
         validator = validator_for(self.schema)(
             schema=self.schema, format_checker=SchemeyFormatChecker()
         )
+        validator.VALIDATORS.update(get_custom_json_schema_validators())
         return validator
 
     def iter_errors(self, item: ExternalType) -> Iterator[ValidationError]:

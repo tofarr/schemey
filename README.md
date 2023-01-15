@@ -50,7 +50,13 @@ This demonstrates adding custom validation rules to dataclass fields
 
 This demonstrates adding fully custom marshalling and validations for a class
 
-### [Beginning with a JSON Schema](tests/examples/e_from_json.py)
+### [Custom JSON Schema Validations](tests/examples/e_custom_json_schema_validations.py)
+
+This demonstrates creating custom json schema validations for things not natively supported by json schema. For 
+example, [checking a date against the current time](schemey/json_schema/timestamp.py), or that 
+[a property of an object is less than another property of that object](schemey/json_schema/ranges.py).
+
+### [Beginning with a JSON Schema](tests/examples/f_from_json.py)
 
 This demonstrates starting with a json schema and generating python dataclasses from it.
 

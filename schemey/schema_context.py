@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Type
+from typing import List, Dict, Optional, Type, Callable
 
 from marshy import get_default_context
 from marshy.marshaller_context import MarshallerContext
@@ -17,6 +17,7 @@ SchemaFactoryABC_ = "schemey.factory.schema_factory_abc.SchemaFactoryABC"
 class SchemaContext:
     factories: List[SchemaFactoryABC_] = field(default_factory=list)
     marshaller_context: MarshallerContext = field(default_factory=get_default_context)
+    custom_validators: Dict[str, Callable] = field(default_factory=dict)
 
     def register_factory(self, schema_factory: SchemaFactoryABC_):
         self.factories.append(schema_factory)
