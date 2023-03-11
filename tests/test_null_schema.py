@@ -1,9 +1,11 @@
+from typing import Optional
 from unittest import TestCase
 
 from jsonschema import ValidationError
 from marshy import dump, load
 
 from schemey import schema_from_type, Schema, get_default_schema_context
+from schemey.schema import optional_schema, str_schema
 
 
 class TestNullSchema(TestCase):
@@ -25,3 +27,8 @@ class TestNullSchema(TestCase):
         dumped = dump(schema)
         loaded = load(Schema, dumped)
         self.assertEqual(schema, loaded)
+
+    def test_optional(self):
+        schema = optional_schema(str_schema())
+        expected = Schema({'anyOf': [{'type': 'null'}, {'type': 'string'}]}, Optional[str])
+        self.assertEqual(schema, expected)

@@ -104,6 +104,15 @@ def datetime_schema():
     return Schema({"type": "string", "format": "date-time"}, datetime)
 
 
+def optional_schema(schema: Schema):
+    """ Wrap a simple schema in an optional schema. Does NOT work for schemas which contain refs. """
+    json_schema = dict(anyOf=[
+        {"type": "null"},
+        schema.schema,
+    ])
+    return Schema(json_schema, Optional[schema.python_type])
+
+
 def update_refs(schema: ExternalType, from_location: str, to_location: str):
     """Swap a referenced schema from one location to another"""
     if isinstance(schema, dict):
