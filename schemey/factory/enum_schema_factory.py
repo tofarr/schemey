@@ -23,7 +23,7 @@ class EnumSchemaFactory(SchemaFactoryABC):
     ) -> Optional[Schema]:
         if isclass(type_) and issubclass(type_, Enum):
             # noinspection PyTypeChecker
-            schema = dict(name=type_.__name__, enum=[e.value for e in type_])
+            schema = dict(name=type_.__name__, enum=[e.name for e in type_])
             return Schema(schema, type_)
 
     def from_json(
