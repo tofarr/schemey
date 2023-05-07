@@ -30,5 +30,7 @@ class TestNullSchema(TestCase):
 
     def test_optional(self):
         schema = optional_schema(str_schema())
-        expected = Schema({'anyOf': [{'type': 'null'}, {'type': 'string'}]}, Optional[str])
+        expected = Schema(
+            {"anyOf": [{"type": "null"}, {"type": "string"}]}, Optional[str]
+        )
         self.assertEqual(schema, expected)

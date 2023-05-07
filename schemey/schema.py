@@ -105,11 +105,13 @@ def datetime_schema():
 
 
 def optional_schema(schema: Schema):
-    """ Wrap a simple schema in an optional schema. Does NOT work for schemas which contain refs. """
-    json_schema = dict(anyOf=[
-        {"type": "null"},
-        schema.schema,
-    ])
+    """Wrap a simple schema in an optional schema. Does NOT work for schemas which contain refs."""
+    json_schema = dict(
+        anyOf=[
+            {"type": "null"},
+            schema.schema,
+        ]
+    )
     return Schema(json_schema, Optional[schema.python_type])
 
 

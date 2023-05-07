@@ -29,8 +29,8 @@ def timestamp(validator, aP, instance, schema):
     """
     Check a timestamp. If times are not specified, it is assumed to be utc.
     """
-    format_ = schema.get('format')
-    if format_ not in ('date-time', 'date'):
+    format_ = schema.get("format")
+    if format_ not in ("date-time", "date"):
         yield ValidationError(
             f"Not a date / date-time: {schema}",
             validator=validator,
@@ -39,19 +39,19 @@ def timestamp(validator, aP, instance, schema):
             schema=schema,
         )
         return
-    timestamp_ = schema['timestamp']
+    timestamp_ = schema["timestamp"]
     now = datetime.now(tz=timezone.utc)
     value = datetime.fromisoformat(instance)
     if not value.tzinfo:
         value = value.replace(tzinfo=timezone.utc)
-    if format_ == 'date':
+    if format_ == "date":
         now.replace(hour=0, minute=0, second=0, microsecond=0)
         value.replace(hour=0, minute=0, second=0, microsecond=0)
     now = now.timestamp()
     value = value.timestamp()
 
-    grace_period_seconds = timestamp_.get('gracePeriodSeconds') or 0
-    past = timestamp_.get('past')
+    grace_period_seconds = timestamp_.get("gracePeriodSeconds") or 0
+    past = timestamp_.get("past")
     if past:
         if value > (now + grace_period_seconds):
             yield ValidationError(

@@ -22,11 +22,11 @@ from jsonschema import ValidationError
 def ranges(validator, aP, instance, schema):
     if not validator.is_type(instance, "object"):
         return
-    ranges_ = schema.get('ranges') or []
+    ranges_ = schema.get("ranges") or []
     for range_ in ranges_:
-        min_property = range_['minProperty']
-        max_property = range_['maxProperty']
-        allow_equal = range_.get('allowEqual')
+        min_property = range_["minProperty"]
+        max_property = range_["maxProperty"]
+        allow_equal = range_.get("allowEqual")
         min_value = instance.get(min_property)
         max_value = instance.get(max_property)
         if min_value < max_value:

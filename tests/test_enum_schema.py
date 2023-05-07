@@ -36,9 +36,7 @@ class TestEnumSchema(TestCase):
             [e.name for e in MyEnum], [e.value for e in loaded.python_type]
         )
         # noinspection PyTypeChecker
-        self.assertEqual(
-            [e.name for e in MyEnum], [e.name for e in loaded.python_type]
-        )
+        self.assertEqual([e.name for e in MyEnum], [e.name for e in loaded.python_type])
 
     def test_validate(self):
         schema = schema_from_type(MyEnum)

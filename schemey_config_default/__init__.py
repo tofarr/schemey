@@ -36,5 +36,5 @@ def configure(context: SchemaContext):
     context.register_factory(ImplSchemaFactory())
     context.register_factory(AnyOfSchemaFactory())
 
-    register_custom_json_schema_validator('timestamp', timestamp)
-    register_custom_json_schema_validator('ranges', ranges)
+    register_custom_json_schema_validator("timestamp", timestamp)
+    register_custom_json_schema_validator("ranges", ranges)
