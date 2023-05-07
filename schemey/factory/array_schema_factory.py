@@ -18,6 +18,7 @@ class ArraySchemaFactory(SchemaFactoryABC):
         ref_schemas: Dict[Type, Schema],
     ) -> Optional[Schema]:
         array_type = self.get_array_type(type_)
+        # pylint: disable=W0125
         if array_type:
             schema = {"type": "array"}
             args = typing_inspect.get_args(type_)

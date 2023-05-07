@@ -61,6 +61,7 @@ class DataclassSchemaFactory(SchemaFactoryABC):
         schema = Schema(schema, type_)
         return schema
 
+    # pylint: disable=R0914
     def from_json(
         self,
         item: ExternalItemType,

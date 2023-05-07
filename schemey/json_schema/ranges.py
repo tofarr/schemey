@@ -33,6 +33,7 @@ def ranges(validator, aP, instance, schema):
             continue
         if allow_equal and min_value == max_value:
             continue
+        # pylint: disable=R0801
         yield ValidationError(
             f"Value not in future: {instance}",
             validator=validator,

@@ -20,7 +20,7 @@ class ExternalTypeFactory(SchemaFactoryABC):
     ) -> Optional[Schema]:
         if type_ == ExternalItemType:
             return Schema({"type": "object", "additionalProperties": True}, type_)
-        elif type_ == ExternalType:
+        if type_ == ExternalType:
             return Schema({}, type_)
 
     def from_json(

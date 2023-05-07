@@ -59,6 +59,7 @@ def validated(cls: Type[T], schema_context: Optional[SchemaContext] = None):
         schema_context = get_default_schema_context()
 
     def wrap(cls_):
+        # pylint: disable=C0415,R0401
         from schemey.validator import Validator
 
         if not dataclasses.is_dataclass(cls_):

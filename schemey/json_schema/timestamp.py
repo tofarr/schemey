@@ -63,6 +63,7 @@ def timestamp(validator, aP, instance, schema):
             )
     else:
         if value < (now - grace_period_seconds):
+            # pylint: disable=R0801
             yield ValidationError(
                 f"Value not in future: {instance}",
                 validator=validator,

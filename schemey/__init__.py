@@ -13,6 +13,7 @@ _default_context = None
 CONFIG_MODULE_PREFIX = "schemey_config_"
 
 
+# pylint: disable=W0603
 def get_default_schema_context() -> SchemaContext:
     global _default_context
     if not _default_context:
