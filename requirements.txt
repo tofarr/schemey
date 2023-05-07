@@ -1,4 +1,0 @@
-marshy~=3.0
-jsonschema~=4.8
-black~=22.6
-coverage~=6.4

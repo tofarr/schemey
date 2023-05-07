@@ -1,0 +1,3 @@
+recursive-exclude tests *
+exclude README.md
+recursive-exclude images
