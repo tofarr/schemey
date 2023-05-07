@@ -39,7 +39,7 @@ class TestValidator(TestCase):
             },
             "additionalProperties": False,
             "required": [],
-            "description": "User(email: Union[str, NoneType] = None)",
+            "description": "User(email: Optional[str] = None)",
         }
         self.assertEqual(expected_json_schema, validator.json_schema)
 

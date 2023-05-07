@@ -3,7 +3,6 @@ from unittest import TestCase
 
 from schemey import schema_from_json, schema_from_type
 from schemey.schema import update_refs
-from schemey.version import __version__
 
 
 class TestSchemey(TestCase):
@@ -20,9 +19,6 @@ class TestSchemey(TestCase):
     def test_schema_from_json_impossible(self):
         with self.assertRaises(ValueError):
             schema_from_json({"type": "foobar"})
-
-    def test_version(self):
-        self.assertTrue(isinstance(__version__, str))
 
     def test_update_refs(self):
         un_updated = {

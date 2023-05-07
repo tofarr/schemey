@@ -13,10 +13,10 @@ setuptools.setup(
     url="https://github.com/tofarr/schemey",
     packages=setuptools.find_packages(exclude=("tests", "tests.*")),
     install_requires=["marshy~=4.0", "jsonschema~=4.8"],
+    python_requires=">=3.7",
     extras_require={
         "dev": [
             "black~=23.3",
-            "marshmallow-dataclass~=8.5",
             "pytest~=7.2",
             "pytest-cov~=4.0",
             "pytest-xdist~=3.2",
