@@ -20,7 +20,7 @@ setuptools.setup(
             "pytest~=7.2",
             "pytest-cov~=4.0",
             "pytest-xdist~=3.2",
-            "pylint~=2.17",
+            "pylint~=3.0",
         ],
     },
     setup_requires=["setuptools-git-versioning"],
