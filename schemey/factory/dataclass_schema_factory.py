@@ -101,6 +101,7 @@ class DataclassSchemaFactory(SchemaFactoryABC):
                 p = params_with_default
             else:
                 p = params
+            # pylint: disable=E3701
             field = dataclasses.field(
                 default=default, metadata={"schemey": field_schema}
             )
