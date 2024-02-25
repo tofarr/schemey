@@ -1,10 +1,10 @@
-from abc import ABC
-from dataclasses import dataclass
+from abc import ABC, abstractmethod
 
 
-@dataclass(frozen=True)
+# pylint: disable=R0903
 class SchemaValidatorABC(ABC):
     property_name: str
 
+    @abstractmethod
     def validate(self, validator, aP, instance, schema):
         """Validate this property"""
