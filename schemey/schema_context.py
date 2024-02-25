@@ -67,4 +67,3 @@ def create_schema_context(
         marshy_context=marshy_context,
     )
     return context
-

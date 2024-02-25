@@ -22,6 +22,7 @@ class RangesValidator(SchemaValidatorABC):
         }]
     }
     """
+
     property_name: str = "ranges"
 
     def validate(self, validator, aP, instance, schema):

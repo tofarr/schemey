@@ -11,8 +11,13 @@ from schemey.factory.factory_schema_factory import FactorySchemaFactory
 from schemey.factory.impl_schema_factory import ImplSchemaFactory
 from schemey.factory.ref_schema_factory import RefSchemaFactory
 from schemey.factory.schema_factory_abc import SchemaFactoryABC
-from schemey.factory.simple_type_factory import BoolTypeFactory, IntTypeFactory, NoneTypeFactory, FloatFactory, \
-    StrFactory
+from schemey.factory.simple_type_factory import (
+    BoolTypeFactory,
+    IntTypeFactory,
+    NoneTypeFactory,
+    FloatFactory,
+    StrFactory,
+)
 from schemey.factory.tuple_schema_factory import TupleSchemaFactory
 from schemey.factory.uuid_factory import UuidFactory
 from schemey.json_schema.ranges_validator import RangesValidator
@@ -25,26 +30,32 @@ priority = 100
 
 def configure(context: InjectyContext):
     context.register_impl(MarshallerABC, SchemaMarshaller)
-    context.register_impls(SchemaFactoryABC, [
-        RefSchemaFactory,
-        BoolTypeFactory,
-        IntTypeFactory,
-        NoneTypeFactory,
-        FloatFactory,
-        StrFactory,
-        DatetimeFactory,
-        UuidFactory,
-        ArraySchemaFactory,
-        TupleSchemaFactory,
-        ExternalTypeFactory,
-        DataclassSchemaFactory,
-        EnumSchemaFactory,
-        FactorySchemaFactory,
-        ImplSchemaFactory,
-        AnyOfSchemaFactory,
-    ])
+    context.register_impls(
+        SchemaFactoryABC,
+        [
+            RefSchemaFactory,
+            BoolTypeFactory,
+            IntTypeFactory,
+            NoneTypeFactory,
+            FloatFactory,
+            StrFactory,
+            DatetimeFactory,
+            UuidFactory,
+            ArraySchemaFactory,
+            TupleSchemaFactory,
+            ExternalTypeFactory,
+            DataclassSchemaFactory,
+            EnumSchemaFactory,
+            FactorySchemaFactory,
+            ImplSchemaFactory,
+            AnyOfSchemaFactory,
+        ],
+    )
 
-    context.register_impls(SchemaValidatorABC, [
-        RangesValidator,
-        TimestampValidator,
-    ])
+    context.register_impls(
+        SchemaValidatorABC,
+        [
+            RangesValidator,
+            TimestampValidator,
+        ],
+    )

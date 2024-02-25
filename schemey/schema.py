@@ -25,10 +25,12 @@ class Schema:
         validator = validator_for(self.schema)(
             schema=self.schema, format_checker=SchemeyFormatChecker()
         )
-        validator.VALIDATORS.update({
-            instance.property_name: instance.validate
-            for instance in injecty_context.get_instances(SchemaValidatorABC)
-        })
+        validator.VALIDATORS.update(
+            {
+                instance.property_name: instance.validate
+                for instance in injecty_context.get_instances(SchemaValidatorABC)
+            }
+        )
         return validator
 
     def iter_errors(self, item: ExternalType) -> Iterator[ValidationError]:

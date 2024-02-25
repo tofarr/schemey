@@ -16,6 +16,7 @@ class ImplSchemaFactory(SchemaFactoryABC):
     structure - though the UnionFactory will make a reasonably standardized class
     structure from the result.
     """
+
     priority: int = 150
 
     def from_type(
@@ -26,7 +27,9 @@ class ImplSchemaFactory(SchemaFactoryABC):
         ref_schemas: Dict[Type, Schema],
     ) -> Optional[Schema]:
         # noinspection PyTypeChecker
-        impls = context.marshy_context.injecty_context.get_impls(type_, permit_no_impl=True)
+        impls = context.marshy_context.injecty_context.get_impls(
+            type_, permit_no_impl=True
+        )
         if impls:
             impls = sorted(list(impls), key=lambda i: i.__name__)
             any_of = []

@@ -95,9 +95,7 @@ class DataclassSchemaFactory(SchemaFactoryABC):
             )
             default = field_item.get("default", dataclasses.MISSING)
             if default is not dataclasses.MISSING:
-                default = context.marshy_context.load(
-                    field_schema.python_type, default
-                )
+                default = context.marshy_context.load(field_schema.python_type, default)
                 p = params_with_default
             else:
                 p = params
