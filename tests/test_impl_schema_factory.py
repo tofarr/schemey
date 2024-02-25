@@ -2,10 +2,10 @@ from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from unittest import TestCase
 
-from marshy import new_default_context
-from marshy.factory.impl_marshaller_factory import register_impl
+from injecty import create_injecty_context
 
-from schemey import new_default_schema_context, Schema
+from schemey import Schema
+from schemey.schema_context import create_schema_context
 
 
 @dataclass
@@ -30,10 +30,9 @@ class Cat(PetABC):
 class TestImplSchemaFactory(TestCase):
     @staticmethod
     def get_context():
-        marshaller_context = new_default_context()
-        register_impl(PetABC, Dog, marshaller_context)
-        register_impl(PetABC, Cat, marshaller_context)
-        schema_context = new_default_schema_context(marshaller_context)
+        injecty_context = create_injecty_context()
+        injecty_context.register_impls(PetABC, [Cat, Dog])
+        schema_context = create_schema_context(injecty_context=injecty_context)
         return schema_context
 
     def test_pet_impl(self):
@@ -81,7 +80,7 @@ class TestImplSchemaFactory(TestCase):
         context = self.get_context()
         Dog("Bowser").annunciate()
         Cat("Garfield").annunciate()
-        item = context.marshaller_context.dump(Dog("Bowser"), PetABC)
+        item = context.marshy_context.dump(Dog("Bowser"), PetABC)
         schema = context.schema_from_type(PetABC)
         schema.validate(item)
 

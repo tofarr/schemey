@@ -5,20 +5,18 @@ from typing import Type, Optional, Dict
 from marshy.types import ExternalItemType
 
 from schemey.schema import Schema
-from schemey.schema_context import SchemaContext
+
+_SchemaContext = "schemey.schema_context.SchemaContext"
 
 
-@total_ordering
 class SchemaFactoryABC(ABC):
-    @property
-    def priority(self):
-        return 100
+    priority: int = 100
 
     @abstractmethod
     def from_type(
         self,
         type_: Type,
-        context: SchemaContext,
+        context: _SchemaContext,
         path: str,
         ref_schemas: Dict[Type, Schema],
     ) -> Optional[Schema]:
@@ -30,13 +28,10 @@ class SchemaFactoryABC(ABC):
     def from_json(
         self,
         item: ExternalItemType,
-        context: SchemaContext,
+        context: _SchemaContext,
         path: str,
         ref_schemas: Dict[str, Schema],
     ) -> Optional[Schema]:
         """
         Create a schema for the type given, or return None if that was not possible
         """
-
-    def __lt__(self, other):
-        return self.priority < getattr(other, "priority", None)

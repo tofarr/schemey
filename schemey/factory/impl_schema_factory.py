@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from typing import Type, Optional, Set, Dict
+from typing import Type, Optional, Dict
 
-from marshy.factory.impl_marshaller_factory import ImplMarshallerFactory
 from marshy.types import ExternalItemType
 
 from schemey.factory.schema_factory_abc import SchemaFactoryABC
@@ -17,7 +16,6 @@ class ImplSchemaFactory(SchemaFactoryABC):
     structure - though the UnionFactory will make a reasonably standardized class
     structure from the result.
     """
-
     priority: int = 150
 
     def from_type(
@@ -27,7 +25,8 @@ class ImplSchemaFactory(SchemaFactoryABC):
         path: str,
         ref_schemas: Dict[Type, Schema],
     ) -> Optional[Schema]:
-        impls = self.get_impls(type_, context)
+        # noinspection PyTypeChecker
+        impls = context.marshy_context.injecty_context.get_impls(type_, permit_no_impl=True)
         if impls:
             impls = sorted(list(impls), key=lambda i: i.__name__)
             any_of = []
@@ -55,17 +54,7 @@ class ImplSchemaFactory(SchemaFactoryABC):
         name = item.get("name")
         if not name or not item.get("anyOf"):
             return
-        factories = context.marshaller_context.get_factories()
-        for factory in factories:
-            if isinstance(factory, ImplMarshallerFactory):
-                if factory.base.__name__ == name:
-                    schema = self.from_type(factory.base, context, path, ref_schemas)
-                    return schema
-
-    @staticmethod
-    def get_impls(type_: Type, context: SchemaContext) -> Optional[Set[Type]]:
-        factories = context.marshaller_context.get_factories()
-        for factory in factories:
-            if isinstance(factory, ImplMarshallerFactory):
-                if factory.base == type_:
-                    return factory.impls
+        for base, impls in context.marshy_context.injecty_context.impls.items():
+            if base.__name__ == name:
+                schema = self.from_type(base, context, path, ref_schemas)
+                return schema

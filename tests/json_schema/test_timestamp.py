@@ -2,13 +2,11 @@ from datetime import datetime, timezone
 from unittest import TestCase
 
 from jsonschema import ValidationError
-from jsonschema.validators import validator_for
 
 from schemey import schema_from_json, schema_from_type
-from schemey.json_schema.timestamp import timestamp
 
 
-class TestRanges(TestCase):
+class TestTimestamp(TestCase):
     def test_past_no_grace_period(self):
         schema = schema_from_json(
             {"type": "string", "format": "date-time", "timestamp": {"past": True}}

@@ -3,14 +3,15 @@ from datetime import datetime
 from typing import Type, Iterator, Optional, Union
 from uuid import UUID
 
+from injecty import get_default_injecty_context, InjectyContext
 from jsonschema import ValidationError
 from jsonschema.validators import validator_for
 from marshy.types import ExternalItemType, ExternalType
 
+from schemey.json_schema.schema_validator_abc import SchemaValidatorABC
 from schemey.schemey_format_checker import SchemeyFormatChecker
 from schemey.string_format import StringFormat
 from schemey.util import filter_none
-from schemey.json_schema import get_custom_json_schema_validators
 
 
 @dataclass
@@ -18,18 +19,23 @@ class Schema:
     schema: ExternalItemType
     python_type: Type
 
-    def validator(self):
+    def validator(self, injecty_context: InjectyContext = None):
+        if injecty_context is None:
+            injecty_context = get_default_injecty_context()
         validator = validator_for(self.schema)(
             schema=self.schema, format_checker=SchemeyFormatChecker()
         )
-        validator.VALIDATORS.update(get_custom_json_schema_validators())
+        validator.VALIDATORS.update({
+            instance.property_name: instance.validate
+            for instance in injecty_context.get_instances(SchemaValidatorABC)
+        })
         return validator
 
     def iter_errors(self, item: ExternalType) -> Iterator[ValidationError]:
         yield from self.validator().iter_errors(instance=item)
 
-    def validate(self, item: ExternalType):
-        self.validator().validate(instance=item)
+    def validate(self, item: ExternalType, injecty_context: InjectyContext = None):
+        self.validator(injecty_context).validate(instance=item)
 
 
 def str_schema(
