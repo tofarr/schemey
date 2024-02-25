@@ -44,7 +44,7 @@ class DataclassSchemaFactory(SchemaFactoryABC):
                 required.append(field.name)
             if field.default is not dataclasses.MISSING:
                 field_schema = Schema({**field_schema.schema}, field_schema.python_type)
-                field_schema.schema["default"] = context.marshaller_context.dump(
+                field_schema.schema["default"] = context.marshy_context.dump(
                     field.default, types[field.name]
                 )
             properties[field.name] = field_schema.schema
@@ -95,9 +95,7 @@ class DataclassSchemaFactory(SchemaFactoryABC):
             )
             default = field_item.get("default", dataclasses.MISSING)
             if default is not dataclasses.MISSING:
-                default = context.marshaller_context.load(
-                    field_schema.python_type, default
-                )
+                default = context.marshy_context.load(field_schema.python_type, default)
                 p = params_with_default
             else:
                 p = params

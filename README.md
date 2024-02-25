@@ -62,24 +62,20 @@ This demonstrates starting with a json schema and generating python dataclasses 
 
 ### Configuring the Context itself
 
-Schemey uses a strategy very similar to marshy for configuration.
+Schemey uses [Injecty](https://github.org/tofarr/injecty) for configuration.
+The default configuration is [here](injecty_config_schemey/__init__.py)
 
-Schemey looks for top level modules starting with the name `schemey_config_*`,
-sorts them by `priority`, and applies them to the default context by invoking their
-`configure` function. [schemey_config_default/__init__.py](schemey_config_default/__init__.py)
-contains the default set of factories. 
-
-For example, for a project named `no_more_uuids`, I may add a file `schemey_config_no_more_uuids/__init__.py`:
+For example, for a project named `no_more_uuids`, I may add a file `injecty_config_no_more_uuids/__init__.py`:
 
 ```
+from schemey.factory.schema_factory_abc import SchemaFactoryABC
+from schemey.factory.uuid_factory import UuidFactory
+
 priority = 120  # Applied after default
 
+
 def configure(context):
-    # For some reason, I don't want to be able to generate schemas for uuids!
-    context.factories = [
-        f for f in context.factories 
-        if 'uuid' not in f.__class__.__name__.lower()
-    ]
+    context.deregister_impl(SchemaFactoryABC, UuidFactory)
 
 ```
 

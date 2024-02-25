@@ -64,7 +64,7 @@ def validated(cls: Type[T], schema_context: Optional[SchemaContext] = None):
 
         if not dataclasses.is_dataclass(cls_):
             cls_ = dataclass(cls_)
-        marshaller_context = schema_context.marshaller_context
+        marshaller_context = schema_context.marshy_context
         schema = schema_context.schema_from_type(cls_)
         properties = schema.schema["properties"]
         validators = {}

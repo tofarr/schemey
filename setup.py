@@ -12,7 +12,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/tofarr/schemey",
     packages=setuptools.find_packages(exclude=("tests", "tests.*")),
-    install_requires=["marshy~=4.0", "jsonschema~=4.8"],
+    install_requires=["marshy~=5.0", "jsonschema~=4.8"],
     python_requires=">=3.7",
     extras_require={
         "dev": [

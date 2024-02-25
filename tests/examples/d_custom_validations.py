@@ -1,9 +1,8 @@
 from typing import Dict, Type
 
 import marshy
-from marshy import ExternalType
+from marshy import ExternalType, MarshyContext
 from marshy.marshaller.marshaller_abc import MarshallerABC
-from marshy.marshaller_context import MarshallerContext
 
 from schemey import SchemaContext, Schema
 from schemey.validator import validator_from_type
@@ -21,16 +20,18 @@ class Point:
 
     # noinspection PyUnusedLocal
     @classmethod
-    def __marshaller_factory__(cls, context: MarshallerContext):
+    def __marshaller_factory__(cls, context: MarshyContext):
         # Marshy already lets us define marshalling any way we choose.
         class PointMarshaller(MarshallerABC[Point]):
+            marshalled_type = Point
+
             def load(self, item: ExternalType) -> Point:
                 return Point(*item)
 
             def dump(self, item: Point) -> ExternalType:
                 return [item.x, item.y]
 
-        return PointMarshaller(Point)
+        return PointMarshaller()
 
     # noinspection PyUnusedLocal
     @classmethod

@@ -25,7 +25,7 @@ class Coordinate3D:
     # noinspection PyUnusedLocal
     @classmethod
     def __marshaller_factory__(cls, marshaller_context):
-        return Coordinate3DMarshaller(Coordinate3D)
+        return Coordinate3DMarshaller()
 
     # noinspection PyUnusedLocal
     @classmethod
@@ -37,6 +37,8 @@ class Coordinate3D:
 
 
 class Coordinate3DMarshaller(MarshallerABC[Coordinate3D]):
+    marshalled_type = Coordinate3D
+
     def load(self, item: ExternalType) -> Coordinate3D:
         return Coordinate3D(item[0], item[1], item[2])
 
