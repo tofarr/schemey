@@ -1,5 +1,4 @@
 from abc import abstractmethod, ABC
-from functools import total_ordering
 from typing import Type, Optional, Dict
 
 from marshy.types import ExternalItemType

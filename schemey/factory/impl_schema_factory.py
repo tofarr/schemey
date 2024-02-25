@@ -57,7 +57,7 @@ class ImplSchemaFactory(SchemaFactoryABC):
         name = item.get("name")
         if not name or not item.get("anyOf"):
             return
-        for base, impls in context.marshy_context.injecty_context.impls.items():
+        for base, _ in context.marshy_context.injecty_context.impls.items():
             if base.__name__ == name:
                 schema = self.from_type(base, context, path, ref_schemas)
                 return schema

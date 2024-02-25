@@ -1,8 +1,11 @@
+from dataclasses import dataclass
+
 from jsonschema.exceptions import ValidationError
 
 from schemey.json_schema.schema_validator_abc import SchemaValidatorABC
 
 
+@dataclass(frozen=True)
 class RangesValidator(SchemaValidatorABC):
     """
     Add a custom validation rule for ranges to json object schema.

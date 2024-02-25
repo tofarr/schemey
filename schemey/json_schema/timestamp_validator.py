@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from jsonschema.exceptions import ValidationError
@@ -5,6 +6,7 @@ from jsonschema.exceptions import ValidationError
 from schemey.json_schema.schema_validator_abc import SchemaValidatorABC
 
 
+@dataclass(frozen=True)
 class TimestampValidator(SchemaValidatorABC):
     """
     Add a custom date validation rule to json object schema.
