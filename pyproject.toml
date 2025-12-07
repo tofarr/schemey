@@ -1,0 +1,48 @@
+[project]
+name = "schemey"
+version = "0.0.0"  # This will be replaced by the release workflow
+description = "Convention over configuration Object Schemas for python"
+authors = [
+    {name = "Tim O'Farrell", email = "tofarr@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "injecty~=0.0",
+    "marshy~=5.0",
+    "jsonschema~=4.8",
+]
+
+[project.urls]
+Repository = "https://github.com/tofarr/schemey"
+
+[project.optional-dependencies]
+dev = [
+    "black~=23.3",
+    "pytest~=7.2",
+    "pytest-cov~=4.0",
+    "pytest-xdist~=3.2",
+    "pylint~=3.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["schemey"]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["tests*", "examples", "images"]
+
+[dependency-groups]
+dev = [
+    "hatch-vcs>=0.5.0",
+    "hatchling>=1.28.0",
+]
