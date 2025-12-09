@@ -15,7 +15,7 @@ classifiers = [
 ]
 dependencies = [
     "injecty~=0.0",
-    "marshy~=5.0",
+    "marshy~=6.0",
     "jsonschema~=4.8",
 ]
 

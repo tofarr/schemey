@@ -298,15 +298,15 @@ wheels = [
 
 [[package]]
 name = "marshy"
-version = "5.0.3"
+version = "6.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "injecty" },
     { name = "typing-inspect" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fc/51/253cbfb1080de266316a644bcf2e08057275f277c513fea1c87c50a9774a/marshy-5.0.3.tar.gz", hash = "sha256:df7031d464a63ece07def8b75e6affa38082f18566c6ad34b1df90a702145bc9", size = 16353, upload-time = "2024-02-25T14:03:03.068Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6b/98/1be2dbe5c39a6fc926d0cf992426d1503414cbd23249e4c49478f3f07ac1/marshy-6.0.0.tar.gz", hash = "sha256:f441d43e8ec3d52082a81a4ae6bddaa4014c687fe1191054e326ae843e28d517", size = 104679, upload-time = "2025-12-07T22:28:15.206Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c2/7d/f6c08172d24e3819fb0c788bf58a119ae3f6d10dd3d17b85b4181ef806c0/marshy-5.0.3-py3-none-any.whl", hash = "sha256:ff4a6ea240749d25bd24beb606c6c9bbb3508e33f5b74d335db020ffd554943f", size = 23514, upload-time = "2024-02-25T14:03:01.211Z" },
+    { url = "https://files.pythonhosted.org/packages/e3/d4/3df40b5b3e91cb92c2ef0b56fe14ab9e83837fad7cfd054a81271d94dd59/marshy-6.0.0-py3-none-any.whl", hash = "sha256:1f445ed15d9f8a5db49814a80e741e32a4d36c2205a54f5bc65fa4a90bec44c1", size = 23339, upload-time = "2025-12-07T22:28:14.173Z" },
 ]
 
 [[package]]
@@ -591,7 +591,7 @@ requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = "~=23.3" },
     { name = "injecty", specifier = "~=0.0" },
     { name = "jsonschema", specifier = "~=4.8" },
-    { name = "marshy", specifier = "~=5.0" },
+    { name = "marshy", specifier = "~=6.0" },
     { name = "pylint", marker = "extra == 'dev'", specifier = "~=3.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = "~=7.2" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = "~=4.0" },
